@@ -1,3 +1,4 @@
 export const environment = {
-  production: true
+  production: true,
+  apiUrl: 'https://shiftsbackend-8qns.onrender.com/api'
 };
