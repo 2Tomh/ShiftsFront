@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800&family=Assistant:wght@400;500;600&display=swap');
+
+:host {
+  display: block;
+  direction: rtl;
+}
+
+/* חדש - מבנה Sidebar: flex לרוחב, סרגל צד קבוע-רוחב מימין (כי RTL),
+   ותוכן הדף בשאר השטח לצדו. */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  background: #1f3a63;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.sidebar-brand {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  text-align: center;
+  padding-bottom: 18px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-link {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+  text-align: right;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.nav-link.active {
+  background: #4caf50;
+  color: #fff;
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* ===== מובייל/מסך צר - חזרה לפס עליון אופקי, כי סרגל צד לא נוח בטלפון ===== */
+@media (max-width: 700px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    border-left: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .sidebar-brand {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+    white-space: nowrap;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .nav-link {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .sidebar-brand {
+    display: none;
+  }
+}
+
+/* חדש - שם המשתמש המחובר + כפתור התנתקות, בתחתית ה-Sidebar */
+.sidebar-user {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-user .user-name {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.sidebar-user .btn-logout {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  padding: 7px 0;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sidebar-user .btn-logout:hover {
+  background: rgba(220, 60, 50, 0.85);
+  border-color: transparent;
+}

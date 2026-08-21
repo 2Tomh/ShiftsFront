@@ -1,0 +1,17 @@
+<header class="admin-topbar">
+  <div class="topbar-inner">
+    <span class="topbar-brand">ניהול · HP נס ציונה</span>
+    <nav class="topbar-nav">
+      <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">לוח מנהל</a>
+      <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">אישור חופשות</a>
+      <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link">אישור מחלה</a>
+      <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">ניהול משתמשים</a>
+    </nav>
+    <div class="topbar-user">
+      <span class="user-name" *ngIf="username">{{ username }}</span>
+      <button class="btn-logout" (click)="logout()">התנתק</button>
+    </div>
+  </div>
+</header>
+
+<router-outlet></router-outlet>

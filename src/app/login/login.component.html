@@ -1,0 +1,32 @@
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-brand">HP נס ציונה</div>
+    <h1 class="login-title">התחברות</h1>
+
+    <div class="field-row">
+      <label for="username">שם משתמש</label>
+      <input
+        id="username"
+        type="text"
+        [(ngModel)]="username"
+        (keyup.enter)="submit()"
+        placeholder="שם משתמש">
+    </div>
+
+    <div class="field-row">
+      <label for="password">סיסמה</label>
+      <input
+        id="password"
+        type="password"
+        [(ngModel)]="password"
+        (keyup.enter)="submit()"
+        placeholder="סיסמה">
+    </div>
+
+    <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+    <button class="btn-login" [disabled]="isSubmitting" (click)="submit()">
+      {{ isSubmitting ? 'מתחבר...' : 'התחבר' }}
+    </button>
+  </div>
+</div>

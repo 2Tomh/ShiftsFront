@@ -1,0 +1,264 @@
+/* הוסר: @import של Google Fonts הועבר ל-styles.css הגלובלי, כי
+   Angular's View Encapsulation "שובר" @import בתוך CSS של קומפוננטה
+   בודדת כשה-URL מכיל query params עם ; (כמו wght@500;700;800) -
+   Angular מזריק בטעות סלקטור [_ngcontent-xxx] לתוך כתובת ה-URL עצמה,
+   מה שהופך אותה לכתובת לא תקינה (ומכאן שגיאת ה-MIME type mismatch).
+   ראי הוראות בתשובה להוספת הפונטים ב-styles.css או index.html. */:host {
+  --navy: #2b4b7c;
+  --navy-dark: #1f3a63;
+  --ink: #26313f;
+  --ink-soft: #6b7684;
+  --paper: #eef1f6;
+  --card: #ffffff;
+  --line: #e1e6ee;
+  --green: #4caf50;
+  --green-dark: #3d8b40;
+  --red: #e05656;
+
+  display: block;
+  font-family: 'Assistant', sans-serif;
+  color: var(--ink);
+  direction: rtl;
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+/* ===== Main ===== */
+.app-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 12px 28px -20px rgba(38, 49, 63, 0.35);
+}
+
+/* ===== Availability panel ===== */
+.panel-heading {
+  margin-bottom: 16px;
+}
+
+.panel-heading h1 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 2px;
+  color: var(--navy-dark);
+}
+
+.panel-date {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
+  /* אותו תיקון בדיוק - בלי זה הסדר "9/8 – 15/8" שנכתב בקוד מוצג הפוך
+     כ-"15/8 – 9/8" בגלל היפוך אוטומטי של רצפי מספרים בתוך הקשר RTL. */
+  direction: ltr;
+  unicode-bidi: plaintext;
+}
+
+.name-row {
+  margin-bottom: 14px;
+}
+
+.name-row label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+
+.name-row input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 14.5px;
+  background: var(--paper);
+}
+
+.name-row input:focus {
+  outline: none;
+  border-color: var(--navy);
+  background: var(--card);
+}
+
+.week-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.notes-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 14px;
+  background: var(--paper);
+  resize: vertical;
+  margin-bottom: 14px;
+}
+
+.notes-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  background: var(--card);
+}
+
+.btn-save {
+  width: 100%;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-save:hover {
+  background: var(--green-dark);
+}
+
+/* ===== Shifts panel ===== */
+.shifts-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.info-icon {
+  color: var(--navy);
+  font-size: 15px;
+}
+
+.shifts-heading h2 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--navy-dark);
+}
+
+.shifts-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.shifts-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.header-row {
+  border-top: none;
+  padding-bottom: 6px;
+}
+
+.row-label {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--navy);
+}
+
+.day-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.day-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.day-date {
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+
+.toggle-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease;
+}
+
+.toggle-icon.is-on {
+  color: var(--green);
+}
+
+.toggle-icon.is-blocked {
+  color: #b0b8c4;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.vacation-banner {
+  background: #fff4e0;
+  border: 1px solid #f0c674;
+  color: #8a5c02;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.toggle-icon:active {
+  transform: scale(0.85);
+}
+
+/* ===== Mobile tightening ===== */
+@media (max-width: 420px) {
+  .shifts-row {
+    grid-template-columns: 44px repeat(7, 1fr);
+  }
+
+  .day-name {
+    font-size: 10.5px;
+  }
+
+  .day-date {
+    font-size: 9px;
+  }
+
+  .toggle-icon {
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,85 @@
+<div class="user-management-page">
+
+  <header class="page-header">
+    <h1 class="page-title">ניהול משתמשים</h1>
+    <p class="page-subtitle">כאן יוצרים למי שצריך גישה למערכת שם משתמש וסיסמה - עובדים ומנהלים נוספים.</p>
+  </header>
+
+  <section class="panel create-panel">
+    <h2>יצירת משתמש חדש</h2>
+
+    <div class="field-row">
+      <label for="newUsername">שם משתמש</label>
+      <input id="newUsername" type="text" [(ngModel)]="newUsername" placeholder="לדוגמה: dana.k">
+    </div>
+
+    <div class="field-row">
+      <label for="newPassword">סיסמה</label>
+      <input id="newPassword" type="text" [(ngModel)]="newPassword" placeholder="לפחות 4 תווים">
+    </div>
+
+    <div class="field-row">
+      <label>תפקיד</label>
+      <div class="role-toggle">
+        <button
+          type="button"
+          class="role-btn"
+          [class.is-active]="newRole === 'Employee'"
+          (click)="newRole = 'Employee'">
+          עובד
+        </button>
+        <button
+          type="button"
+          class="role-btn"
+          [class.is-active]="newRole === 'Admin'"
+          (click)="newRole = 'Admin'">
+          מנהל
+        </button>
+      </div>
+    </div>
+
+    <div class="field-row" *ngIf="newRole === 'Employee'">
+      <label for="newEmployeeName">שם העובד (לקישור לרשומת העובד הקיימת, או ליצור חדשה)</label>
+      <input id="newEmployeeName" type="text" [(ngModel)]="newEmployeeName" placeholder="לדוגמה: דנה כהן">
+    </div>
+
+    <div class="error-message" *ngIf="createError">{{ createError }}</div>
+
+    <button class="btn-create" [disabled]="isCreating" (click)="createUser()">
+      {{ isCreating ? 'יוצר...' : '+ צור משתמש' }}
+    </button>
+  </section>
+
+  <section class="panel users-list-panel">
+    <h2>משתמשים קיימים</h2>
+
+    <div *ngIf="isLoading" class="loading-hint">טוען...</div>
+    <div *ngIf="!isLoading && users.length === 0" class="empty-hint">אין עדיין משתמשים במערכת.</div>
+
+    <table class="users-table" *ngIf="!isLoading && users.length > 0">
+      <thead>
+        <tr>
+          <th>שם משתמש</th>
+          <th>תפקיד</th>
+          <th>עובד מקושר</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td class="user-username">{{ user.username }}</td>
+          <td>
+            <span class="role-badge" [class.role-admin]="user.role === 'Admin'">
+              {{ roleLabel(user.role) }}
+            </span>
+          </td>
+          <td>{{ user.employeeName || '—' }}</td>
+          <td>
+            <button class="btn-delete" (click)="deleteUser(user)" title="מחק משתמש">מחק</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</div>

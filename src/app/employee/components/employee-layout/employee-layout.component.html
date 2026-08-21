@@ -1,0 +1,22 @@
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand">HP נס ציונה</div>
+    <nav class="sidebar-nav">
+      <a routerLink="/schedule" routerLinkActive="active" class="nav-link">לוח משמרות</a>
+      <a routerLink="/register" routerLinkActive="active" class="nav-link">הרשמת עובדים</a>
+      <a routerLink="/vacation" routerLinkActive="active" class="nav-link">בקשת חופשה</a>
+      <a routerLink="/sick-leave" routerLinkActive="active" class="nav-link">ימי מחלה</a>
+    </nav>
+
+    <div class="sidebar-user">
+      <span class="user-name" *ngIf="employeeName">{{ employeeName }}</span>
+      <button class="btn-logout" (click)="logout()">התנתק</button>
+    </div>
+  </aside>
+
+  <main class="app-content">
+    <router-outlet></router-outlet>
+  </main>
+
+</div>

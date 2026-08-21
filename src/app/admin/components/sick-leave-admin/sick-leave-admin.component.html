@@ -1,0 +1,48 @@
+<div class="sickleave-admin-page">
+
+  <header class="page-header">
+    <h1 class="page-title">אישור בקשות ימי מחלה</h1>
+  </header>
+
+  <div class="filter-tabs">
+    <button class="tab" [class.active]="activeFilter === 'Pending'" (click)="setFilter('Pending')">ממתינות</button>
+    <button class="tab" [class.active]="activeFilter === 'Approved'" (click)="setFilter('Approved')">מאושרות</button>
+    <button class="tab" [class.active]="activeFilter === 'Rejected'" (click)="setFilter('Rejected')">נדחות</button>
+    <button class="tab" [class.active]="activeFilter === 'All'" (click)="setFilter('All')">הכל</button>
+  </div>
+
+  <div class="requests-list">
+
+    <div *ngIf="isLoading" class="loading-hint">טוען...</div>
+
+    <div *ngIf="!isLoading && requests.length === 0" class="empty-state">
+      אין בקשות להצגה בקטגוריה הזו.
+    </div>
+
+    <div class="request-row" *ngFor="let req of requests">
+      <div class="request-main">
+        <div class="request-employee">{{ req.employeeName }}</div>
+        <div class="request-dates">
+          {{ req.startDate | date:'dd/MM/yyyy' }} – {{ req.endDate | date:'dd/MM/yyyy' }}
+        </div>
+        <div class="request-reason" *ngIf="req.reason">{{ req.reason }}</div>
+        <div class="request-meta">
+          הוגש: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+        </div>
+        <div class="admin-note" *ngIf="req.adminNote">הערה: {{ req.adminNote }}</div>
+      </div>
+
+      <div class="request-actions">
+        <span class="status-badge" [ngClass]="'status-' + req.status.toLowerCase()">
+          {{ statusLabel(req.status) }}
+        </span>
+
+        <div class="action-buttons" *ngIf="req.status === 'Pending'">
+          <button class="btn-approve" (click)="approve(req)">אשר</button>
+          <button class="btn-reject" (click)="reject(req)">דחה</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

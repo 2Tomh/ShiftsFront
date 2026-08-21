@@ -1,0 +1,213 @@
+<div class="schedule-page">
+
+  <header class="page-header">
+    <div class="header-actions">
+      <button class="btn-create-week" (click)="generateWeek()">
+        <span class="btn-icon">+</span> צור שבוע חדש
+      </button>
+      <button class="btn-publish" (click)="publishWeek()" [disabled]="isPublishing || shifts.length === 0">
+        {{ isPublishing ? 'מפרסם...' : '📢 פרסום ללוח העובדים' }}
+      </button>
+      <span class="publish-status" [class.is-published]="isWeekPublished">
+        {{ isWeekPublished ? '✓ פורסם' : 'טיוטה - לא פורסם' }}
+      </span>
+    </div>
+    <h1 class="page-title">לוח משמרות שבועי</h1>
+    <p class="eyebrow">HP נס ציונה</p>
+  </header>
+
+  <div class="main-layout">
+    <div class="table-container">
+      <div class="table-scroll">
+        <table class="schedule-table matrix-table">
+          <thead>
+            <tr>
+              <th class="col-side-label">משמרת</th>
+              <th class="col-role-label">תפקיד</th>
+              <th *ngFor="let day of daysOfWeek" colspan="2">{{ day }}</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- ================= סקשיין בוקר - כולל מאבטח, בנק אחד משותף (rowspan=4) ================= -->
+            <ng-container *ngFor="let role of morningRoles; let firstRole = first">
+              <tr class="shift-morning">
+                <td *ngIf="firstRole" [attr.rowspan]="4" class="shift-label-vertical">
+                  <span class="shift-icon">☀️</span>
+                  בוקר
+                </td>
+                <td class="role-sidebar">{{ role }}</td>
+                <ng-container *ngFor="let day of daysOfWeek; let i = index">
+                  <td class="bank-cell" [attr.rowspan]="4" *ngIf="firstRole">
+                    <div class="side-mini-title">הגישו</div>
+                    <button
+                      *ngFor="let c of getCandidatesForCell(i, shiftTypes[0].type)"
+                      class="candidate-line"
+                      [class.is-assigned]="isCandidateAssignedToAny(i, shiftTypes[0].type, c.fullName, morningRoles)"
+                      (click)="assignFromSharedBank(i, shiftTypes[0].type, c, morningRoles)"
+                      [title]="c.fullName">
+                      {{ c.fullName }}
+                    </button>
+                    <span class="no-candidates" *ngIf="getCandidatesForCell(i, shiftTypes[0].type).length === 0">—</span>
+                  </td>
+                  <td class="assign-cell hatched-cell" *ngIf="role === 'מאבטח' && i >= 5"></td>
+                  <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, shiftTypes[0].type, role)" *ngIf="!(role === 'מאבטח' && i >= 5)">
+                    <div class="side-mini-title">{{ role }}</div>
+                    <div class="assigned-display-box" *ngIf="getEmployeeForRole(i, shiftTypes[0].type, role) as assignedName; else emptySlot0">
+                      <span class="assigned-name-text">{{ assignedName }}</span>
+                      <button class="btn-remove-mini" (click)="removeEmployee(i, shiftTypes[0].type, role)" title="הסר שיבוץ">×</button>
+                    </div>
+                    <ng-template #emptySlot0>
+                      <button class="btn-add-mini" (click)="startSelectingRole(i, shiftTypes[0].type, role)" title="בחר מהבנק">+</button>
+                    </ng-template>
+                  </td>
+                </ng-container>
+              </tr>
+            </ng-container>
+
+
+            <!-- ================= סקשיין צהריים (בנק אחד משותף, בלי מאבטח) ================= -->
+            <ng-container *ngFor="let role of mainRoles; let firstRole = first">
+              <tr class="shift-afternoon">
+                <td *ngIf="firstRole" [attr.rowspan]="3" class="shift-label-vertical">
+                  <span class="shift-icon">🌤️</span>
+                  צהריים
+                </td>
+                <td class="role-sidebar">{{ role }}</td>
+                <ng-container *ngFor="let day of daysOfWeek; let i = index">
+                  <td class="bank-cell" [attr.rowspan]="3" *ngIf="firstRole">
+                    <div class="side-mini-title">הגישו</div>
+                    <button
+                      *ngFor="let c of getCandidatesForCell(i, shiftTypes[1].type)"
+                      class="candidate-line"
+                      [class.is-assigned]="isCandidateAssignedToAny(i, shiftTypes[1].type, c.fullName, mainRoles)"
+                      (click)="assignFromSharedBank(i, shiftTypes[1].type, c, mainRoles)"
+                      [title]="c.fullName">
+                      {{ c.fullName }}
+                    </button>
+                    <span class="no-candidates" *ngIf="getCandidatesForCell(i, shiftTypes[1].type).length === 0">—</span>
+                  </td>
+                  <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, shiftTypes[1].type, role)">
+                    <div class="side-mini-title">{{ role }}</div>
+                    <div class="assigned-display-box" *ngIf="getEmployeeForRole(i, shiftTypes[1].type, role) as assignedName; else emptySlot2">
+                      <span class="assigned-name-text">{{ assignedName }}</span>
+                      <button class="btn-remove-mini" (click)="removeEmployee(i, shiftTypes[1].type, role)" title="הסר שיבוץ">×</button>
+                    </div>
+                    <ng-template #emptySlot2>
+                      <button class="btn-add-mini" (click)="startSelectingRole(i, shiftTypes[1].type, role)" title="בחר מהבנק">+</button>
+                    </ng-template>
+                  </td>
+                </ng-container>
+              </tr>
+            </ng-container>
+
+
+            <!-- ================= סקשיין לילה (בנק אחד משותף, בלי מאבטח) ================= -->
+            <ng-container *ngFor="let role of mainRoles; let firstRole = first">
+              <tr class="shift-night">
+                <td *ngIf="firstRole" [attr.rowspan]="3" class="shift-label-vertical">
+                  <span class="shift-icon">🌙</span>
+                  לילה
+                </td>
+                <td class="role-sidebar">{{ role }}</td>
+                <ng-container *ngFor="let day of daysOfWeek; let i = index">
+                  <td class="bank-cell" [attr.rowspan]="3" *ngIf="firstRole">
+                    <div class="side-mini-title">הגישו</div>
+                    <button
+                      *ngFor="let c of getCandidatesForCell(i, shiftTypes[2].type)"
+                      class="candidate-line"
+                      [class.is-assigned]="isCandidateAssignedToAny(i, shiftTypes[2].type, c.fullName, mainRoles)"
+                      (click)="assignFromSharedBank(i, shiftTypes[2].type, c, mainRoles)"
+                      [title]="c.fullName">
+                      {{ c.fullName }}
+                    </button>
+                    <span class="no-candidates" *ngIf="getCandidatesForCell(i, shiftTypes[2].type).length === 0">—</span>
+                  </td>
+                  <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, shiftTypes[2].type, role)">
+                    <div class="side-mini-title">{{ role }}</div>
+                    <div class="assigned-display-box" *ngIf="getEmployeeForRole(i, shiftTypes[2].type, role) as assignedName; else emptySlot3">
+                      <span class="assigned-name-text">{{ assignedName }}</span>
+                      <button class="btn-remove-mini" (click)="removeEmployee(i, shiftTypes[2].type, role)" title="הסר שיבוץ">×</button>
+                    </div>
+                    <ng-template #emptySlot3>
+                      <button class="btn-add-mini" (click)="startSelectingRole(i, shiftTypes[2].type, role)" title="בחר מהבנק">+</button>
+                    </ng-template>
+                  </td>
+                </ng-container>
+              </tr>
+            </ng-container>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- פאנל סטטיסטיקות -->
+    <aside class="stats-panel">
+      <div class="stats-header">
+        <h2>סיכום עובדים</h2>
+        <button (click)="clearAllAvailabilities()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
+          נקה הגשות
+        </button>
+      </div>
+
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th class="text-start">עובד</th>
+            <th>הגיש</th>
+            <th>קיבל</th>
+            <th>לילה</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let stat of employeeStats">
+            <td class="text-start emp-name">
+              <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
+              <div class="emp-actions">
+                <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
+              </div>
+            </td>
+            <td class="num-requested">{{ stat.requested }}</td>
+            <td class="num-total">{{ stat.total }}</td>
+            <td class="num-night">{{ stat.night }}</td>
+          </tr>
+          <tr *ngIf="employeeStats.length === 0">
+            <td colspan="4" class="empty-state">עדיין אין הגשות זמינות</td>
+          </tr>
+        </tbody>
+      </table>
+    </aside>
+  </div>
+
+  <!-- מודאל עריכת הגשה -->
+  <div class="modal-backdrop" *ngIf="showEditAvailabilityModal" (click)="closeEditAvailabilityModal()"></div>
+  <div class="assignment-modal edit-availability-modal" *ngIf="showEditAvailabilityModal">
+    <h2 class="modal-title">עריכת הגשה — {{ editingEmployeeName }}</h2>
+    <div class="edit-modal-body" *ngIf="!isLoadingEdit; else loadingTpl">
+      <div class="edit-shifts-table">
+        <div class="edit-row header-row">
+          <div class="edit-row-label"></div>
+          <div class="edit-day-col" *ngFor="let day of daysOfWeek">{{ day }}</div>
+        </div>
+        <div class="edit-row" *ngFor="let shiftLabel of editShiftLabels">
+          <div class="edit-row-label">{{ shiftLabel }}</div>
+          <div class="edit-day-col" *ngFor="let day of daysOfWeek">
+            <button class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)" (click)="toggleEditPreference(day, shiftLabel)">
+              {{ isEditSelected(day, shiftLabel) ? '✓' : '⊘' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <label class="edit-notes-label" for="editNotes">הערות</label>
+      <textarea id="editNotes" class="edit-notes-input" rows="2" [(ngModel)]="editNotes"></textarea>
+      <div class="edit-modal-actions">
+        <button class="btn-cancel-edit" (click)="closeEditAvailabilityModal()">ביטול</button>
+        <button class="btn-save-edit" (click)="saveEditedAvailability()">שמור שינויים</button>
+      </div>
+    </div>
+    <ng-template #loadingTpl>
+      <p class="edit-loading">טוען הגשה...</p>
+    </ng-template>
+  </div>
+</div>

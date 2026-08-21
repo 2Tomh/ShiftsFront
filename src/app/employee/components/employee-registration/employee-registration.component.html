@@ -1,0 +1,68 @@
+<div class="app-shell">
+
+  <main class="app-main">
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h1>הגשת זמינות</h1>
+        <p class="panel-date">{{ formatDateLabel(weekDates[0]) }} – {{ formatDateLabel(weekDates[6]) }}</p>
+      </div>
+
+      <div class="name-row">
+        <label for="employeeName">שם מלא</label>
+        <input
+          id="employeeName"
+          type="text"
+          [(ngModel)]="employeeName"
+          (blur)="checkVacationConflicts()"
+          placeholder="לדוגמה: דנה כהן">
+      </div>
+
+      <div class="vacation-banner" *ngIf="vacationBanner">
+        {{ vacationBanner }}
+      </div>
+
+      <textarea
+        class="notes-input"
+        rows="3"
+        [(ngModel)]="notes"
+        placeholder="הערות..."></textarea>
+
+      <button class="btn-save" (click)="submitAvailability()">
+        שלח זמינות
+      </button>
+    </section>
+
+    <section class="panel shifts-panel">
+      <div class="shifts-heading">
+        <span class="info-icon">ⓘ</span>
+        <h2>משמרות</h2>
+      </div>
+
+      <div class="shifts-table">
+        <div class="shifts-row header-row">
+          <div class="row-label"></div>
+          <div class="day-col" *ngFor="let day of dayNames; let i = index">
+            <span class="day-name">{{ day }}</span>
+            <span class="day-date">{{ formatDateLabel(weekDates[i]) }}</span>
+          </div>
+        </div>
+
+        <div class="shifts-row" *ngFor="let shift of shiftLabels">
+          <div class="row-label">{{ shift }}</div>
+          <div class="day-col" *ngFor="let day of dayNames">
+            <button
+              class="toggle-icon"
+              [class.is-on]="isSelected(day, shift)"
+              [class.is-blocked]="isDayBlocked(day)"
+              [disabled]="isDayBlocked(day)"
+              (click)="togglePreference(day, shift)">
+              {{ isDayBlocked(day) ? '🏖' : (isSelected(day, shift) ? '✓' : '⊘') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>

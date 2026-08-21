@@ -1,0 +1,15 @@
+/* Reset גלובלי בסיסי - מאפס margin/padding ברירת מחדל של הדפדפן
+   שגורמים לרצועה בהירה סביב כל האפליקציה (בדרך כלל 8px על ה-body). */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  background: #eef1f6; /* אותו --paper שבו משתמשים כל הקומפוננטות, כדי שלא תהיה קפיצת צבע */
+}

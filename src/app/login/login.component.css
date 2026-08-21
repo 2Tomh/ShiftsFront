@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800&family=Assistant:wght@400;500;600&display=swap');
+
+:host {
+  display: block;
+  direction: rtl;
+  font-family: 'Assistant', sans-serif;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef1f6;
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px -20px rgba(28, 36, 48, 0.35);
+  padding: 32px 28px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-brand {
+  text-align: center;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #d98e04;
+  margin-bottom: -4px;
+}
+
+.login-title {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  text-align: center;
+  margin: 0 0 8px;
+  color: #1c2430;
+}
+
+.field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-row label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c2430;
+}
+
+.field-row input {
+  border: 1.5px solid #dde3ec;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: 'Assistant', sans-serif;
+}
+
+.field-row input:focus {
+  outline: none;
+  border-color: #146356;
+}
+
+.error-message {
+  background: #f8dcd7;
+  color: #c0392b;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  text-align: center;
+}
+
+.btn-login {
+  margin-top: 6px;
+  background: #146356;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 12px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-login:hover:not(:disabled) {
+  background: #0f4c42;
+}
+
+.btn-login:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

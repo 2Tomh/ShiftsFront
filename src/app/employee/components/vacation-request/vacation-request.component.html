@@ -1,0 +1,68 @@
+<div class="app-shell">
+
+  <main class="app-main">
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h1>הגשת בקשת חופשה</h1>
+        <p class="panel-subtitle">הבקשה תישלח למנהל לאישור. תוכלי לעקוב אחרי הסטטוס למטה.</p>
+      </div>
+
+      <div class="field-row">
+        <label for="employeeName">שם מלא</label>
+        <input
+          id="employeeName"
+          type="text"
+          [(ngModel)]="employeeName"
+          placeholder="לדוגמה: דנה כהן">
+      </div>
+
+      <div class="date-row">
+        <div class="field-row">
+          <label for="startDate">מתאריך</label>
+          <input id="startDate" type="date" [(ngModel)]="startDate">
+        </div>
+        <div class="field-row">
+          <label for="endDate">עד תאריך</label>
+          <input id="endDate" type="date" [(ngModel)]="endDate">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <label for="reason">סיבה / הערות (אופציונלי)</label>
+        <textarea id="reason" rows="3" [(ngModel)]="reason" placeholder="לא חובה למלא..."></textarea>
+      </div>
+
+      <button class="btn-submit" [disabled]="isSubmitting" (click)="submitRequest()">
+        {{ isSubmitting ? 'שולח...' : 'שלח בקשה' }}
+      </button>
+    </section>
+
+    <section class="panel history-panel">
+      <div class="history-heading">
+        <h2>הבקשות שלי</h2>
+        <button class="btn-load-history" [disabled]="isLoadingHistory" (click)="loadMyRequests()">
+          {{ isLoadingHistory ? 'טוען...' : 'טען היסטוריה' }}
+        </button>
+      </div>
+
+      <div *ngIf="historyLoaded && myRequests.length === 0" class="empty-hint">
+        עדיין לא הגשת בקשות חופשה.
+      </div>
+
+      <div class="request-card" *ngFor="let req of myRequests">
+        <div class="request-dates">
+          {{ req.startDate | date:'dd/MM/yyyy' }} – {{ req.endDate | date:'dd/MM/yyyy' }}
+        </div>
+        <div class="request-reason" *ngIf="req.reason">{{ req.reason }}</div>
+        <span class="status-badge" [ngClass]="'status-' + req.status.toLowerCase()">
+          {{ statusLabel(req.status) }}
+        </span>
+        <div class="admin-note" *ngIf="req.adminNote">
+          הערת מנהל: {{ req.adminNote }}
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
