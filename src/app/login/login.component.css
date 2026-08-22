@@ -1,4 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@500;700;800&family=Assistant:wght@400;500;600&display=swap');
+/* הוסר: @import של Google Fonts - Angular ViewEncapsulation "מזריק"
+   סלקטורים לתוך ה-URL עצמו כשזה בקובץ CSS מוקף-קומפוננטה, ושובר את
+   הבקשה. הפונט כבר נטען גלובלית ב-src/styles.css - אין צורך לטעון
+   אותו שוב פה. */
 
 :host {
   display: block;
