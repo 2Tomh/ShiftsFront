@@ -7,7 +7,7 @@ export const environment = {
   apiUrl: 'https://localhost:7278/api',
   // חדש - המפתח הציבורי (VAPID Public Key) הנדרש להרשמה ל-Push.
   // נוצר פעם אחת (ר' ההסבר בהודעה), זהה גם ב-Dev וגם ב-Prod.
-  vapidPublicKey: 'BFxqU8peZs11YxMFTAQFNjTOm0IqP1QOXpxIQv7k5T6Vx_Xa7z7Z8TFAL52pS2jrNgKzfjENAgZwJMcTdvYkjBc'
+  vapidPublicKey: 'BK4UstUWZawF59aH3vBmG-n5rqKwgGGi4FBQCa1YuI9fIXgmEAIjAKySmmVK49FneO07BR_ICj7XisldHGH544w'
 };
 
 /*
