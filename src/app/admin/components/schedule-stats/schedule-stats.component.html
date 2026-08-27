@@ -1,0 +1,35 @@
+<aside class="stats-panel">
+  <div class="stats-header">
+    <h2>סיכום עובדים</h2>
+    <button (click)="clearAll()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
+      נקה הגשות
+    </button>
+  </div>
+
+  <table class="stats-table">
+    <thead>
+      <tr>
+        <th class="text-start">עובד</th>
+        <th>הגיש</th>
+        <th>קיבל</th>
+        <th>לילה</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let stat of employeeStats">
+        <td class="text-start emp-name">
+          <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editName(stat)">{{ stat.name }}</div>
+          <div class="emp-actions">
+            <button class="icon-btn" title="ערוך הגשה" (click)="openEditModal(stat)">📋</button>
+          </div>
+        </td>
+        <td class="num-requested">{{ stat.requested }}</td>
+        <td class="num-total">{{ stat.total }}</td>
+        <td class="num-night">{{ stat.night }}</td>
+      </tr>
+      <tr *ngIf="employeeStats.length === 0">
+        <td colspan="4" class="empty-state">עדיין אין הגשות זמינות</td>
+      </tr>
+    </tbody>
+  </table>
+</aside>

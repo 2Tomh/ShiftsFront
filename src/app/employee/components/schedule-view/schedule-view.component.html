@@ -1,7 +1,7 @@
 <div class="schedule-view-page">
 
   <header class="page-header">
-    <h1 class="page-title">לוח משמרות</h1>
+    <h1 class="page-title">לוח המשמרות שלי</h1>
     <p class="eyebrow" *ngIf="lastUpdated">עודכן: {{ lastUpdated | date:'HH:mm:ss' }}</p>
   </header>
 
@@ -13,6 +13,9 @@
       placeholder="הקלד/י את שמך כדי להדגיש את המשמרות שלך (אופציונלי)">
     <button class="btn-refresh" (click)="refreshNow()" [disabled]="isLoading">
       {{ isLoading ? 'מרענן...' : '🔄 רענן' }}
+    </button>
+    <button class="btn-notifications" (click)="enableNotifications()" title="קבלי התראה בטלפון כשחופשה/מחלה מאושרת או נדחית">
+      🔔 הפעל התראות
     </button>
   </div>
 

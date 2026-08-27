@@ -1,0 +1,62 @@
+<div class="schedule-page">
+
+  <!-- שימוש בקומפוננטת הכותרת החדשה -->
+  <app-schedule-header
+    [isPublishing]="isPublishing"
+    [shiftsLength]="shifts.length"
+    [isWeekPublished]="isWeekPublished"
+    (generateWeekEvent)="generateWeek()"
+    (publishWeekEvent)="publishWeek()">
+  </app-schedule-header>
+
+  <div class="main-layout">
+    
+    <!-- מיכל הטבלה המרכזית עם גלילה אופקית תומכת מ-350px ומעלה -->
+    <div class="table-container">
+      <div class="table-scroll">
+        <!-- כאן נשארת טבלת המטריצה המקורית שלך -->
+      </div>
+    </div>
+
+    <!-- שימוש בקומפוננטת פאנל הסטטיסטיקות החדשה -->
+    <app-schedule-stats
+      [employeeStats]="employeeStats"
+      (clearStatsEvent)="clearAllAvailabilities()"
+      (editNameEvent)="editEmployeeName($event)"
+      (openEditModalEvent)="openEditAvailabilityModal($event)">
+    </app-schedule-stats>
+
+  </div>
+
+  <!-- מודאל עריכת הגשה -->
+  <div class="modal-backdrop" *ngIf="showEditAvailabilityModal" (click)="closeEditAvailabilityModal()"></div>
+  <div class="assignment-modal edit-availability-modal" *ngIf="showEditAvailabilityModal">
+    <h2 class="modal-title">עריכת הגשה — {{ editingEmployeeName }}</h2>
+    <div class="edit-modal-body" *ngIf="!isLoadingEdit; else loadingTpl">
+      <div class="edit-shifts-table">
+        <div class="edit-row header-row">
+          <div class="edit-row-label"></div>
+          <div class="edit-day-col" *ngFor="let day of daysOfWeek">{{ day }}</div>
+        </div>
+        <div class="edit-row" *ngFor="let shiftLabel of editShiftLabels">
+          <div class="edit-row-label">{{ shiftLabel }}</div>
+          <div class="edit-day-col" *ngFor="let day of daysOfWeek">
+            <button class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)" (click)="toggleEditPreference(day, shiftLabel)">
+              {{ isEditSelected(day, shiftLabel) ? '✓' : '⊘' }}
+            </button>
+          </div>
+        </div>
+      </div>
+      <label class="edit-notes-label" for="editNotes">הערות</label>
+      <textarea id="editNotes" class="edit-notes-input" rows="2" [(ngModel)]="editNotes"></textarea>
+      <div class="edit-modal-actions">
+        <button class="btn-cancel-edit" (click)="closeEditAvailabilityModal()">ביטול</button>
+        <button class="btn-save-edit" (click)="saveEditedAvailability()">שמור שינויים</button>
+      </div>
+    </div>
+    <ng-template #loadingTpl>
+      <p class="edit-loading">טוען הגשה...</p>
+    </ng-template>
+  </div>
+
+</div>

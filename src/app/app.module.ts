@@ -2,15 +2,18 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { ServiceWorkerModule } from '@angular/service-worker';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { environment } from '../environments/environment';
 
 // עדכון: נוסף LoginComponent (חי ברמת ה-Root - נטען מיד, לא Lazy, כי
 // הוא נקודת הכניסה לפני שידוע בכלל אם המשתמש אדמין או עובד). נוסף גם
 // FormsModule (בשביל ngModel בטופס ההתחברות), ו-HTTP_INTERCEPTORS
-// שמצמיד את הטוקן אוטומטית לכל בקשה יוצאת.
+// שמצמיד את הטוקן אוטומטית לכל בקשה יוצאת. חדש - ServiceWorkerModule
+// נדרש לתמיכה ב-Push Notifications, פעיל רק ב-Production.
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +23,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     BrowserModule,
     FormsModule,
     HttpClientModule,
-    AppRoutingModule
+    AppRoutingModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

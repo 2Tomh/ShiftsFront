@@ -1,0 +1,152 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #dde3ec;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 700px) {
+  .page-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    text-align: right;
+  }
+}
+
+.page-title {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  margin: 0;
+  color: #1c2430;
+  order: 1;
+}
+
+@media (min-width: 700px) {
+  .page-title {
+    font-size: 22px;
+    text-align: center;
+    order: unset;
+  }
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d98e04;
+  margin: 0;
+  order: 2;
+}
+
+@media (min-width: 700px) {
+  .eyebrow {
+    font-size: 13px;
+    text-align: left;
+    justify-self: end;
+    order: unset;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  order: 3;
+}
+
+@media (min-width: 700px) {
+  .header-actions {
+    justify-self: start;
+    order: unset;
+  }
+}
+
+.header-actions button,
+.header-actions .publish-status {
+  font-size: 12px;
+  padding: 8px 12px;
+  flex: 1 1 auto;
+  min-width: 130px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.btn-create-week {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #1c2430;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-create-week:hover {
+  background: #146356;
+}
+
+.btn-publish {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #d98e04;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-publish:hover:not(:disabled) {
+  background: #b87700;
+}
+
+.btn-publish:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.publish-status {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #c0392b;
+  background: #f8dcd7;
+  padding: 6px 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.publish-status.is-published {
+  color: #146356;
+  background: #d9efe9;
+}
+
+.btn-icon {
+  font-size: 14px;
+  line-height: 1;
+}

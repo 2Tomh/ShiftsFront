@@ -8,6 +8,9 @@ import { ShiftBoardComponent } from './components/shift-board/shift-board.compon
 import { VacationAdminComponent } from './components/vacation-admin/vacation-admin.component';
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
+import { SchedulePageComponent } from './components/schedule-page/schedule-page.component';
+import { ScheduleHeaderComponent } from './components/schedule-header/schedule-header.component';
+import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +18,10 @@ import { UserManagementComponent } from './components/user-management/user-manag
     ShiftBoardComponent,
     VacationAdminComponent,
     SickLeaveAdminComponent,
-    UserManagementComponent
+    UserManagementComponent,
+    SchedulePageComponent,
+    ScheduleHeaderComponent,
+    ScheduleStatsComponent
   ],
   imports: [
     CommonModule,

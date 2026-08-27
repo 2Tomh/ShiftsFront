@@ -1,22 +1,17 @@
 <div class="schedule-page">
 
-  <header class="page-header">
-    <div class="header-actions">
-      <button class="btn-create-week" (click)="generateWeek()">
-        <span class="btn-icon">+</span> צור שבוע חדש
-      </button>
-      <button class="btn-publish" (click)="publishWeek()" [disabled]="isPublishing || shifts.length === 0">
-        {{ isPublishing ? 'מפרסם...' : '📢 פרסום ללוח העובדים' }}
-      </button>
-      <span class="publish-status" [class.is-published]="isWeekPublished">
-        {{ isWeekPublished ? '✓ פורסם' : 'טיוטה - לא פורסם' }}
-      </span>
-    </div>
-    <h1 class="page-title">לוח משמרות שבועי</h1>
-    <p class="eyebrow">HP נס ציונה</p>
-  </header>
+  <!-- כותרת ראשית (קומפוננטה) -->
+  <app-schedule-header
+    [isPublishing]="isPublishing"
+    [shiftsLength]="shifts.length"
+    [isWeekPublished]="isWeekPublished"
+    (generateWeekEvent)="generateWeek()"
+    (publishWeekEvent)="publishWeek()">
+  </app-schedule-header>
 
   <div class="main-layout">
+    
+    <!-- מיכל הטבלה המרכזית -->
     <div class="table-container">
       <div class="table-scroll">
         <table class="schedule-table matrix-table">
@@ -29,7 +24,7 @@
           </thead>
           <tbody>
 
-            <!-- ================= סקשיין בוקר - כולל מאבטח, בנק אחד משותף (rowspan=4) ================= -->
+            <!-- ================= סקשיין בוקר ================= -->
             <ng-container *ngFor="let role of morningRoles; let firstRole = first">
               <tr class="shift-morning">
                 <td *ngIf="firstRole" [attr.rowspan]="4" class="shift-label-vertical">
@@ -65,8 +60,7 @@
               </tr>
             </ng-container>
 
-
-            <!-- ================= סקשיין צהריים (בנק אחד משותף, בלי מאבטח) ================= -->
+            <!-- ================= סקשיין צהריים ================= -->
             <ng-container *ngFor="let role of mainRoles; let firstRole = first">
               <tr class="shift-afternoon">
                 <td *ngIf="firstRole" [attr.rowspan]="3" class="shift-label-vertical">
@@ -101,8 +95,7 @@
               </tr>
             </ng-container>
 
-
-            <!-- ================= סקשיין לילה (בנק אחד משותף, בלי מאבטח) ================= -->
+            <!-- ================= סקשיין לילה ================= -->
             <ng-container *ngFor="let role of mainRoles; let firstRole = first">
               <tr class="shift-night">
                 <td *ngIf="firstRole" [attr.rowspan]="3" class="shift-label-vertical">
@@ -142,42 +135,14 @@
       </div>
     </div>
 
-    <!-- פאנל סטטיסטיקות -->
-    <aside class="stats-panel">
-      <div class="stats-header">
-        <h2>סיכום עובדים</h2>
-        <button (click)="clearAllAvailabilities()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
-          נקה הגשות
-        </button>
-      </div>
+    <!-- פאנל סטטיסטיקות (קומפוננטה) -->
+    <app-schedule-stats
+      [employeeStats]="employeeStats"
+      (clearStatsEvent)="clearAllAvailabilities()"
+      (editNameEvent)="editEmployeeName($event)"
+      (openEditModalEvent)="openEditAvailabilityModal($event)">
+    </app-schedule-stats>
 
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th class="text-start">עובד</th>
-            <th>הגיש</th>
-            <th>קיבל</th>
-            <th>לילה</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let stat of employeeStats">
-            <td class="text-start emp-name">
-              <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
-              <div class="emp-actions">
-                <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
-              </div>
-            </td>
-            <td class="num-requested">{{ stat.requested }}</td>
-            <td class="num-total">{{ stat.total }}</td>
-            <td class="num-night">{{ stat.night }}</td>
-          </tr>
-          <tr *ngIf="employeeStats.length === 0">
-            <td colspan="4" class="empty-state">עדיין אין הגשות זמינות</td>
-          </tr>
-        </tbody>
-      </table>
-    </aside>
   </div>
 
   <!-- מודאל עריכת הגשה -->
@@ -210,4 +175,5 @@
       <p class="edit-loading">טוען הגשה...</p>
     </ng-template>
   </div>
+
 </div>
