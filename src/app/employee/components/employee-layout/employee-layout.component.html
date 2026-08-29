@@ -19,4 +19,17 @@
     <router-outlet></router-outlet>
   </main>
 
+  <!-- חדש - פופאפ התראה, מוצג מעל כל דף כשיש התראה שטרם נצפתה -->
+  <div class="notification-overlay" *ngIf="currentNotification">
+    <div class="notification-popup">
+      <div class="notification-icon">🔔</div>
+      <h3 class="notification-title">{{ currentNotification.title }}</h3>
+      <p class="notification-body">{{ currentNotification.body }}</p>
+      <button class="btn-dismiss" (click)="dismissCurrentNotification()">הבנתי, סגור</button>
+      <span class="notification-counter" *ngIf="pendingNotifications.length > 1">
+        עוד {{ pendingNotifications.length - 1 }} התראות ממתינות
+      </span>
+    </div>
+  </div>
+
 </div>
