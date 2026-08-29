@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { VacationService } from '../../../services/vacation.service';
 import { VacationRequest } from '../../../Models/vacationRequest.model';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-vacation-request',
   templateUrl: './vacation-request.component.html',
   styleUrls: ['./vacation-request.component.css']
 })
-export class VacationRequestComponent {
+export class VacationRequestComponent implements OnInit {
   employeeName: string = '';
   startDate: string = '';
   endDate: string = '';
@@ -18,11 +19,26 @@ export class VacationRequestComponent {
   myRequests: VacationRequest[] = [];
   historyLoaded = false;
 
-  constructor(private vacationService: VacationService) { }
+  constructor(
+    private vacationService: VacationService,
+    private authService: AuthService
+  ) { }
+
+  // חדש - קריטי: השם נלקח אוטומטית מהזהות המחוברת (Login), ולא
+  // מוקלד ידנית יותר - אותה סיבה בדיוק כמו בטופס הגשת הזמינות: שם
+  // שהוקלד בטעות שונה מזה שנוצר ב"ניהול משתמשים" יוצר רשומת עובד
+  // כפולה ומנותקת. גם ההיסטוריה נטענת אוטומטית מיד, בלי צורך ללחוץ
+  // כפתור או להקליד שוב את השם.
+  ngOnInit(): void {
+    this.employeeName = this.authService.getEmployeeName() || this.authService.getUsername() || '';
+    if (this.employeeName) {
+      this.loadMyRequests();
+    }
+  }
 
   submitRequest(): void {
     if (!this.employeeName.trim()) {
-      alert('נא להזין שם!');
+      alert('שגיאה: לא זוהה שם עובד מחובר. נסי להתחבר מחדש.');
       return;
     }
     if (!this.startDate || !this.endDate) {
@@ -48,9 +64,7 @@ export class VacationRequestComponent {
         this.startDate = '';
         this.endDate = '';
         this.reason = '';
-        if (this.historyLoaded) {
-          this.loadMyRequests();
-        }
+        this.loadMyRequests();
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -61,10 +75,7 @@ export class VacationRequestComponent {
   }
 
   loadMyRequests(): void {
-    if (!this.employeeName.trim()) {
-      alert('נא להזין שם קודם');
-      return;
-    }
+    if (!this.employeeName.trim()) return;
 
     this.isLoadingHistory = true;
     this.vacationService.getForEmployee(this.employeeName.trim()).subscribe({

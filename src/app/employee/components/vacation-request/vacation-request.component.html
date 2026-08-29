@@ -13,8 +13,9 @@
         <input
           id="employeeName"
           type="text"
-          [(ngModel)]="employeeName"
-          placeholder="לדוגמה: דנה כהן">
+          [value]="employeeName"
+          readonly
+          disabled>
       </div>
 
       <div class="date-row">
@@ -42,7 +43,7 @@
       <div class="history-heading">
         <h2>הבקשות שלי</h2>
         <button class="btn-load-history" [disabled]="isLoadingHistory" (click)="loadMyRequests()">
-          {{ isLoadingHistory ? 'טוען...' : 'טען היסטוריה' }}
+          {{ isLoadingHistory ? 'טוען...' : '🔄 רענן' }}
         </button>
       </div>
 
