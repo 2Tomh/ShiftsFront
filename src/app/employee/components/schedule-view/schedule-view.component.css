@@ -88,25 +88,6 @@
   opacity: 0.6;
 }
 
-.btn-notifications {
-  border: 1.5px solid var(--amber);
-  background: var(--amber-soft);
-  color: #8a5c02;
-  border-radius: 8px;
-  padding: 9px 16px;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-}
-
-.btn-notifications:hover {
-  background: var(--amber);
-  color: #fff;
-}
-
 .empty-hint {
   text-align: center;
   color: var(--ink-soft);

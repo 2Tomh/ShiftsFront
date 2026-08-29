@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ShiftService } from '../../../services/shift.service';
 import { Shift } from '../../../Models/shift.model';
-import { PushNotificationService } from '../../../services/push-notification.service';
 
 @Component({
   selector: 'app-schedule-view',
@@ -27,13 +26,8 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   private refreshInterval: any;
 
   constructor(
-    private shiftService: ShiftService,
-    private pushService: PushNotificationService
+    private shiftService: ShiftService
   ) { }
-
-  enableNotifications(): void {
-    this.pushService.subscribeToPush();
-  }
 
   ngOnInit(): void {
     this.loadShifts();

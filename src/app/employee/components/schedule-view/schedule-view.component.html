@@ -14,9 +14,6 @@
     <button class="btn-refresh" (click)="refreshNow()" [disabled]="isLoading">
       {{ isLoading ? 'מרענן...' : '🔄 רענן' }}
     </button>
-    <button class="btn-notifications" (click)="enableNotifications()" title="קבלי התראה בטלפון כשחופשה/מחלה מאושרת או נדחית">
-      🔔 הפעל התראות
-    </button>
   </div>
 
   <div *ngIf="!isLoading && shifts.length === 0" class="empty-hint">
