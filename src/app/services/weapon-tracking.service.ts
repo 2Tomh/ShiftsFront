@@ -7,7 +7,7 @@ import { WeaponTracking } from '../Models/weapon-tracking.model';
   providedIn: 'root'
 })
 export class WeaponTrackingService {
-  // שנה את הכתובת לשרת ה-Backend שלך ב-Render
+  // כתובת מלאה כדי למנוע נפילה על Vercel או שגיאות 404
   private apiUrl = 'https://shiftsbackend-8qns.onrender.com/api/weapon-tracking';
 
   constructor(private http: HttpClient) {}
