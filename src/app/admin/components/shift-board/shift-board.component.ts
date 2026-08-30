@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
-import { ShiftService } from '../../services/shift.service';
-import { Shift } from '../../Models/shift.model';
-import { ShiftType } from '../../Models/shiftType.enum';
+import { ShiftService } from '../../../services/shift.service';
+import { Shift } from '../../../Models/shift.model';
+import { ShiftType } from '../../../Models/shiftType.enum';
 
 @Component({
   selector: 'app-shift-board',
