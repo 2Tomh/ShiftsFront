@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ShiftService } from '../../../services/shift.service';
 import { VacationService } from '../../../services/vacation.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-employee-registration',
   templateUrl: './employee-registration.component.html',
   styleUrls: ['./employee-registration.component.css']
 })
-export class EmployeeRegistrationComponent {
+export class EmployeeRegistrationComponent implements OnInit {
   employeeName: string = '';
   notes: string = '';
   dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
@@ -24,8 +25,23 @@ export class EmployeeRegistrationComponent {
 
   constructor(
     private shiftService: ShiftService,
-    private vacationService: VacationService
+    private vacationService: VacationService,
+    private authService: AuthService
   ) { }
+
+  // חדש - קריטי: השם נלקח אוטומטית מהזהות המחוברת (Login), ולא
+  // מוקלד ידנית יותר - זה פותר את הבאג "ההגשה נעלמת/משתמש כפול":
+  // קודם, אם העובד הקליד שם שונה במעט מזה שהאדמין רשם ליצירת המשתמש
+  // שלו (רווח נוסף, כינוי, סדר שונה), נוצרה רשומת Employee חדשה
+  // ונפרדת בשרת (find-or-create לפי שם), והעובד "נעלם" מבחינת
+  // המנהל - כי הוא בפועל נוצר כמישהו אחר לגמרי. בודקים חפיפה לחופשה
+  // מייד עם הכניסה לדף (לא מחכים ל-blur יותר, כי אין יותר הקלדה בכלל).
+  ngOnInit(): void {
+    this.employeeName = this.authService.getEmployeeName() || this.authService.getUsername() || '';
+    if (this.employeeName) {
+      this.checkVacationConflicts();
+    }
+  }
 
   private getWeekSunday(): Date {
     const today = new Date();
@@ -70,8 +86,9 @@ export class EmployeeRegistrationComponent {
   }
 
   /**
-   * חדש - בודקת אם לעובד יש חופשה מאושרת שחופפת לשבוע שמוצג בטופס,
-   * וחוסמת את הימים הרלוונטיים. נקראת כשמסיימים להקליד שם (blur).
+   * בודקת אם לעובד יש חופשה מאושרת שחופפת לשבוע שמוצג בטופס,
+   * וחוסמת את הימים הרלוונטיים. נקראת אוטומטית ב-ngOnInit (כי השם
+   * כבר ידוע מייד, לא צריך לחכות ל-blur של שדה טקסט שכבר לא קיים).
    */
   checkVacationConflicts(): void {
     const name = this.employeeName.trim();
@@ -123,7 +140,7 @@ export class EmployeeRegistrationComponent {
 
   submitAvailability() {
     if (!this.employeeName.trim()) {
-      alert("נא להזין שם!");
+      alert("שגיאה: לא זוהה שם עובד מחובר. נסי להתחבר מחדש.");
       return;
     }
 
@@ -143,15 +160,16 @@ export class EmployeeRegistrationComponent {
       },
       error: (err: any) => {
         console.error(err);
-        // תוקן: מציג עכשיו את הודעת השגיאה האמיתית מהשרת (כולל רשימת
-        // הימים החסומים, אם השרת חסם בגלל חופשה) במקום הודעה גנרית.
+        // מציג את הודעת השגיאה האמיתית מהשרת (כולל רשימת הימים
+        // החסומים, אם השרת חסם בגלל חופשה) במקום הודעה גנרית.
         alert(err.error?.error || "שגיאה בשליחת הנתונים.");
       }
     });
   }
 
   resetForm() {
-    this.employeeName = '';
+    // לא מאפסים employeeName יותר - הוא קבוע ותואם לזהות המחוברת,
+    // לא שדה טופס שצריך "לנקות" בין הגשות.
     this.preferredShifts = [];
     this.notes = '';
     this.blockedDays.clear();
