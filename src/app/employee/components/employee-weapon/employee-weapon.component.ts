@@ -17,6 +17,7 @@ export class EmployeeWeaponComponent implements OnInit {
   };
 
   private currentEmployeeId = '12345'; // החלף ב-ID של העובד המחובר בפועל
+  private managerEmail = 'manager@company.com'; // מייל המנהל
 
   constructor(private weaponService: WeaponTrackingService) {}
 
@@ -31,22 +32,32 @@ export class EmployeeWeaponComponent implements OnInit {
   }
 
   sendDeclaration(): void {
+    // פתיחת חלון מייל חדש עם נושא ותוכן מוכנים מראש
+    const subject = encodeURIComponent('הצהרת בריאות להוצאת נשק אישי');
+    const body = encodeURIComponent('שלום,\n\nאני מגיש את הצהרת הבריאות שלי לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
+    window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
+
+    // עדכון הסטטוס בשרת ובבסיס הנתונים
     this.weaponService.sendHealthDeclaration(this.currentEmployeeId).subscribe({
       next: () => {
-        alert('ההצהרה נשלחה בהצלחה למנהל');
         this.tracking.healthDeclarationSent = true;
       },
-      error: (err) => console.error('שגיאה בשליחת ההצהרה', err)
+      error: (err) => console.error('שגיאה בעדכון הסטטוס', err)
     });
   }
 
   sendBtf(): void {
+    // פתיחת חלון מייל חדש לבט"פ
+    const subject = encodeURIComponent('בקשה לבט"פ להוצאת נשק אישי');
+    const body = encodeURIComponent('שלום,\n\nאני מעוניין להגיש בקשה לבט"פ לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
+    window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
+
+    // עדכון הסטטוס בשרת ובבסיס הנתונים
     this.weaponService.sendBtfRequest(this.currentEmployeeId).subscribe({
       next: () => {
-        alert('בקשת הבט"פ נשלחה בהצלחה למנהל');
         this.tracking.btfRequestSubmitted = true;
       },
-      error: (err) => console.error('שגיאה בשליחת בקשת הבט"פ', err)
+      error: (err) => console.error('שגיאה בעדכון הסטטוס', err)
     });
   }
 }
