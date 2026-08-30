@@ -16,8 +16,6 @@ export class EmployeeWeaponComponent implements OnInit {
     psychologistAppointment: false
   };
 
-  // תוקן - הוסר לגמרי currentEmployeeId הקשיח ('12345'). השרת מזהה
-  // את העובד לפי ה-Token, אז אין צורך (וגם לא בטוח) להעביר ID מהפרונט.
   private readonly managerEmail = 'manager@company.com';
 
   constructor(private weaponService: WeaponTrackingService) {}
@@ -32,10 +30,20 @@ export class EmployeeWeaponComponent implements OnInit {
     });
   }
 
+  // חדש - פותח ישירות את Gmail בדפדפן (חלון Compose), במקום
+  // mailto: שפותח את תוכנת המייל שמוגדרת כברירת מחדל במחשב (בד"כ
+  // Outlook). כתובת ה-URL של Gmail: view=cm (compose message),
+  // fs=1 (fullscreen compose), to/su/body בדיוק כמו ב-mailto.
+  private openGmailCompose(subject: string, body: string): void {
+    const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${this.managerEmail}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(url, '_blank');
+  }
+
   sendDeclaration(): void {
-    const subject = encodeURIComponent('הצהרת בריאות להוצאת נשק אישי');
-    const body = encodeURIComponent('שלום,\n\nאני מגיש את הצהרת הבריאות שלי לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
-    window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
+    this.openGmailCompose(
+      'הצהרת בריאות להוצאת נשק אישי',
+      'שלום,\n\nאני מגיש את הצהרת הבריאות שלי לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד'
+    );
 
     this.weaponService.sendHealthDeclaration().subscribe({
       next: () => {
@@ -46,9 +54,10 @@ export class EmployeeWeaponComponent implements OnInit {
   }
 
   sendBtf(): void {
-    const subject = encodeURIComponent('בקשה לבט"פ להוצאת נשק אישי');
-    const body = encodeURIComponent('שלום,\n\nאני מעוניין להגיש בקשה לבט"פ לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
-    window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
+    this.openGmailCompose(
+      'בקשה לבט"פ להוצאת נשק אישי',
+      'שלום,\n\nאני מעוניין להגיש בקשה לבט"פ לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד'
+    );
 
     this.weaponService.sendBtfRequest().subscribe({
       next: () => {
