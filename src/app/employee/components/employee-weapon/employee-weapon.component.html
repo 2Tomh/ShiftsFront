@@ -10,6 +10,7 @@
   <div class="status-item">
     <input type="checkbox" [checked]="tracking.btfRequestSubmitted" disabled />
     <label>2. הגשת בקשה לבט"פ</label>
+    <button *ngIf="!tracking.btfRequestSubmitted" (click)="sendBtf()">שלח הפניה</button>
   </div>
 
   <div class="status-item">

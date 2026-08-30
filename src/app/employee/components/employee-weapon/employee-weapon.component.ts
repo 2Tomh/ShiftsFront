@@ -39,4 +39,14 @@ export class EmployeeWeaponComponent implements OnInit {
       error: (err) => console.error('שגיאה בשליחת ההצהרה', err)
     });
   }
+
+  sendBtf(): void {
+    this.weaponService.sendBtfRequest(this.currentEmployeeId).subscribe({
+      next: () => {
+        alert('בקשת הבט"פ נשלחה בהצלחה למנהל');
+        this.tracking.btfRequestSubmitted = true;
+      },
+      error: (err) => console.error('שגיאה בשליחת בקשת הבט"פ', err)
+    });
+  }
 }

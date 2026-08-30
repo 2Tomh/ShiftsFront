@@ -26,4 +26,8 @@ export class WeaponTrackingService {
   sendHealthDeclaration(employeeId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/send-health-declaration`, { employeeId });
   }
+
+  sendBtfRequest(employeeId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/send-btf-request`, { employeeId });
+  }
 }
