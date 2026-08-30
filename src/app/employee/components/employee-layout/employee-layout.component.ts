@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
-import { NotificationService, AppNotification } from '../../../../services/notification.service';
-
+import { NotificationService, AppNotification } from '../../../services/notification.service';
 @Component({
   selector: 'app-employee-layout',
   templateUrl: './employee-layout.component.html',
