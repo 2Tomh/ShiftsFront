@@ -1,0 +1,47 @@
+<div class="admin-container">
+  <h3>ניהול הוצאת נשק לעובדים (אדמין)</h3>
+
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>שם עובד</th>
+        <th>הצהרת בריאות (נשלח)</th>
+        <th>הגשת בקשה לבט"פ</th>
+        <th>תור לבט"פ (תאריך)</th>
+        <th>תור לפסיכולוג</th>
+        <th>פעולות</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of employeesList">
+        <td>{{ item.employeeName || item.employeeId }}</td>
+        
+        <td>
+          <input type="checkbox" [(ngModel)]="item.healthDeclarationSent" />
+        </td>
+        
+        <td>
+          <input type="checkbox" [(ngModel)]="item.btfRequestSubmitted" />
+        </td>
+        
+        <td>
+          <div class="date-group">
+            <input type="checkbox" [checked]="!!item.btfAppointmentDate" (change)="toggleBtfDate(item, $event)" />
+            <input 
+              type="datetime-local" 
+              [(ngModel)]="item.btfAppointmentDate" 
+              [disabled]="!item.btfAppointmentDate" />
+          </div>
+        </td>
+
+        <td>
+          <input type="checkbox" [(ngModel)]="item.psychologistAppointment" />
+        </td>
+
+        <td>
+          <button (click)="saveChanges(item)">שמור</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

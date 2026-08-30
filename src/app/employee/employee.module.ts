@@ -8,6 +8,7 @@ import { EmployeeRegistrationComponent } from './components/employee-registratio
 import { VacationRequestComponent } from './components/vacation-request/vacation-request.component';
 import { SickLeaveRequestComponent } from '../employee/components/sick-leave-request/sick-leave-request.component';
 import { ScheduleViewComponent } from './components/schedule-view/schedule-view.component';
+import { EmployeeWeaponComponent } from './components/employee-weapon/employee-weapon.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { ScheduleViewComponent } from './components/schedule-view/schedule-view.
     EmployeeRegistrationComponent,
     VacationRequestComponent,
     SickLeaveRequestComponent,
-    ScheduleViewComponent
+    ScheduleViewComponent,
+    EmployeeWeaponComponent
   ],
   imports: [
     CommonModule,

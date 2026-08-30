@@ -8,6 +8,7 @@ import { ShiftBoardComponent } from './components/shift-board/shift-board.compon
 import { VacationAdminComponent } from './components/vacation-admin/vacation-admin.component';
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
+import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
 
 // חדש - SchedulePageComponent / ScheduleHeaderComponent / ScheduleStatsComponent
 // הוסרו: היו שריד מנוטש מניסיון קודם, לא מנותבים בכלל
@@ -19,7 +20,8 @@ import { UserManagementComponent } from './components/user-management/user-manag
     ShiftBoardComponent,
     VacationAdminComponent,
     SickLeaveAdminComponent,
-    UserManagementComponent
+    UserManagementComponent,
+    AdminWeaponComponent
   ],
   imports: [
     CommonModule,

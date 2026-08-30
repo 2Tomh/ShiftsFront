@@ -1,0 +1,27 @@
+<div class="weapon-container">
+  <h3>מעקב הוצאת נשק אישי</h3>
+  
+  <div class="status-item">
+    <input type="checkbox" [checked]="tracking.healthDeclarationSent" disabled />
+    <label>1. הצהרת בריאות (נשלח למייל למנהל)</label>
+    <button *ngIf="!tracking.healthDeclarationSent" (click)="sendDeclaration()">שלח הצהרה</button>
+  </div>
+
+  <div class="status-item">
+    <input type="checkbox" [checked]="tracking.btfRequestSubmitted" disabled />
+    <label>2. הגשת בקשה לבט"פ</label>
+  </div>
+
+  <div class="status-item">
+    <input type="checkbox" [checked]="!!tracking.btfAppointmentDate" disabled />
+    <label>3. תור לבט"פ</label>
+    <span *ngIf="tracking.btfAppointmentDate" class="date-text">
+      (תאריך: {{ tracking.btfAppointmentDate | date:'dd/MM/yyyy HH:mm' }})
+    </span>
+  </div>
+
+  <div class="status-item">
+    <input type="checkbox" [checked]="tracking.psychologistAppointment" disabled />
+    <label>4. תור לפסיכולוג</label>
+  </div>
+</div>
