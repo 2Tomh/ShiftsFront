@@ -1,34 +1,36 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { WeaponTracking } from '../Models/weapon-tracking.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeaponTrackingService {
-  // כתובת מלאה כדי למנוע נפילה על Vercel או שגיאות 404
-  private apiUrl = 'https://shiftsbackend-8qns.onrender.com/api/weapon-tracking';
-
+  // תוקן - חוזר לשימוש ב-environment.apiUrl (כמו כל שאר השירותים
+  // בפרויקט), במקום כתובת קשיחה - כדי ש-localhost:7278 בפיתוח
+  // ימשיך לעבוד, לא רק הפרודקשן.
   constructor(private http: HttpClient) {}
 
-  getEmployeeTracking(employeeId: string): Observable<WeaponTracking> {
-    return this.http.get<WeaponTracking>(`${this.apiUrl}/${employeeId}`);
+  // תוקן - אין יותר employeeId כפרמטר: השרת קובע לפי ה-Token שלך
+  getMyTracking(): Observable<WeaponTracking> {
+    return this.http.get<WeaponTracking>(`${environment.apiUrl}/weapon-tracking/my`);
   }
 
   getAllTracking(): Observable<WeaponTracking[]> {
-    return this.http.get<WeaponTracking[]>(this.apiUrl);
+    return this.http.get<WeaponTracking[]>(`${environment.apiUrl}/weapon-tracking`);
   }
 
   updateTracking(employeeId: string, data: Partial<WeaponTracking>): Observable<WeaponTracking> {
-    return this.http.put<WeaponTracking>(`${this.apiUrl}/${employeeId}`, data);
+    return this.http.put<WeaponTracking>(`${environment.apiUrl}/weapon-tracking/${employeeId}`, data);
   }
 
-  sendHealthDeclaration(employeeId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/send-health-declaration`, { employeeId });
+  sendHealthDeclaration(): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/weapon-tracking/send-health-declaration`, {});
   }
 
-  sendBtfRequest(employeeId: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/send-btf-request`, { employeeId });
+  sendBtfRequest(): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/weapon-tracking/send-btf-request`, {});
   }
 }

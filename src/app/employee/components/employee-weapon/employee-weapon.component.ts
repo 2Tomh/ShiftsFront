@@ -16,8 +16,9 @@ export class EmployeeWeaponComponent implements OnInit {
     psychologistAppointment: false
   };
 
-  private currentEmployeeId = '12345'; // החלף ב-ID של העובד המחובר בפועל
-  private managerEmail = 'manager@company.com'; // מייל המנהל
+  // תוקן - הוסר לגמרי currentEmployeeId הקשיח ('12345'). השרת מזהה
+  // את העובד לפי ה-Token, אז אין צורך (וגם לא בטוח) להעביר ID מהפרונט.
+  private readonly managerEmail = 'manager@company.com';
 
   constructor(private weaponService: WeaponTrackingService) {}
 
@@ -26,19 +27,17 @@ export class EmployeeWeaponComponent implements OnInit {
   }
 
   loadData(): void {
-    this.weaponService.getEmployeeTracking(this.currentEmployeeId).subscribe(data => {
+    this.weaponService.getMyTracking().subscribe(data => {
       if (data) this.tracking = data;
     });
   }
 
   sendDeclaration(): void {
-    // פתיחת חלון מייל חדש עם נושא ותוכן מוכנים מראש
     const subject = encodeURIComponent('הצהרת בריאות להוצאת נשק אישי');
     const body = encodeURIComponent('שלום,\n\nאני מגיש את הצהרת הבריאות שלי לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
     window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
 
-    // עדכון הסטטוס בשרת ובבסיס הנתונים
-    this.weaponService.sendHealthDeclaration(this.currentEmployeeId).subscribe({
+    this.weaponService.sendHealthDeclaration().subscribe({
       next: () => {
         this.tracking.healthDeclarationSent = true;
       },
@@ -47,13 +46,11 @@ export class EmployeeWeaponComponent implements OnInit {
   }
 
   sendBtf(): void {
-    // פתיחת חלון מייל חדש לבט"פ
     const subject = encodeURIComponent('בקשה לבט"פ להוצאת נשק אישי');
     const body = encodeURIComponent('שלום,\n\nאני מעוניין להגיש בקשה לבט"פ לצורך הוצאת נשק אישי.\n\nבברכה,\nעובד');
     window.open(`mailto:${this.managerEmail}?subject=${subject}&body=${body}`, '_blank');
 
-    // עדכון הסטטוס בשרת ובבסיס הנתונים
-    this.weaponService.sendBtfRequest(this.currentEmployeeId).subscribe({
+    this.weaponService.sendBtfRequest().subscribe({
       next: () => {
         this.tracking.btfRequestSubmitted = true;
       },
