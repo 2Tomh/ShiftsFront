@@ -7,7 +7,8 @@ import { WeaponTracking } from '../Models/weapon-tracking.model';
   providedIn: 'root'
 })
 export class WeaponTrackingService {
-  private apiUrl = '/api/weapon-tracking';
+  // שנה את הכתובת לשרת ה-Backend שלך ב-Render
+  private apiUrl = 'https://shiftsbackend-8qns.onrender.com/api/weapon-tracking';
 
   constructor(private http: HttpClient) {}
 
