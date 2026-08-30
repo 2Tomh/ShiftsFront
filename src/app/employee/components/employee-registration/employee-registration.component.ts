@@ -19,9 +19,16 @@ export class EmployeeRegistrationComponent implements OnInit {
 
   shiftLabels = ['בוקר', 'צהריים', 'לילה'];
 
-  // חדש: ימים חסומים בגלל חופשה מאושרת + הודעה להצגה למשתמש
   blockedDays = new Set<string>();
   vacationBanner: string = '';
+
+  isSubmitting = false;
+
+  // חדש - נעילת ההגשה. ניתן לערוך עד יום שלישי 15:00 של השבוע
+  // המוגש, ולאחר מכן ההגשה ננעלת (השרת אוכף את זה גם בעצמו,
+  // כאן זה רק כדי לחסום ולהראות הודעה מוקדם יותר בממשק).
+  isLocked = false;
+  deadlineLabel: string = '';
 
   constructor(
     private shiftService: ShiftService,
@@ -29,17 +36,12 @@ export class EmployeeRegistrationComponent implements OnInit {
     private authService: AuthService
   ) { }
 
-  // חדש - קריטי: השם נלקח אוטומטית מהזהות המחוברת (Login), ולא
-  // מוקלד ידנית יותר - זה פותר את הבאג "ההגשה נעלמת/משתמש כפול":
-  // קודם, אם העובד הקליד שם שונה במעט מזה שהאדמין רשם ליצירת המשתמש
-  // שלו (רווח נוסף, כינוי, סדר שונה), נוצרה רשומת Employee חדשה
-  // ונפרדת בשרת (find-or-create לפי שם), והעובד "נעלם" מבחינת
-  // המנהל - כי הוא בפועל נוצר כמישהו אחר לגמרי. בודקים חפיפה לחופשה
-  // מייד עם הכניסה לדף (לא מחכים ל-blur יותר, כי אין יותר הקלדה בכלל).
   ngOnInit(): void {
     this.employeeName = this.authService.getEmployeeName() || this.authService.getUsername() || '';
+    this.computeDeadline();
     if (this.employeeName) {
       this.checkVacationConflicts();
+      this.loadExistingAvailability();
     }
   }
 
@@ -64,6 +66,32 @@ export class EmployeeRegistrationComponent implements OnInit {
     return `${date.getDate()}/${date.getMonth() + 1}`;
   }
 
+  // חדש - יום שלישי (אינדקס 2) של השבוע המוגש, בשעה 15:00.
+  // אחרי הרגע הזה - ההגשה ננעלת, גם בממשק וגם בשרת.
+  private computeDeadline(): void {
+    const tuesday = new Date(this.weekDates[2]);
+    tuesday.setHours(15, 0, 0, 0);
+    this.deadlineLabel = this.formatDateLabel(tuesday);
+    this.isLocked = new Date() > tuesday;
+  }
+
+  // חדש - טוען הגשה קיימת של העובד (אם יש) כדי שהוא יראה ויוכל
+  // לערוך את מה שכבר שלח לשבוע הזה, במקום להתחיל מטופס ריק כל פעם.
+  loadExistingAvailability(): void {
+    this.shiftService.getAvailabilityForEmployee(this.employeeName).subscribe({
+      next: (result: any) => {
+        if (result?.found) {
+          this.preferredShifts = (result.preferredShifts || []).map((p: any) => ({
+            day: p.day,
+            shift: p.shift
+          }));
+          this.notes = result.notes || '';
+        }
+      },
+      error: () => { }
+    });
+  }
+
   isSelected(day: string, shift: string): boolean {
     return this.preferredShifts.some(s => s.day === day && s.shift === shift);
   }
@@ -73,9 +101,7 @@ export class EmployeeRegistrationComponent implements OnInit {
   }
 
   togglePreference(day: string, shift: string) {
-    // הגנה נוספת - גם אם מישהו יצליח ללחוץ על כפתור מבוטל (למשל
-    // דרך DevTools), הלוגיקה עצמה לא תאפשר לבחור יום חסום.
-    if (this.blockedDays.has(day)) return;
+    if (this.blockedDays.has(day) || this.isLocked) return;
 
     const index = this.preferredShifts.findIndex(s => s.day === day && s.shift === shift);
     if (index > -1) {
@@ -85,11 +111,6 @@ export class EmployeeRegistrationComponent implements OnInit {
     }
   }
 
-  /**
-   * בודקת אם לעובד יש חופשה מאושרת שחופפת לשבוע שמוצג בטופס,
-   * וחוסמת את הימים הרלוונטיים. נקראת אוטומטית ב-ngOnInit (כי השם
-   * כבר ידוע מייד, לא צריך לחכות ל-blur של שדה טקסט שכבר לא קיים).
-   */
   checkVacationConflicts(): void {
     const name = this.employeeName.trim();
     this.blockedDays.clear();
@@ -124,21 +145,22 @@ export class EmployeeRegistrationComponent implements OnInit {
           }
         });
 
-        // מסירים בחירות קיימות בימים שהתבררו כחסומים
         this.preferredShifts = this.preferredShifts.filter(s => !this.blockedDays.has(s.day));
 
         if (this.blockedDays.size > 0) {
           this.vacationBanner = `שימי לב: יש לך חופשה מאושרת בתאריכים ${ranges.join(', ')} - לא ניתן להגיש זמינות לימים אלו.`;
         }
       },
-      error: () => {
-        // כשל בבדיקה לא אמור לחסום את המשתמש מלהגיש בכלל - השרת
-        // עדיין יבדוק את זה בעצמו כהגנה אמיתית.
-      }
+      error: () => { }
     });
   }
 
   submitAvailability() {
+    if (this.isLocked) {
+      alert('המועד להגשה/עריכה לשבוע זה עבר.');
+      return;
+    }
+
     if (!this.employeeName.trim()) {
       alert("שגיאה: לא זוהה שם עובד מחובר. נסי להתחבר מחדש.");
       return;
@@ -153,26 +175,18 @@ export class EmployeeRegistrationComponent implements OnInit {
       notes: this.notes
     };
 
+    this.isSubmitting = true;
+
     this.shiftService.submitEmployeeAvailability(payload).subscribe({
       next: () => {
-        alert(`תודה, הזמינות נשלחה בהצלחה!`);
-        this.resetForm();
+        this.isSubmitting = false;
+        alert(`תודה, הזמינות נשמרה בהצלחה! ניתן להמשיך לערוך עד יום שלישי בשעה 15:00.`);
       },
       error: (err: any) => {
+        this.isSubmitting = false;
         console.error(err);
-        // מציג את הודעת השגיאה האמיתית מהשרת (כולל רשימת הימים
-        // החסומים, אם השרת חסם בגלל חופשה) במקום הודעה גנרית.
         alert(err.error?.error || "שגיאה בשליחת הנתונים.");
       }
     });
-  }
-
-  resetForm() {
-    // לא מאפסים employeeName יותר - הוא קבוע ותואם לזהות המחוברת,
-    // לא שדה טופס שצריך "לנקות" בין הגשות.
-    this.preferredShifts = [];
-    this.notes = '';
-    this.blockedDays.clear();
-    this.vacationBanner = '';
   }
 }

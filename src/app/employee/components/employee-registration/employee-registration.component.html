@@ -13,9 +13,16 @@
         <input
           id="employeeName"
           type="text"
-          [(ngModel)]="employeeName"
-          (blur)="checkVacationConflicts()"
-          placeholder="לדוגמה: דנה כהן">
+          [value]="employeeName"
+          readonly
+          disabled>
+      </div>
+
+      <div class="deadline-banner" *ngIf="isLocked">
+        🔒 המועד להגשה/עריכה לשבוע זה עבר (יום שלישי 15:00). ההגשה נעולה.
+      </div>
+      <div class="deadline-hint" *ngIf="!isLocked">
+        ניתן לערוך עד יום שלישי, {{ deadlineLabel }}, בשעה 15:00.
       </div>
 
       <div class="vacation-banner" *ngIf="vacationBanner">
@@ -26,10 +33,11 @@
         class="notes-input"
         rows="3"
         [(ngModel)]="notes"
+        [disabled]="isLocked"
         placeholder="הערות..."></textarea>
 
-      <button class="btn-save" (click)="submitAvailability()">
-        שלח זמינות
+      <button class="btn-save" [disabled]="isLocked || isSubmitting" (click)="submitAvailability()">
+        {{ isSubmitting ? 'שולח...' : (isLocked ? 'נעול' : 'שלח זמינות') }}
       </button>
     </section>
 
@@ -55,7 +63,7 @@
               class="toggle-icon"
               [class.is-on]="isSelected(day, shift)"
               [class.is-blocked]="isDayBlocked(day)"
-              [disabled]="isDayBlocked(day)"
+              [disabled]="isDayBlocked(day) || isLocked"
               (click)="togglePreference(day, shift)">
               {{ isDayBlocked(day) ? '🏖' : (isSelected(day, shift) ? '✓' : '⊘') }}
             </button>
