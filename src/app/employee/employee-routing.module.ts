@@ -6,6 +6,7 @@ import { EmployeeRegistrationComponent } from './components/employee-registratio
 import { VacationRequestComponent } from './components/vacation-request/vacation-request.component';
 import { SickLeaveRequestComponent } from '../employee/components/sick-leave-request/sick-leave-request.component';
 import { ScheduleViewComponent } from './components/schedule-view/schedule-view.component';
+import { EmployeeWeaponComponent } from './components/employee-weapon/employee-weapon.component'; // חדש
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
       { path: 'vacation', component: VacationRequestComponent },
       { path: 'sick-leave', component: SickLeaveRequestComponent },
       { path: 'schedule', component: ScheduleViewComponent },
+      { path: 'weapon', component: EmployeeWeaponComponent }, // חדש
       { path: '', redirectTo: 'register', pathMatch: 'full' }
     ]
   }

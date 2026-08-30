@@ -7,6 +7,8 @@
       <a routerLink="/register" routerLinkActive="active" class="nav-link">הרשמת עובדים</a>
       <a routerLink="/vacation" routerLinkActive="active" class="nav-link">בקשת חופשה</a>
       <a routerLink="/sick-leave" routerLinkActive="active" class="nav-link">ימי מחלה</a>
+      <!-- חדש: קישור למעקב נשק -->
+      <a routerLink="/weapon" routerLinkActive="active" class="nav-link">מעקב הוצאת נשק</a>
     </nav>
 
     <div class="sidebar-user">
@@ -19,7 +21,6 @@
     <router-outlet></router-outlet>
   </main>
 
-  <!-- חדש - פופאפ התראה, מוצג מעל כל דף כשיש התראה שטרם נצפתה -->
   <div class="notification-overlay" *ngIf="currentNotification">
     <div class="notification-popup">
       <div class="notification-icon">🔔</div>
