@@ -440,11 +440,7 @@ tr.shift-night td {
 
 /* ===== Stats panel ===== */
 .stats-panel {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
+  padding: 0;
 }
 
 .stats-header {
@@ -479,30 +475,31 @@ tr.shift-night td {
 
 .stats-table {
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
   border-collapse: collapse;
-  font-size: 13px;
-  table-layout: fixed;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 14px;
 }
 
 .stats-table th {
-  color: var(--ink-soft);
-  font-weight: 600;
-  font-size: 11px;
-  padding: 5px 3px;
-  border-bottom: 1.5px solid var(--line);
-}
-
-.stats-table th.text-start,
-.stats-table td.text-start {
-  width: 44%;
+  background: var(--ink);
+  color: #fff;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px 14px;
 }
 
 .stats-table td {
-  padding: 8px 3px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--line);
   text-align: center;
+}
+
+.stats-table tbody tr:hover {
+  background: #f8fafc;
 }
 
 .text-start {

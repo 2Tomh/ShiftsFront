@@ -12,80 +12,121 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-header-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 2px solid #dde3ec;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .admin-header-row h3 {
   font-family: 'Heebo', sans-serif;
   font-size: 20px;
   font-weight: 700;
+  color: #1c2430;
   margin: 0;
 }
 
 .header-buttons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
-.btn-add-employee, .btn-secondary {
-  border: none;
-  border-radius: 6px;
-  padding: 9px 16px;
+/* ===== כפתורים עליונים ===== */
+.btn-secondary {
+  background: #ffffff;
+  color: #146356;
+  border: 1.5px solid #146356;
+  border-radius: 8px;
+  padding: 8px 14px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #d9efe9;
 }
 
 .btn-add-employee {
   background: #146356;
-  color: #fff;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .btn-add-employee:hover {
   background: #0f4c42;
 }
 
-.btn-secondary {
-  background: #eef2f7;
-  color: #1c2430;
-  border: 1px solid #d1d5db;
-}
-
+/* ===== שורה להוספת עמודה ===== */
 .add-column-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #dde3ec;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  align-items: center;
 }
 
-.add-column-row input {
-  flex: 1;
-  border: 1px solid #d1d5db;
+.add-column-row input[type="text"] {
+  flex-grow: 1;
+  border: 1.5px solid #dde3ec;
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   font-family: 'Assistant', sans-serif;
-  font-size: 13.5px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.add-column-row input[type="text"]:focus {
+  border-color: #146356;
 }
 
 .add-column-row button {
-  background: #146356;
-  color: #fff;
+  background: #1c2430;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   padding: 8px 16px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
+.add-column-row button:hover {
+  background: #146356;
+}
+
+.loading-hint {
+  text-align: center;
+  color: #5a6472;
+  font-style: italic;
+  padding: 20px;
+}
+
+/* ===== טבלה ===== */
 .table-scroll {
   overflow-x: auto;
 }
@@ -95,7 +136,7 @@
   border-collapse: collapse;
   font-size: 13.5px;
   text-align: right;
-  min-width: 700px;
+  min-width: 800px;
 }
 
 .admin-table th {
@@ -103,73 +144,97 @@
   color: #ffffff;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
-  font-size: 12.5px;
-  padding: 10px 12px;
+  font-size: 13px;
+  padding: 12px 14px;
   white-space: nowrap;
 }
 
-.btn-remove-col {
-  background: none;
-  border: none;
-  color: #f87171;
-  cursor: pointer;
-  font-size: 13px;
-  margin-right: 6px;
-}
-
 .admin-table td {
-  padding: 8px 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid #dde3ec;
   vertical-align: middle;
+  color: #1c2430;
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.15s ease;
 }
 
 .admin-table tbody tr:hover {
   background-color: #f8fafc;
 }
 
+/* עיצוב שדות קלט בתוך הטבלה */
 .admin-table input[type="text"],
 .admin-table input[type="email"],
 .admin-table input[type="date"] {
   width: 100%;
-  min-width: 100px;
-  border: 1px solid transparent;
+  box-sizing: border-box;
+  border: 1px solid #dde3ec;
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   font-family: 'Assistant', sans-serif;
   font-size: 13px;
-  background: transparent;
-  box-sizing: border-box;
+  background: #ffffff;
+  color: #1c2430;
+  transition: border-color 0.15s ease;
 }
 
 .admin-table input[type="text"]:focus,
 .admin-table input[type="email"]:focus,
 .admin-table input[type="date"]:focus {
   border-color: #146356;
-  background: #fff;
   outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 99, 86, 0.1);
 }
 
+/* תא חמוש */
 .armed-cell {
   display: flex;
   align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+  gap: 8px;
+  padding-top: 15px !important;
 }
 
 .armed-cell input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
   accent-color: #146356;
   cursor: pointer;
 }
 
+.armed-cell span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5a6472;
+}
+
+/* כפתור מחיקת עמודה בותר */
+.btn-remove-col {
+  background: transparent;
+  border: none;
+  color: #f8dcd7;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 6px;
+  padding: 0 4px;
+  border-radius: 4px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.btn-remove-col:hover {
+  background: rgba(192, 57, 43, 0.2);
+  color: #c0392b;
+}
+
+/* פעולות בשורת העובד */
 .actions-cell {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   white-space: nowrap;
 }
 
-.admin-table button {
+.actions-cell button {
   background: #146356;
   color: #ffffff;
   border: none;
@@ -179,30 +244,24 @@
   font-weight: 700;
   font-size: 12px;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.admin-table button:hover {
+.actions-cell button:hover {
   background: #0f4c42;
 }
 
-.btn-remove {
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
-  border: 1px solid #fecaca !important;
+.actions-cell .btn-remove {
+  background: #c0392b;
 }
 
-.btn-remove:hover {
-  background: #fee2e2 !important;
+.actions-cell .btn-remove:hover {
+  background: #a93226;
 }
 
 .empty-state {
   text-align: center;
-  color: #94a3b8;
-  padding: 24px;
-}
-
-.loading-hint {
-  text-align: center;
-  color: #94a3b8;
-  padding: 40px;
+  color: #5a6472;
+  font-style: italic;
+  padding: 24px !important;
 }
