@@ -10,7 +10,8 @@ import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leav
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
 import { BoardSettingsComponent } from './components/board-settings/board-settings.component';
-import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component'; // חדש - הוחזר, הפך לעמוד עצמאי
+import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component';
+import { EmployeeManagementComponent } from './components/employee-management/employee-management.component'; // חדש
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { ScheduleStatsComponent } from './components/schedule-stats/schedule-sta
     UserManagementComponent,
     AdminWeaponComponent,
     BoardSettingsComponent,
-    ScheduleStatsComponent
+    ScheduleStatsComponent,
+    EmployeeManagementComponent
   ],
   imports: [
     CommonModule,

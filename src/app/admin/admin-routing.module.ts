@@ -8,7 +8,8 @@ import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leav
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
 import { BoardSettingsComponent } from './components/board-settings/board-settings.component';
-import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component'; // חדש
+import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component';
+import { EmployeeManagementComponent } from './components/employee-management/employee-management.component'; // חדש
 
 const routes: Routes = [
   {
@@ -21,7 +22,8 @@ const routes: Routes = [
       { path: 'users', component: UserManagementComponent },
       { path: 'weapon', component: AdminWeaponComponent },
       { path: 'board-settings', component: BoardSettingsComponent },
-      { path: 'stats', component: ScheduleStatsComponent }, // חדש
+      { path: 'stats', component: ScheduleStatsComponent },
+      { path: 'employee-management', component: EmployeeManagementComponent }, // חדש
       { path: '', redirectTo: 'board', pathMatch: 'full' }
     ]
   }
