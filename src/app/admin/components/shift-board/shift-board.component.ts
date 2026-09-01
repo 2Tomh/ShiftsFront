@@ -3,11 +3,10 @@ import { forkJoin } from 'rxjs';
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { Shift } from '../../../Models/shift.model';
-import { ShiftType } from '../../../Models/shiftType.enum';
 import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
 
 interface DynamicShiftBlock {
-  type: ShiftType;
+  type: string;
   label: string;
   roles: string[];
   icon: string;
@@ -38,11 +37,10 @@ export class ShiftBoardComponent implements OnInit {
     'חמישי': 'Thursday', 'שישי': 'Friday', 'שבת': 'Saturday'
   };
 
-  // מגבלה: תמיד עד 3 "בלוקי משמרת", כי ה-Backend (ShiftType Enum)
-  // תומך רק ב-3 ערכים קבועים (Morning/Afternoon/Night). אינדקס
-  // בתצורה -> Enum קבוע, בלי קשר לשם שהמנהל בחר להציג.
-  private readonly indexToEnum: ShiftType[] = [ShiftType.Morning, ShiftType.Afternoon, ShiftType.Night];
-  private readonly indexToIcon: string[] = ['☀️', '🌤️', '🌙'];
+  // תוקן - אין יותר מגבלת 3 (לא indexToEnum, לא Enum בכלל) - כמה
+  // בלוקי משמרת שיהיו בתצורה, כולם יוצגו. type הוא כעת פשוט שם
+  // המשמרת עצמו (מחרוזת), שתואם בדיוק למה שנשמר ב-Shift.Type בשרת.
+  private readonly icons = ['☀️', '🌤️', '🌙', '⭐', '🌗', '🌌'];
 
   selectedTarget: { dayIndex: number, shiftType: any, role: string } | null = null;
 
@@ -87,13 +85,13 @@ export class ShiftBoardComponent implements OnInit {
     this.daysOfWeek = config.workDays;
     this.extraRowNames = config.extraRowNames || [];
 
-    // חותכים ל-3 בלוקים מקסימום, כי זו מגבלת ה-Enum בשרת. אם המנהל
-    // הגדיר יותר מ-3 משמרות ב"הגדרות לוח" - רק 3 הראשונות מוצגות כאן.
-    this.shiftBlocks = config.shiftDefinitions.slice(0, 3).map((sd, i) => ({
-      type: this.indexToEnum[i],
+    // תוקן - כל המשמרות מהתצורה, בלי הגבלת 3. type הוא שם המשמרת
+    // עצמו (מחרוזת), לא Enum - זה בדיוק מה שנשמר ב-Shift.Type בשרת.
+    this.shiftBlocks = config.shiftDefinitions.map((sd, i) => ({
+      type: sd.name,
       label: sd.name,
       roles: sd.roles,
-      icon: this.indexToIcon[i]
+      icon: this.icons[i % this.icons.length]
     }));
   }
 
@@ -110,13 +108,13 @@ export class ShiftBoardComponent implements OnInit {
       const name = emp.name;
       const requested = emp.requestedCount || 0;
       if (name && requested > 0) {
-        statsMap.set(name, { name: name, total: 0, night: 0, requested: requested });
+        statsMap.set(name, { name: name, total: 0, night: 0, requested: requested, notes: emp.notes || '' });
       }
     });
 
     this.shifts.forEach((shift: any) => {
-      const sType = this.getShiftTypeString(shift.type);
-      const isNight = sType === 'Night';
+      const sType = shift.type || shift.Type;
+      const isNight = this.shiftBlocks.length > 2 && sType === this.shiftBlocks[2].type;
       const assignments = shift.assignments || [];
       assignments.forEach((ass: any) => {
         const name = ass.employeeName;
@@ -133,11 +131,10 @@ export class ShiftBoardComponent implements OnInit {
   getEmployeeForRole(dayIndex: number, shiftType: any, role: string): string {
     const dayNameHebrew = this.daysOfWeek[dayIndex];
     const dayNameEnglish = this.dayMap[dayNameHebrew];
-    const targetTypeStr = this.getShiftTypeString(shiftType);
     const shift = this.shifts.find((s: any) => {
       const sDay = s.day || s.Day;
-      const sType = this.getShiftTypeString(s.type || s.Type);
-      return sDay === dayNameEnglish && sType === targetTypeStr;
+      const sType = s.type || s.Type;
+      return sDay === dayNameEnglish && sType === shiftType;
     });
     const assignments = (shift as any)?.assignments || (shift as any)?.Assignments;
     if (assignments) {
@@ -150,20 +147,12 @@ export class ShiftBoardComponent implements OnInit {
   getShiftForDay(dayIndex: number, type: any): Shift | undefined {
     const dayNameHebrew = this.daysOfWeek[dayIndex];
     const dayNameEnglish = this.dayMap[dayNameHebrew];
-    const targetTypeStr = this.getShiftTypeString(type).toLowerCase();
 
     return this.shifts.find((s: any) => {
       const sDay = (s.day || s.Day || '').toString();
-      const sType = this.getShiftTypeString(s.type || s.Type).toLowerCase();
-      return sDay === dayNameEnglish && sType === targetTypeStr;
+      const sType = s.type || s.Type;
+      return sDay === dayNameEnglish && sType === type;
     });
-  }
-
-  private getShiftTypeString(type: any): string {
-    if (type === ShiftType.Morning || type === 'Morning' || type === 0 || type === '0') return 'Morning';
-    if (type === ShiftType.Afternoon || type === 'Afternoon' || type === 1 || type === '1') return 'Afternoon';
-    if (type === ShiftType.Night || type === 'Night' || type === 2 || type === '2') return 'Night';
-    return type?.toString() || '';
   }
 
   private getCurrentWeekSunday(): Date {

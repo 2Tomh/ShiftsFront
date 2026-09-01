@@ -114,6 +114,7 @@
               <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
               <div class="emp-actions">
                 <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
+                <span class="notes-indicator" *ngIf="stat.notes" [title]="stat.notes">📝</span>
               </div>
             </td>
             <td class="num-requested">{{ stat.requested }}</td>

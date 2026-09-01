@@ -1,11 +1,12 @@
 import { ShfitAssingment } from "./shiftAssignment.model";
-import { ShiftType } from "./shiftType.enum";
 
+// תוקן - type הופך ממחרוזת-Enum (ShiftType) למחרוזת חופשית, כדי
+// לתמוך בכל מספר משמרות עם כל שם, לא רק ב-3 קבועות.
 export interface Shift {
     id: string;
     date: Date;
     day: string;
-    type: ShiftType;
+    type: string;
     assignments: ShfitAssingment[];
-    isPublished?: boolean; // חדש - רק ה-endpoint של המנהל (GetShifts) שולח את זה
+    isPublished?: boolean;
 }
