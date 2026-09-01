@@ -15,6 +15,7 @@
         <th>הגיש</th>
         <th>קיבל</th>
         <th>לילה</th>
+        <th class="text-start">הערות</th>
         <th>פעולות</th>
       </tr>
     </thead>
@@ -22,17 +23,17 @@
       <tr *ngFor="let stat of employeeStats">
         <td class="text-start emp-name">
           <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editName(stat)">{{ stat.name }}</div>
-          <span class="notes-indicator" *ngIf="stat.notes" [title]="stat.notes">📝</span>
         </td>
         <td class="num-requested">{{ stat.requested }}</td>
         <td class="num-total">{{ stat.total }}</td>
         <td class="num-night">{{ stat.night }}</td>
+        <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
         <td>
           <button class="icon-btn" title="ערוך הגשה" (click)="openEditModal(stat)">📋 ערוך הגשה</button>
         </td>
       </tr>
       <tr *ngIf="employeeStats.length === 0">
-        <td colspan="5" class="empty-state">עדיין אין הגשות זמינות</td>
+        <td colspan="6" class="empty-state">עדיין אין הגשות זמינות</td>
       </tr>
     </tbody>
   </table>

@@ -106,6 +106,7 @@
             <th>הגיש</th>
             <th>קיבל</th>
             <th>לילה</th>
+            <th class="text-start">הערות</th>
           </tr>
         </thead>
         <tbody>
@@ -114,15 +115,15 @@
               <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
               <div class="emp-actions">
                 <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
-                <span class="notes-indicator" *ngIf="stat.notes" [title]="stat.notes">📝</span>
               </div>
             </td>
             <td class="num-requested">{{ stat.requested }}</td>
             <td class="num-total">{{ stat.total }}</td>
             <td class="num-night">{{ stat.night }}</td>
+            <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
           </tr>
           <tr *ngIf="employeeStats.length === 0">
-            <td colspan="4" class="empty-state">עדיין אין הגשות זמינות</td>
+            <td colspan="5" class="empty-state">עדיין אין הגשות זמינות</td>
           </tr>
         </tbody>
       </table>
