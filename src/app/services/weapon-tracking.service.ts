@@ -26,6 +26,15 @@ export class WeaponTrackingService {
     return this.http.put<WeaponTracking>(`${environment.apiUrl}/weapon-tracking/${employeeId}`, data);
   }
 
+  // חדש - הוספה/הסרה של עובד מרשימת המעקב
+  addEmployee(employeeId: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/weapon-tracking/${employeeId}`, {});
+  }
+
+  removeEmployee(employeeId: string): Observable<any> {
+    return this.http.delete(`${environment.apiUrl}/weapon-tracking/${employeeId}`);
+  }
+
   sendHealthDeclaration(): Observable<any> {
     return this.http.post(`${environment.apiUrl}/weapon-tracking/send-health-declaration`, {});
   }
