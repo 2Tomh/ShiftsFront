@@ -1,0 +1,87 @@
+<div class="settings-shell">
+  <h1>הגדרות לוח משמרות</h1>
+  <p class="settings-subtitle">
+    התצורה כאן היא תבנית קבועה שחלה על כל השבועות, עד שתשני אותה שוב.
+    שינוי כאן לא מוחק שיבוצים קיימים - רק קובע איך הלוח נראה מעכשיו.
+  </p>
+
+  <div *ngIf="isLoading" class="loading-hint">טוען...</div>
+
+  <div *ngIf="!isLoading">
+
+    <!-- ימי עבודה -->
+    <section class="settings-section">
+      <h2>ימי עבודה</h2>
+      <div class="days-row">
+        <button
+          *ngFor="let day of allDayNames"
+          class="day-toggle"
+          [class.is-selected]="isDaySelected(day)"
+          (click)="toggleDay(day)">
+          {{ day }}
+        </button>
+      </div>
+    </section>
+
+    <!-- משמרות ותפקידים -->
+    <section class="settings-section">
+      <h2>משמרות ותפקידים</h2>
+
+      <div class="shift-card" *ngFor="let shift of config.shiftDefinitions; let i = index">
+        <div class="shift-card-header">
+          <input
+            type="text"
+            class="shift-name-input"
+            [(ngModel)]="shift.name"
+            placeholder="שם המשמרת (לדוגמה: בוקר)">
+          <button class="btn-remove-shift" (click)="removeShiftDefinition(i)">הסר משמרת</button>
+        </div>
+
+        <div class="roles-list">
+          <span class="role-chip" *ngFor="let role of shift.roles; let ri = index">
+            {{ role }}
+            <button class="chip-remove" (click)="removeRole(i, ri)">×</button>
+          </span>
+        </div>
+
+        <div class="add-role-row">
+          <input
+            type="text"
+            [(ngModel)]="newRoleInputs[i]"
+            placeholder="שם תפקיד חדש (לדוגמה: אחמ״ש)"
+            (keyup.enter)="addRole(i)">
+          <button (click)="addRole(i)">הוסף תפקיד</button>
+        </div>
+      </div>
+
+      <button class="btn-add-shift" (click)="addShiftDefinition()">+ הוסף משמרת חדשה</button>
+    </section>
+
+    <!-- שורות עצמאיות -->
+    <section class="settings-section">
+      <h2>שורות עצמאיות (תיגבורים, מטווחים, חפיפות...)</h2>
+      <p class="section-hint">שורות אלו לא קשורות למשמרת ספציפית - טקסט חופשי לכל יום.</p>
+
+      <div class="extra-rows-list">
+        <span class="role-chip" *ngFor="let row of config.extraRowNames; let i = index">
+          {{ row }}
+          <button class="chip-remove" (click)="removeExtraRow(i)">×</button>
+        </span>
+      </div>
+
+      <div class="add-role-row">
+        <input
+          type="text"
+          [(ngModel)]="newExtraRowName"
+          placeholder="שם שורה חדשה (לדוגמה: תיגבורים)"
+          (keyup.enter)="addExtraRow()">
+        <button (click)="addExtraRow()">הוסף שורה</button>
+      </div>
+    </section>
+
+    <button class="btn-save-config" [disabled]="isSaving" (click)="save()">
+      {{ isSaving ? 'שומר...' : 'שמור תצורה' }}
+    </button>
+
+  </div>
+</div>

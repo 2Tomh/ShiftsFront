@@ -6,7 +6,8 @@ import { ShiftBoardComponent } from './components/shift-board/shift-board.compon
 import { VacationAdminComponent } from './components/vacation-admin/vacation-admin.component';
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
-import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component'; // חדש
+import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
+import { BoardSettingsComponent } from './components/board-settings/board-settings.component'; // חדש
 
 const routes: Routes = [
   {
@@ -17,7 +18,8 @@ const routes: Routes = [
       { path: 'vacations', component: VacationAdminComponent },
       { path: 'sick-leaves', component: SickLeaveAdminComponent },
       { path: 'users', component: UserManagementComponent },
-      { path: 'weapon', component: AdminWeaponComponent }, // חדש
+      { path: 'weapon', component: AdminWeaponComponent },
+      { path: 'board-settings', component: BoardSettingsComponent }, // חדש
       { path: '', redirectTo: 'board', pathMatch: 'full' }
     ]
   }

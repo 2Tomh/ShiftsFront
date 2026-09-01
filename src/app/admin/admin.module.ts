@@ -9,11 +9,8 @@ import { VacationAdminComponent } from './components/vacation-admin/vacation-adm
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
+import { BoardSettingsComponent } from './components/board-settings/board-settings.component'; // חדש
 
-// חדש - SchedulePageComponent / ScheduleHeaderComponent / ScheduleStatsComponent
-// הוסרו: היו שריד מנוטש מניסיון קודם, לא מנותבים בכלל
-// ב-admin-routing.module.ts, וככל הנראה הם גרמו לקריסת ה-AOT compiler
-// (שגיאת "Cannot read properties of undefined").
 @NgModule({
   declarations: [
     AdminLayoutComponent,
@@ -21,7 +18,8 @@ import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.com
     VacationAdminComponent,
     SickLeaveAdminComponent,
     UserManagementComponent,
-    AdminWeaponComponent
+    AdminWeaponComponent,
+    BoardSettingsComponent
   ],
   imports: [
     CommonModule,
