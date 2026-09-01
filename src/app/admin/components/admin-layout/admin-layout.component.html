@@ -1,9 +1,10 @@
-<div class="admin-layout">
+<div class="admin-layout-wrapper">
+  <!-- תפריט הצד -->
   <aside class="admin-sidenav">
     <div class="sidenav-header">
       <span class="sidenav-brand">ניהול · HP נס ציונה</span>
     </div>
-    
+
     <nav class="sidenav-nav">
       <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">לוח מנהל</a>
       <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">אישור חופשות</a>
@@ -21,7 +22,8 @@
     </div>
   </aside>
 
-  <main class="admin-content">
+  <!-- אזור התוכן המרכזי -->
+  <main class="admin-content-outlet">
     <router-outlet></router-outlet>
   </main>
 </div>
