@@ -1,8 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ShiftService } from '../../../services/shift.service';
+import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { Shift } from '../../../Models/shift.model';
 import { ShiftType } from '../../../Models/shiftType.enum';
+import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
+
+interface DynamicShiftBlock {
+  type: ShiftType;
+  label: string;
+  roles: string[];
+  icon: string;
+}
 
 @Component({
   selector: 'app-shift-board',
@@ -13,76 +22,81 @@ export class ShiftBoardComponent implements OnInit {
   shifts: Shift[] = [];
   allEmployees: any[] = [];
   employeeStats: any[] = [];
-  daysOfWeek: string[] = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
   isProcessing = false;
   isPublishing = false;
+
+  // חדש - הכל נטען מהתצורה (BoardConfiguration) במקום להיות קבוע
+  // בקוד. daysOfWeek ו-shiftBlocks מתמלאים ב-loadData(), לא כברירת
+  // מחדל קבועה יותר.
+  daysOfWeek: string[] = [];
+  shiftBlocks: DynamicShiftBlock[] = [];
+  extraRowNames: string[] = [];
+  extraRowEntries: ExtraRowEntry[] = [];
 
   private dayMap: { [key: string]: string } = {
     'ראשון': 'Sunday', 'שני': 'Monday', 'שלישי': 'Tuesday', 'רביעי': 'Wednesday',
     'חמישי': 'Thursday', 'שישי': 'Friday', 'שבת': 'Saturday'
   };
 
-  shiftTypes = [
-    { type: ShiftType.Morning, label: 'בוקר', class: 'shift-morning' },
-    { type: ShiftType.Afternoon, label: 'צהריים', class: 'shift-afternoon' },
-    { type: ShiftType.Night, label: 'לילה', class: 'shift-night' }
-  ];
+  // מגבלה: תמיד עד 3 "בלוקי משמרת", כי ה-Backend (ShiftType Enum)
+  // תומך רק ב-3 ערכים קבועים (Morning/Afternoon/Night). אינדקס
+  // בתצורה -> Enum קבוע, בלי קשר לשם שהמנהל בחר להציג.
+  private readonly indexToEnum: ShiftType[] = [ShiftType.Morning, ShiftType.Afternoon, ShiftType.Night];
+  private readonly indexToIcon: string[] = ['☀️', '🌤️', '🌙'];
 
-  // חדש: הוחלף מנגנון ה-Popup בבנק מועמדים ישיר בכל תא. מערכי התפקידים
-  // האלה מגדירים "לאיזה תפקיד לנסות לשבץ" כשלוחצים על שם בבנק.
-  mainRoles = ['אחמ״ש', 'סייר', 'בקרה'];
-  morningRoles = ['מאבטח', 'אחמ״ש', 'סייר', 'בקרה'];
-  guardRoles = ['מאבטח'];
-
-  /**
-   * חדש - מנגנון "בחירת יעד מפורש": לחיצה על "+" בקובייה ריקה קובעת
-   * לאיזה יום/משמרת/תפקיד בדיוק לשבץ את הלחיצה הבאה בבנק. כך במקום
-   * שהבנק "ינחש" את התפקיד הפנוי הראשון, המנהל בוחר בעצמו בדיוק לאיזה
-   * תפקיד - זה פותר מקרה שבו רוצים לשבץ למשל ל"בקרה" ספציפית, לא
-   * לתפקיד הראשון הפנוי שנמצא.
-   */
   selectedTarget: { dayIndex: number, shiftType: any, role: string } | null = null;
 
-  // ===== מודאל עריכת הגשה (למנהל) =====
   showEditAvailabilityModal = false;
   editingEmployeeName = '';
   editPreferredShifts: { day: string, shift: string }[] = [];
   editNotes: string = '';
   isLoadingEdit = false;
-  editShiftLabels = ['בוקר', 'צהריים', 'לילה'];
+  get editShiftLabels(): string[] {
+    return this.shiftBlocks.map(b => b.label);
+  }
 
-  constructor(private shiftService: ShiftService) { }
+  constructor(
+    private shiftService: ShiftService,
+    private boardConfigService: BoardConfigurationService
+  ) { }
 
   ngOnInit(): void {
     this.loadData();
   }
 
   /**
-   * תוקן: היה כאן שרשור רציף - getEmployees(), ורק אחרי שהוא חוזר,
-   * getShifts() נקרא בתוך ה-callback שלו. זה אומר שני round-trips
-   * לשרת בזה אחר זה, במקום במקביל - כמעט מכפיל את זמן ההמתנה סתם,
-   * כי שתי הקריאות בכלל לא תלויות אחת בשנייה. forkJoin מריץ את שתיהן
-   * במקביל, וממתין רק עד ששתיהן חוזרות (הכי איטית מביניהן קובעת
-   * את הזמן הכולל, לא הסכום של שתיהן).
+   * תוקן - נטען עכשיו גם config וגם extraRows, לצד employees ו-
+   * shifts כבר קיימים, הכל במקביל (forkJoin), לא ברצף.
    */
   loadData(): void {
     forkJoin({
       employees: this.shiftService.getEmployees(),
-      shifts: this.shiftService.getShifts()
-    }).subscribe(({ employees, shifts }) => {
+      shifts: this.shiftService.getShifts(),
+      config: this.boardConfigService.getConfiguration(),
+      extraRows: this.boardConfigService.getExtraRows()
+    }).subscribe(({ employees, shifts, config, extraRows }) => {
       this.allEmployees = employees;
       this.shifts = shifts;
+      this.applyConfiguration(config);
+      this.extraRowEntries = extraRows;
       this.calculateStats();
     });
   }
 
-  /**
-   * חדש - טעינה "קלה": רק המשמרות, בלי לגעת ברשימת העובדים/הגשות.
-   * שיבוץ, הסרה, והחלפה (selectCandidate/removeEmployee) משנים אך
-   * ורק את Shifts.Assignments - אין שום סיבה לטעון מחדש גם את כל
-   * העובדים וההגשות שלהם בכל לחיצה, כפי שקרה קודם עם loadData().
-   * זה חוסך round-trip שלם ל-MongoDB Atlas בכל פעולה כזו.
-   */
+  private applyConfiguration(config: BoardConfiguration): void {
+    this.daysOfWeek = config.workDays;
+    this.extraRowNames = config.extraRowNames || [];
+
+    // חותכים ל-3 בלוקים מקסימום, כי זו מגבלת ה-Enum בשרת. אם המנהל
+    // הגדיר יותר מ-3 משמרות ב"הגדרות לוח" - רק 3 הראשונות מוצגות כאן.
+    this.shiftBlocks = config.shiftDefinitions.slice(0, 3).map((sd, i) => ({
+      type: this.indexToEnum[i],
+      label: sd.name,
+      roles: sd.roles,
+      icon: this.indexToIcon[i]
+    }));
+  }
+
   private loadShiftsOnly(): void {
     this.shiftService.getShifts().subscribe(shifts => {
       this.shifts = shifts;
@@ -95,19 +109,8 @@ export class ShiftBoardComponent implements OnInit {
     this.allEmployees.forEach(emp => {
       const name = emp.name;
       const requested = emp.requestedCount || 0;
-
-      // תוקן: עובדים שנוצרו אך ורק דרך הגשת חופשה/מחלה (find-or-create
-      // ב-VacationsController/SickLeaveController) מקבלים רשומת Employee
-      // בלי שום הגשת זמינות בפועל - requestedCount שלהם תמיד 0. אין סיבה
-      // שהם יופיעו ב"סיכום עובדים" (שמיועד למי שהגיש זמינות למשמרות),
-      // אז מדלגים על כל מי שלא הגיש בכלל.
       if (name && requested > 0) {
-        statsMap.set(name, {
-          name: name,
-          total: 0,
-          night: 0,
-          requested: requested
-        });
+        statsMap.set(name, { name: name, total: 0, night: 0, requested: requested });
       }
     });
 
@@ -171,13 +174,9 @@ export class ShiftBoardComponent implements OnInit {
     return sunday;
   }
 
-  /**
-   * חדש - מחזיר את כל מי שהגיש זמינות ליום/משמרת מסוימים, ללא תלות
-   * בתפקיד (כי העובד לא בוחר תפקיד בהגשה) - זה "הבנק" שמוצג בכל תא.
-   */
   getCandidatesForCell(dayIndex: number, shiftType: any): any[] {
-    const foundShiftType = this.shiftTypes.find(st => st.type === shiftType);
-    const shiftLabel = foundShiftType ? foundShiftType.label : '';
+    const block = this.shiftBlocks.find(b => b.type === shiftType);
+    const shiftLabel = block ? block.label : '';
 
     const currentDayHeb = this.daysOfWeek[dayIndex];
     const currentDayEng = this.dayMap[currentDayHeb];
@@ -204,11 +203,6 @@ export class ShiftBoardComponent implements OnInit {
     return result;
   }
 
-  /**
-   * חדש - חוזרים לתצוגה מוטבעת (inline) של הרשימה בתוך כל תא, בלי
-   * Popup/Popover - בדיוק כמו בתמונת הייחוס. לחיצה על שם: אם הוא כבר
-   * משובץ לתפקיד הזה - מסירה אותו (טוגל); אחרת משבצת אותו.
-   */
   selectCandidate(dayIndex: number, shiftType: any, role: string, candidate: any): void {
     if (this.getEmployeeForRole(dayIndex, shiftType, role) === candidate.fullName) {
       this.removeEmployee(dayIndex, shiftType, role);
@@ -217,20 +211,14 @@ export class ShiftBoardComponent implements OnInit {
     }
   }
 
-  /** האם המועמד הזה כבר משובץ לתפקיד הספציפי הזה ביום/משמרת הזו */
   isCandidateAssignedToRole(dayIndex: number, shiftType: any, fullName: string, role: string): boolean {
     return this.getEmployeeForRole(dayIndex, shiftType, role) === fullName;
   }
 
-  /** חדש - האם המועמד משובץ לאחד מהתפקידים ברשימה (לשימוש בבנק המשותף) */
   isCandidateAssignedToAny(dayIndex: number, shiftType: any, fullName: string, roles: string[]): boolean {
     return roles.some(role => this.getEmployeeForRole(dayIndex, shiftType, role) === fullName);
   }
 
-  /**
-   * חדש - לחיצה על "+" בקובייה ריקה: קובעת/מבטלת יעד שיבוץ מפורש.
-   * לחיצה חוזרת על אותו "+" מבטלת את הבחירה (טוגל).
-   */
   startSelectingRole(dayIndex: number, shiftType: any, role: string): void {
     if (this.isSelectingRole(dayIndex, shiftType, role)) {
       this.selectedTarget = null;
@@ -246,12 +234,6 @@ export class ShiftBoardComponent implements OnInit {
       && this.selectedTarget.role === role;
   }
 
-  /**
-   * תוקן - לשימוש בבנק המשותף: אם יש יעד נבחר במפורש (המנהל לחץ "+"
-   * על תפקיד ספציפי) - משבצים בדיוק אליו, בלי לנחש. אחרת (המנהל פשוט
-   * לחץ על שם בבנק בלי לבחור "+" קודם) - נופלים חזרה להתנהגות הישנה:
-   * מחפשים את התפקיד הפנוי הראשון מבין הרשימה.
-   */
   assignFromSharedBank(dayIndex: number, shiftType: any, candidate: any, roles: string[]): void {
     if (this.selectedTarget && this.selectedTarget.dayIndex === dayIndex && this.selectedTarget.shiftType === shiftType) {
       const targetRole = this.selectedTarget.role;
@@ -268,11 +250,6 @@ export class ShiftBoardComponent implements OnInit {
     this.assignFromBank(dayIndex, shiftType, openRole, candidate);
   }
 
-  /**
-   * תוקן - עכשיו כל תא שוב שייך לתפקיד ספציפי אחד (חזרה ל-3 שורות
-   * אמיתיות בטבלה), אז לחיצה על מועמד משבצת ישירות לתפקיד הזה בדיוק -
-   * בלי לחפש "תפקיד פנוי ראשון" כמו בגרסת הבנק המשותף הקודמת.
-   */
   assignFromBank(dayIndex: number, shiftType: any, role: string, candidate: any): void {
     const employeeId = candidate.id || candidate.employeeId;
     const employeeName = candidate.fullName;
@@ -288,7 +265,6 @@ export class ShiftBoardComponent implements OnInit {
       return;
     }
 
-    // Optimistic UI - עדכון/הוספה מיידיים במסך, עם rollback אם השרת מסרב.
     const existingIndex = shift.assignments.findIndex((a: any) => a.role === role);
     const previousAssignment = existingIndex > -1 ? { ...shift.assignments[existingIndex] } : null;
 
@@ -335,11 +311,6 @@ export class ShiftBoardComponent implements OnInit {
     }
   }
 
-  /**
-   * חדש - נגזר (computed) מתוך shifts שכבר נטענו: השבוע נחשב "פורסם"
-   * רק אם יש משמרות בכלל, וכולן מסומנות isPublished=true. אם המנהל
-   * הרגע יצר שבוע חדש (generate-week) - הוא תמיד יתחיל כטיוטה.
-   */
   get isWeekPublished(): boolean {
     return this.shifts.length > 0 && this.shifts.every((s: any) => s.isPublished);
   }
@@ -352,7 +323,7 @@ export class ShiftBoardComponent implements OnInit {
       next: (res: any) => {
         this.isPublishing = false;
         alert(res.message);
-        this.loadData(); // רענון כדי לעדכן את isPublished בכל משמרת
+        this.loadData();
       },
       error: (err) => {
         this.isPublishing = false;
@@ -384,10 +355,6 @@ export class ShiftBoardComponent implements OnInit {
     const shift = this.getShiftForDay(dayIndex, shiftType);
     if (!shift) return;
 
-    // Optimistic UI: מסירים מיידית מהמסך *לפני* שהשרת בכלל ענה, כדי
-    // שהפעולה תרגיש מיידית ולא תלויה במהירות הרשת/Atlas. שומרים גיבוי
-    // של האיבר שהוסר, כדי שאם השרת יחזיר שגיאה - נחזיר אותו למקומו
-    // (rollback) ונודיע למשתמש, במקום שהמסך יישאר במצב שגוי בשקט.
     const removedIndex = shift.assignments.findIndex((a: any) => a.role === role);
     const removedAssignment = removedIndex > -1 ? shift.assignments[removedIndex] : null;
     if (removedIndex > -1) {
@@ -398,14 +365,11 @@ export class ShiftBoardComponent implements OnInit {
     this.shiftService.assignEmployee(shift.id, null, role).subscribe({
       next: () => {
         this.isProcessing = false;
-        // הצלחה - המסך כבר מעודכן, רק מסנכרנים ברקע (בלי לחסום) כדי
-        // שהסטטיסטיקות (calculateStats) יתעדכנו בדיוק לפי מה שבאמת נשמר.
         this.loadShiftsOnly();
       },
       error: (err) => {
         this.isProcessing = false;
         console.error(err);
-        // Rollback: השרת סירב - מחזירים את האיבר שהוסר בחזרה למקומו
         if (removedAssignment && removedIndex > -1) {
           shift.assignments.splice(removedIndex, 0, removedAssignment);
         }
@@ -491,11 +455,6 @@ export class ShiftBoardComponent implements OnInit {
       return;
     }
 
-    // תוקן: קודם זה עדכן רק את המצב המקומי בדפדפן ולא נשמר בשרת בכלל -
-    // אחרי רענון (F5) השם היה חוזר לישן. עכשיו קוראים ל-endpoint אמיתי
-    // שגם שומר את השם וגם מתקן את הצילומים (snapshots) שלו בכל מקום
-    // אחר שהוא מופיע (הגשות זמינות, שיבוצים בלוח), ורק בהצלחה מרעננים
-    // את כל הנתונים מהשרת - כדי שהתצוגה תמיד תשקף את מה שבאמת נשמר.
     this.shiftService.updateEmployeeName(emp.id, trimmedName).subscribe({
       next: () => {
         this.loadData();
@@ -503,6 +462,33 @@ export class ShiftBoardComponent implements OnInit {
       error: (err) => {
         console.error('שגיאה בעדכון שם העובד:', err);
         alert('שגיאה בשמירת השם החדש. נסה שוב.');
+      }
+    });
+  }
+
+  // ===== שורות עצמאיות (תיגבורים/מטווחים/חפיפות) =====
+
+  getExtraRowText(rowName: string, dayIndex: number): string {
+    const dayEng = this.dayMap[this.daysOfWeek[dayIndex]];
+    const entry = this.extraRowEntries.find(e => e.rowName === rowName && e.day === dayEng);
+    return entry ? entry.text : '';
+  }
+
+  updateExtraRowText(rowName: string, dayIndex: number, text: string): void {
+    const dayEng = this.dayMap[this.daysOfWeek[dayIndex]];
+    const entry: ExtraRowEntry = { rowName, day: dayEng, text };
+
+    this.boardConfigService.updateExtraRow(entry).subscribe({
+      next: () => {
+        const existing = this.extraRowEntries.find(e => e.rowName === rowName && e.day === dayEng);
+        if (existing) {
+          existing.text = text;
+        } else {
+          this.extraRowEntries.push(entry);
+        }
+      },
+      error: (err) => {
+        console.error('שגיאה בשמירת שורה עצמאית:', err);
       }
     });
   }

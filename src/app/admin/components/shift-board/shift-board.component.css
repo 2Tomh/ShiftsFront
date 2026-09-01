@@ -852,3 +852,18 @@ tr.shift-night td {
     font-size: 11px;
   }
 }
+
+.shift-block-0 { background: #eaf4ff; }
+.shift-block-1 { background: #eafaf0; }
+.shift-block-2 { background: #f5f0ff; }
+
+.extra-row-label { background: #fafafa; font-weight: 600; }
+.extra-row-input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-family: 'Heebo', sans-serif;
+  font-size: 12.5px;
+  text-align: center;
+}
