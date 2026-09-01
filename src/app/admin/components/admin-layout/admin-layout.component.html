@@ -1,20 +1,27 @@
-<header class="admin-topbar">
-  <div class="topbar-inner">
-    <span class="topbar-brand">ניהול · HP נס ציונה</span>
-    <nav class="topbar-nav">
+<div class="admin-layout">
+  <aside class="admin-sidenav">
+    <div class="sidenav-header">
+      <span class="sidenav-brand">ניהול · HP נס ציונה</span>
+    </div>
+    
+    <nav class="sidenav-nav">
       <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">לוח מנהל</a>
       <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">אישור חופשות</a>
       <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link">אישור מחלה</a>
       <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">ניהול משתמשים</a>
       <a routerLink="/admin/weapon" routerLinkActive="active" class="nav-link">מעקב נשק</a>
-      <!-- חדש: הגדרות לוח -->
       <a routerLink="/admin/board-settings" routerLinkActive="active" class="nav-link">הגדרות לוח</a>
     </nav>
-    <div class="topbar-user">
-      <span class="user-name" *ngIf="username">{{ username }}</span>
+
+    <div class="sidenav-footer">
+      <div class="sidenav-user" *ngIf="username">
+        <span class="user-name">{{ username }}</span>
+      </div>
       <button class="btn-logout" (click)="logout()">התנתק</button>
     </div>
-  </div>
-</header>
+  </aside>
 
-<router-outlet></router-outlet>
+  <main class="admin-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
