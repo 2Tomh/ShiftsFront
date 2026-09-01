@@ -20,6 +20,7 @@ interface DynamicShiftBlock {
 export class ShiftBoardComponent implements OnInit {
   shifts: Shift[] = [];
   allEmployees: any[] = [];
+  employeeStats: any[] = [];
   isProcessing = false;
   isPublishing = false;
 
@@ -76,6 +77,7 @@ export class ShiftBoardComponent implements OnInit {
       this.shifts = shifts;
       this.applyConfiguration(config);
       this.extraRowEntries = extraRows;
+      this.calculateStats();
     });
   }
 
@@ -96,7 +98,34 @@ export class ShiftBoardComponent implements OnInit {
   private loadShiftsOnly(): void {
     this.shiftService.getShifts().subscribe(shifts => {
       this.shifts = shifts;
+      this.calculateStats();
     });
+  }
+
+  calculateStats(): void {
+    const statsMap = new Map<string, any>();
+    this.allEmployees.forEach(emp => {
+      const name = emp.name;
+      const requested = emp.requestedCount || 0;
+      if (name && requested > 0) {
+        statsMap.set(name, { name: name, total: 0, night: 0, requested: requested, notes: emp.notes || '' });
+      }
+    });
+
+    this.shifts.forEach((shift: any) => {
+      const sType = shift.type || shift.Type;
+      const isNight = this.shiftBlocks.length > 2 && sType === this.shiftBlocks[2].type;
+      const assignments = shift.assignments || [];
+      assignments.forEach((ass: any) => {
+        const name = ass.employeeName;
+        if (name && statsMap.has(name)) {
+          const current = statsMap.get(name);
+          current.total++;
+          if (isNight) current.night++;
+        }
+      });
+    });
+    this.employeeStats = Array.from(statsMap.values()).sort((a, b) => b.total - a.total);
   }
 
   getEmployeeForRole(dayIndex: number, shiftType: any, role: string): string {
@@ -161,6 +190,18 @@ export class ShiftBoardComponent implements OnInit {
     });
 
     return result;
+  }
+
+  selectCandidate(dayIndex: number, shiftType: any, role: string, candidate: any): void {
+    if (this.getEmployeeForRole(dayIndex, shiftType, role) === candidate.fullName) {
+      this.removeEmployee(dayIndex, shiftType, role);
+    } else {
+      this.assignFromBank(dayIndex, shiftType, role, candidate);
+    }
+  }
+
+  isCandidateAssignedToRole(dayIndex: number, shiftType: any, fullName: string, role: string): boolean {
+    return this.getEmployeeForRole(dayIndex, shiftType, role) === fullName;
   }
 
   isCandidateAssignedToAny(dayIndex: number, shiftType: any, fullName: string, roles: string[]): boolean {
@@ -246,6 +287,7 @@ export class ShiftBoardComponent implements OnInit {
       this.shiftService.clearAllData().subscribe({
         next: () => {
           this.allEmployees = [];
+          this.employeeStats = [];
           this.shifts = [];
           alert("המערכת אופסה! כל השמות והנתונים נמחקו.");
           this.loadData();
@@ -325,6 +367,31 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
+  openEditAvailabilityModal(stat: any): void {
+    this.editingEmployeeName = stat.name;
+    this.showEditAvailabilityModal = true;
+    this.isLoadingEdit = true;
+    this.editPreferredShifts = [];
+    this.editNotes = '';
+
+    this.shiftService.getAvailabilityForEmployee(stat.name).subscribe({
+      next: (res: any) => {
+        this.isLoadingEdit = false;
+        if (res && res.found) {
+          this.editPreferredShifts = (res.preferredShifts || []).map((p: any) => ({
+            day: p.day,
+            shift: p.shift
+          }));
+          this.editNotes = res.notes || '';
+        }
+      },
+      error: (err) => {
+        this.isLoadingEdit = false;
+        console.error('שגיאה בטעינת ההגשה לעריכה:', err);
+      }
+    });
+  }
+
   closeEditAvailabilityModal(): void {
     this.showEditAvailabilityModal = false;
     this.editingEmployeeName = '';
@@ -361,6 +428,29 @@ export class ShiftBoardComponent implements OnInit {
       error: (err) => {
         console.error('שגיאה בשמירת ההגשה הערוכה:', err);
         alert('שגיאה בשמירת ההגשה. נסה שוב.');
+      }
+    });
+  }
+
+  editEmployeeName(stat: any) {
+    const newName = prompt("הכנס שם מעודכן לעובד:", stat.name);
+    if (!newName || newName.trim() === "" || newName.trim() === stat.name) return;
+
+    const trimmedName = newName.trim();
+    const emp = this.allEmployees.find(e => e.name === stat.name);
+
+    if (!emp || !emp.id) {
+      alert("שגיאה: לא נמצא מזהה עובד. נסה לרענן (F5).");
+      return;
+    }
+
+    this.shiftService.updateEmployeeName(emp.id, trimmedName).subscribe({
+      next: () => {
+        this.loadData();
+      },
+      error: (err) => {
+        console.error('שגיאה בעדכון שם העובד:', err);
+        alert('שגיאה בשמירת השם החדש. נסה שוב.');
       }
     });
   }
