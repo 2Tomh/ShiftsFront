@@ -98,35 +98,6 @@
           נקה הגשות
         </button>
       </div>
-
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th class="text-start">עובד</th>
-            <th>הגיש</th>
-            <th>קיבל</th>
-            <th>לילה</th>
-            <th class="text-start">הערות</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let stat of employeeStats">
-            <td class="text-start emp-name">
-              <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
-              <div class="emp-actions">
-                <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
-              </div>
-            </td>
-            <td class="num-requested">{{ stat.requested }}</td>
-            <td class="num-total">{{ stat.total }}</td>
-            <td class="num-night">{{ stat.night }}</td>
-            <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
-          </tr>
-          <tr *ngIf="employeeStats.length === 0">
-            <td colspan="5" class="empty-state">עדיין אין הגשות זמינות</td>
-          </tr>
-        </tbody>
-      </table>
     </aside>
   </div>
 
