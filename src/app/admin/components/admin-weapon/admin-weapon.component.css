@@ -1,0 +1,147 @@
+:host {
+  display: block;
+  font-family: 'Assistant', sans-serif;
+  color: #1c2430;
+  direction: rtl;
+  box-sizing: border-box;
+}
+
+.admin-container {
+  background: #ffffff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-container h3 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1c2430;
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #dde3ec;
+}
+
+/* ===== טבלה ===== */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  text-align: right;
+}
+
+.admin-table th {
+  background: #1e293b;
+  color: #ffffff;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.admin-table th:first-child {
+  border-top-right-radius: 8px;
+}
+
+.admin-table th:last-child {
+  border-top-left-radius: 8px;
+}
+
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #dde3ec;
+  vertical-align: middle;
+  color: #1c2430;
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ===== עיצוב קבוצת תאריכים ===== */
+.date-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-group input[type="datetime-local"] {
+  border: 1.5px solid #dde3ec;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 12.5px;
+  color: #1c2430;
+  background-color: #fff;
+  transition: all 0.15s ease;
+}
+
+.date-group input[type="datetime-local"]:focus {
+  border-color: #146356;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 99, 86, 0.1);
+}
+
+.date-group input[type="datetime-local"]:disabled {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+}
+
+/* ===== עיצוב תיבות סימון (Checkboxes) ===== */
+.admin-table input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #146356;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+/* ===== כפתור שמירה ===== */
+.admin-table button {
+  background: #146356;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.admin-table button:hover {
+  background: #0f4c42;
+}
+
+.admin-table button:active {
+  transform: scale(0.97);
+}
+
+/* ===== רספונסיביות למסכים קטנים ===== */
+@media (max-width: 900px) {
+  .admin-container {
+    padding: 16px;
+    overflow-x: auto;
+  }
+  
+  .admin-table {
+    min-width: 750px;
+  }
+}
