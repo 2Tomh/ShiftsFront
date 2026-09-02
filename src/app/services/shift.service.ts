@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Shift } from '../Models/shift.model';
 import { Employee } from '../Models/emplyee.model';
@@ -14,16 +14,29 @@ export class ShiftService {
   constructor(private http: HttpClient) { }
 
   // --- שליפת נתונים ---
-  getShifts(): Observable<Shift[]> {
-    return this.http.get<Shift[]>(`${this.apiUrl}/Shifts`);
+
+  // חדש - weekStart אופציונלי (yyyy-MM-dd): כשמועבר, מחזיר רק את
+  // משמרות השבוע הזה (נדרש כדי לתמוך בכמה סידורים מקבילים בלי
+  // שידרסו זה את זה בתצוגה).
+  getShifts(weekStart?: string): Observable<Shift[]> {
+    let params = new HttpParams();
+    if (weekStart) {
+      params = params.set('weekStart', weekStart);
+    }
+    return this.http.get<Shift[]>(`${this.apiUrl}/Shifts`, { params });
   }
 
   getPublishedShifts(): Observable<Shift[]> {
     return this.http.get<Shift[]>(`${this.apiUrl}/Shifts/published`);
   }
 
-  publishWeek(): Observable<any> {
-    return this.http.put(`${this.apiUrl}/Shifts/publish`, {});
+  // חדש - weekStart אופציונלי: כשמועבר, מפרסם רק את משמרות השבוע הזה.
+  publishWeek(weekStart?: string): Observable<any> {
+    let params = new HttpParams();
+    if (weekStart) {
+      params = params.set('weekStart', weekStart);
+    }
+    return this.http.put(`${this.apiUrl}/Shifts/publish`, {}, { params });
   }
 
   getEmployees(): Observable<Employee[]> {

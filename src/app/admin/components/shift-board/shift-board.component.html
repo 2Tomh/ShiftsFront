@@ -2,6 +2,18 @@
 
   <header class="page-header">
     <div class="header-actions">
+      <!-- תוקן - במקום <input type="date"> חופשי, ניווט שבועות בלבד:
+           כל קליק זז 7 ימים בדיוק, כך selectedWeekStart נשאר תמיד
+           יום ראשון (לא ניתן לבחור באמצע שבוע בטעות). -->
+      <div class="week-nav">
+        <button type="button" class="week-nav-btn" (click)="previousWeek()" title="שבוע קודם">‹</button>
+        <div class="week-nav-label">
+          <span class="week-nav-caption">שבוע מתחיל ביום ראשון</span>
+          <span class="week-nav-range">{{ selectedWeekRangeLabel }}</span>
+        </div>
+        <button type="button" class="week-nav-btn" (click)="nextWeek()" title="שבוע הבא">›</button>
+        <button type="button" class="week-nav-today" (click)="goToCurrentWeek()">השבוע הנוכחי</button>
+      </div>
       <button class="btn-create-week" (click)="generateWeek()">
         <span class="btn-icon">+</span> צור שבוע חדש
       </button>
@@ -27,7 +39,13 @@
             <tr>
               <th class="col-side-label">משמרת</th>
               <th class="col-role-label">תפקיד</th>
-              <th *ngFor="let day of daysOfWeek" colspan="2">{{ day }}</th>
+              <!-- חדש - תאריך ספציפי מתחת לשם היום, לפי selectedWeekStart -->
+              <th *ngFor="let day of daysOfWeek" colspan="2">
+                <div class="day-header-cell">
+                  <span class="day-name">{{ day }}</span>
+                  <span class="day-date">{{ getDateLabelForDay(day) }}</span>
+                </div>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -46,24 +64,24 @@
                   <ng-container *ngFor="let day of daysOfWeek; let i = index">
                     <td class="bank-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole">
                       <div class="side-mini-title">הגישו</div>
-                      <button
-                        *ngFor="let c of getCandidatesForCell(i, block.type)"
-                        class="candidate-line"
+                      <button *ngFor="let c of getCandidatesForCell(i, block.type)" class="candidate-line"
                         [class.is-assigned]="isCandidateAssignedToAny(i, block.type, c.fullName, block.roles)"
-                        (click)="assignFromSharedBank(i, block.type, c, block.roles)"
-                        [title]="c.fullName">
+                        (click)="assignFromSharedBank(i, block.type, c, block.roles)" [title]="c.fullName">
                         {{ c.fullName }}
                       </button>
                       <span class="no-candidates" *ngIf="getCandidatesForCell(i, block.type).length === 0">—</span>
                     </td>
                     <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, block.type, role)">
                       <div class="side-mini-title">{{ role }}</div>
-                      <div class="assigned-display-box" *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else emptySlot">
+                      <div class="assigned-display-box"
+                        *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else emptySlot">
                         <span class="assigned-name-text">{{ assignedName }}</span>
-                        <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)" title="הסר שיבוץ">×</button>
+                        <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)"
+                          title="הסר שיבוץ">×</button>
                       </div>
                       <ng-template #emptySlot>
-                        <button class="btn-add-mini" (click)="startSelectingRole(i, block.type, role)" title="בחר מהבנק">+</button>
+                        <button class="btn-add-mini" (click)="startSelectingRole(i, block.type, role)"
+                          title="בחר מהבנק">+</button>
                       </ng-template>
                     </td>
                   </ng-container>
@@ -76,12 +94,8 @@
             <tr class="extra-row" *ngFor="let rowName of extraRowNames">
               <td class="shift-label-vertical extra-row-label" colspan="2">{{ rowName }}</td>
               <td class="assign-cell extra-row-cell" *ngFor="let day of daysOfWeek; let i = index" colspan="2">
-                <input
-                  type="text"
-                  class="extra-row-input"
-                  [value]="getExtraRowText(rowName, i)"
-                  (change)="updateExtraRowText(rowName, i, $any($event.target).value)"
-                  placeholder="—">
+                <input type="text" class="extra-row-input" [value]="getExtraRowText(rowName, i)"
+                  (change)="updateExtraRowText(rowName, i, $any($event.target).value)" placeholder="—">
               </td>
             </tr>
 
@@ -128,6 +142,7 @@
         </tbody>
       </table>
     </aside> -->
+    <app-schedule-stats></app-schedule-stats>
   </div>
 
   <!-- מודאל עריכת הגשה -->
@@ -143,7 +158,8 @@
         <div class="edit-row" *ngFor="let shiftLabel of editShiftLabels">
           <div class="edit-row-label">{{ shiftLabel }}</div>
           <div class="edit-day-col" *ngFor="let day of daysOfWeek">
-            <button class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)" (click)="toggleEditPreference(day, shiftLabel)">
+            <button class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)"
+              (click)="toggleEditPreference(day, shiftLabel)">
               {{ isEditSelected(day, shiftLabel) ? '✓' : '⊘' }}
             </button>
           </div>

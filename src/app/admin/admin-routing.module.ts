@@ -22,7 +22,6 @@ const routes: Routes = [
       { path: 'users', component: UserManagementComponent },
       { path: 'weapon', component: AdminWeaponComponent },
       { path: 'board-settings', component: BoardSettingsComponent },
-      { path: 'stats', component: ScheduleStatsComponent },
       { path: 'employee-management', component: EmployeeManagementComponent }, // חדש
       { path: '', redirectTo: 'board', pathMatch: 'full' }
     ]
