@@ -1,24 +1,30 @@
-import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { forkJoin, Subscription } from 'rxjs';
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
+import { DataRefreshService } from '../../../services/data-refresh.service';
 
-// חדש - הקומפוננטה הזו הפכה מ-@Input/@Output תלוי-הורה (שריד מת,
-// לא מנותב) לעמוד עצמאי לגמרי: טוענת בעצמה עובדים+משמרות+תצורה,
-// ומחשבת סטטיסטיקות בדיוק כמו הפאנל הצדדי ב-shift-board, אבל
-// כעמוד רחב ונפרד עם עוד מקום לפרטים.
+// הקומפוננטה הזו הפכה מ-@Input/@Output תלוי-הורה (שריד מת, לא
+// מנותב) לעמוד עצמאי לגמרי: טוענת בעצמה עובדים+משמרות+תצורה,
+// ומחשבת סטטיסטיקות בדיוק כמו הפאנל הצדדי ב-shift-board, אבל כעמוד
+// רחב ונפרד עם עוד מקום לפרטים.
+// חדש - נרשמת ל-DataRefreshService.refresh$ כדי לדעת מתי shift-board
+// טען/שינה נתונים (למשל לחיצה על "רענן הגשות"), ולטעון את עצמה
+// מחדש בהתאם - בלי זה היא נשארת "קפואה" עם הנתונים מהטעינה הראשונה
+// עד שהדף כולו מתרענן (F5).
 @Component({
   selector: 'app-schedule-stats',
   templateUrl: './schedule-stats.component.html',
   styleUrls: ['./schedule-stats.component.css']
 })
-export class ScheduleStatsComponent implements OnInit {
+export class ScheduleStatsComponent implements OnInit, OnDestroy {
   employeeStats: any[] = [];
   isLoading = true;
 
   private allEmployees: any[] = [];
   private shifts: any[] = [];
   private nightBlockType: string | null = null;
+  private refreshSubscription?: Subscription;
 
   showEditAvailabilityModal = false;
   editingEmployeeName = '';
@@ -30,11 +36,22 @@ export class ScheduleStatsComponent implements OnInit {
 
   constructor(
     private shiftService: ShiftService,
-    private boardConfigService: BoardConfigurationService
+    private boardConfigService: BoardConfigurationService,
+    private dataRefreshService: DataRefreshService
   ) { }
 
   ngOnInit(): void {
     this.loadData();
+
+    // חדש - בכל פעם שמשהו אחר במערכת (בעיקר shift-board) מודיע על
+    // שינוי נתונים, טוענים מחדש גם כאן.
+    this.refreshSubscription = this.dataRefreshService.refresh$.subscribe(() => {
+      this.loadData();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.refreshSubscription?.unsubscribe();
   }
 
   loadData(): void {
@@ -89,6 +106,8 @@ export class ScheduleStatsComponent implements OnInit {
       next: () => {
         alert('המערכת אופסה! כל השמות והנתונים נמחקו.');
         this.loadData();
+        // חדש - מודיע גם לרכיבים אחרים (shift-board) שהנתונים השתנו
+        this.dataRefreshService.notifyDataChanged();
       },
       error: (err) => {
         console.error('Delete failed:', err);
@@ -110,7 +129,10 @@ export class ScheduleStatsComponent implements OnInit {
     }
 
     this.shiftService.updateEmployeeName(emp.id, trimmedName).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.loadData();
+        this.dataRefreshService.notifyDataChanged();
+      },
       error: (err) => {
         console.error('שגיאה בעדכון שם העובד:', err);
         alert('שגיאה בשמירת השם החדש. נסה שוב.');
@@ -180,6 +202,7 @@ export class ScheduleStatsComponent implements OnInit {
       next: () => {
         this.closeEditModal();
         this.loadData();
+        this.dataRefreshService.notifyDataChanged();
       },
       error: (err) => {
         console.error('שגיאה בשמירת ההגשה הערוכה:', err);

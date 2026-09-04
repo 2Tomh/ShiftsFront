@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
+import { DataRefreshService } from '../../../services/data-refresh.service';
 import { Shift } from '../../../Models/shift.model';
 import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
 
@@ -82,7 +83,8 @@ export class ShiftBoardComponent implements OnInit {
 
   constructor(
     private shiftService: ShiftService,
-    private boardConfigService: BoardConfigurationService
+    private boardConfigService: BoardConfigurationService,
+    private dataRefreshService: DataRefreshService
   ) { }
 
   ngOnInit(): void {
@@ -110,6 +112,10 @@ export class ShiftBoardComponent implements OnInit {
       this.extraRowEntries = extraRows;
       this.calculateStats();
       this.computeRestViolations();
+      // חדש - מודיע לרכיבים אחרים (בעיקר app-schedule-stats) שהנתונים
+      // נטענו/השתנו, כדי שגם הם יטענו מחדש ולא יישארו "קפואים" עם
+      // נתונים ישנים עד לרענון מלא של הדף (F5).
+      this.dataRefreshService.notifyDataChanged();
     });
   }
 
@@ -137,6 +143,9 @@ export class ShiftBoardComponent implements OnInit {
       this.shifts = shifts;
       this.calculateStats();
       this.computeRestViolations();
+      // חדש - שיבוץ/הסרת שיבוץ עשויים לשנות את הסטטיסטיקות (סה"כ
+      // משמרות, לילות) - מודיעים כדי ש-app-schedule-stats יתעדכן.
+      this.dataRefreshService.notifyDataChanged();
     });
   }
 
