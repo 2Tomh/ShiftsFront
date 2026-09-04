@@ -87,15 +87,17 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
     return map[englishDay] || englishDay;
   }
 
+  // תוקן - Type כבר מגיע מהשרת בדיוק כמו שהמנהל הגדיר אותו ב"הגדרות
+  // לוח" (למשל "בוקר", "צהריים", "לילה" - או כל שם אחר שהמנהל בחר),
+  // לא כ-Enum באנגלית ("Morning"/"Afternoon"/"Night") ולא כמספר
+  // (0/1/2) כמו שהיה פעם. אין יותר צורך (ואי אפשר) "לתרגם" - הערך
+  // כבר מוכן להשוואה ישירה.
   private getShiftTypeLabel(type: any): string {
-    if (type === 'Morning' || type === 0 || type === '0') return 'בוקר';
-    if (type === 'Afternoon' || type === 1 || type === '1') return 'צהריים';
-    if (type === 'Night' || type === 2 || type === '2') return 'לילה';
-    return '';
+    return type || '';
   }
 
-  // חדש: אותה לוגיקה כמו שורת "כללי/מאבטח" בלוח המנהל - קשורה
-  // למשמרת הבוקר (לפי המבנה המקורי), ולא רלוונטית ביום שישי/שבת.
+  // אותה לוגיקה כמו שורת "כללי/מאבטח" בלוח המנהל - קשורה למשמרת
+  // הבוקר (לפי המבנה המקורי), ולא רלוונטית ביום שישי/שבת.
   getGuardForDay(dayIndex: number): string {
     return this.getEmployeeForRole(this.daysOfWeek[dayIndex], 'בוקר', 'מאבטח');
   }
