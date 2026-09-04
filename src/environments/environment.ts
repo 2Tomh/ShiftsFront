@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  apiUrl: 'https://localhost:7278/api',
+  apiUrl: 'https://shiftsbackend-8qns.onrender.com/api',
+  // apiUrl: 'https://localhost:7278/api',
 };
 
 /*
