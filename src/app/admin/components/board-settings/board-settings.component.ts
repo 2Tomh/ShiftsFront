@@ -36,6 +36,13 @@ export class BoardSettingsComponent implements OnInit {
     this.boardConfigService.getConfiguration().subscribe({
       next: (config) => {
         this.config = config;
+        // תוקן - הגנה על תצורות ישנות שנטענו מהשרת בלי startTime/
+        // endTime (למשל לפני שהשדות האלה נוספו למודל) - לא נכשל,
+        // פשוט משלים מחרוזת ריקה.
+        this.config.shiftDefinitions.forEach(sd => {
+          if (sd.startTime === undefined || sd.startTime === null) sd.startTime = '';
+          if (sd.endTime === undefined || sd.endTime === null) sd.endTime = '';
+        });
         this.newRoleInputs = this.config.shiftDefinitions.map(() => '');
         this.isLoading = false;
       },
@@ -62,8 +69,11 @@ export class BoardSettingsComponent implements OnInit {
     }
   }
 
+  // תוקן - כולל עכשיו startTime/endTime (מחרוזת ריקה כברירת מחדל),
+  // כדי לתאום למודל ShiftDefinition המעודכן. המנהל ימלא אותן בעצמו
+  // דרך שדות השעה החדשים בתבנית.
   addShiftDefinition(): void {
-    this.config.shiftDefinitions.push({ name: '', roles: [] });
+    this.config.shiftDefinitions.push({ name: '', roles: [], startTime: '', endTime: '' });
     this.newRoleInputs.push('');
   }
 
@@ -112,6 +122,20 @@ export class BoardSettingsComponent implements OnInit {
     if (emptyShiftName) {
       alert('לכל משמרת חייב להיות שם');
       return;
+    }
+
+    // חדש - לא חוסם שמירה אם השעות ריקות (כדי לא לשבור זרימת עבודה
+    // קיימת), אבל מזהיר את המנהל שבלי שעות חוק מרווח המנוחה של 8
+    // שעות לא יעבוד עבור המשמרת הזו.
+    const missingHours = this.config.shiftDefinitions.filter(s => !s.startTime || !s.endTime);
+    if (missingHours.length > 0) {
+      const names = missingHours.map(s => s.name || '(ללא שם)').join(', ');
+      const proceed = confirm(
+        `למשמרות הבאות אין שעות התחלה/סיום מוגדרות: ${names}.\n` +
+        `בלי שעות, בדיקת מרווח המנוחה של 8 שעות לא תעבוד עבורן.\n\n` +
+        `לשמור בכל זאת?`
+      );
+      if (!proceed) return;
     }
 
     this.isSaving = true;

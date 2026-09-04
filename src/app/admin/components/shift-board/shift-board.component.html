@@ -2,9 +2,7 @@
 
   <header class="page-header">
     <div class="header-actions">
-      <!-- תוקן - במקום <input type="date"> חופשי, ניווט שבועות בלבד:
-           כל קליק זז 7 ימים בדיוק, כך selectedWeekStart נשאר תמיד
-           יום ראשון (לא ניתן לבחור באמצע שבוע בטעות). -->
+      <!-- ניווט שבועות: קפיצה של 7 ימים בדיוק, תמיד יום ראשון -->
       <div class="week-nav">
         <button type="button" class="week-nav-btn" (click)="previousWeek()" title="שבוע קודם">‹</button>
         <div class="week-nav-label">
@@ -31,6 +29,18 @@
     <p class="eyebrow">HP נס ציונה</p>
   </header>
 
+  <!-- מקרא צבעים למרווח מנוחה -->
+  <div class="rest-legend">
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-orange"></span>
+      הפרש של 8 שעות בדיוק בין משמרות
+    </span>
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-red"></span>
+      פחות מ-8 שעות הפרש בין משמרות
+    </span>
+  </div>
+
   <div class="main-layout">
     <div class="table-container">
       <div class="table-scroll">
@@ -39,7 +49,7 @@
             <tr>
               <th class="col-side-label">משמרת</th>
               <th class="col-role-label">תפקיד</th>
-              <!-- חדש - תאריך ספציפי מתחת לשם היום, לפי selectedWeekStart -->
+              <!-- תאריך מתחת לשם היום, לפי selectedWeekStart -->
               <th *ngFor="let day of daysOfWeek" colspan="2">
                 <div class="day-header-cell">
                   <span class="day-name">{{ day }}</span>
@@ -50,7 +60,7 @@
           </thead>
           <tbody>
 
-            <!-- חדש - בלוק אחד גנרי, חוזר על עצמו לכל משמרת מהתצורה
+            <!-- בלוק אחד גנרי, חוזר על עצמו לכל משמרת מהתצורה
                  (במקום 3 בלוקים מועתקים בעבר). shiftBlockClass קובע
                  צבע לפי אינדקס, כי אין יותר שם קבוע (shift-morning וכו'). -->
             <ng-container *ngFor="let block of shiftBlocks; let blockIndex = index">
@@ -74,7 +84,10 @@
                     <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, block.type, role)">
                       <div class="side-mini-title">{{ role }}</div>
                       <div class="assigned-display-box"
-                        *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else emptySlot">
+                        *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else emptySlot"
+                        [class.rest-warning]="getRestSeverity(i, block.type, assignedName) === 'orange'"
+                        [class.rest-violation]="getRestSeverity(i, block.type, assignedName) === 'red'"
+                        [title]="getRestSeverity(i, block.type, assignedName) === 'red' ? 'פחות מ-8 שעות הפרש ממשמרת סמוכה' : (getRestSeverity(i, block.type, assignedName) === 'orange' ? 'בדיוק 8 שעות הפרש ממשמרת סמוכה' : '')">
                         <span class="assigned-name-text">{{ assignedName }}</span>
                         <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)"
                           title="הסר שיבוץ">×</button>
@@ -89,7 +102,7 @@
               </ng-container>
             </ng-container>
 
-            <!-- חדש - שורות עצמאיות (תיגבורים/מטווחים/חפיפות מהתצורה):
+            <!-- שורות עצמאיות (תיגבורים/מטווחים/חפיפות מהתצורה):
                  טקסט חופשי לכל יום, בלי בנק מועמדים, לא קשור למשמרת. -->
             <tr class="extra-row" *ngFor="let rowName of extraRowNames">
               <td class="shift-label-vertical extra-row-label" colspan="2">{{ rowName }}</td>
@@ -104,44 +117,6 @@
       </div>
     </div>
 
-    <!-- פאנל סטטיסטיקות -->
-    <!-- <aside class="stats-panel">
-      <div class="stats-header">
-        <h2>סיכום עובדים</h2>
-        <button (click)="clearAllAvailabilities()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
-          נקה הגשות
-        </button>
-      </div>
-
-      <table class="stats-table">
-        <thead>
-          <tr>
-            <th class="text-start">עובד</th>
-            <th>הגיש</th>
-            <th>קיבל</th>
-            <th>לילה</th>
-            <th class="text-start">הערות</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let stat of employeeStats">
-            <td class="text-start emp-name">
-              <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editEmployeeName(stat)">{{ stat.name }}</div>
-              <div class="emp-actions">
-                <button class="icon-btn" title="ערוך הגשה" (click)="openEditAvailabilityModal(stat)">📋</button>
-              </div>
-            </td>
-            <td class="num-requested">{{ stat.requested }}</td>
-            <td class="num-total">{{ stat.total }}</td>
-            <td class="num-night">{{ stat.night }}</td>
-            <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
-          </tr>
-          <tr *ngIf="employeeStats.length === 0">
-            <td colspan="5" class="empty-state">עדיין אין הגשות זמינות</td>
-          </tr>
-        </tbody>
-      </table>
-    </aside> -->
     <app-schedule-stats></app-schedule-stats>
   </div>
 

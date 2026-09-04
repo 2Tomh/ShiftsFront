@@ -26,6 +26,9 @@
     <!-- משמרות ותפקידים -->
     <section class="settings-section">
       <h2>משמרות ותפקידים</h2>
+      <p class="section-hint">
+        שעות ההתחלה/סיום משמשות לבדיקת מרווח מנוחה של 8 שעות בין משמרות של אותו עובד בלוח המשמרות.
+      </p>
 
       <div class="shift-card" *ngFor="let shift of config.shiftDefinitions; let i = index">
         <div class="shift-card-header">
@@ -35,6 +38,23 @@
             [(ngModel)]="shift.name"
             placeholder="שם המשמרת (לדוגמה: בוקר)">
           <button class="btn-remove-shift" (click)="removeShiftDefinition(i)">הסר משמרת</button>
+        </div>
+
+        <!-- חדש - שעות התחלה/סיום של המשמרת (פורמט "HH:mm"). אם
+             הסיום "לפני" ההתחלה (למשל 22:00 -> 06:00), המערכת מבינה
+             שהמשמרת חוצה חצות. -->
+        <div class="shift-time-row">
+          <label class="shift-time-field">
+            <span class="shift-time-label">שעת התחלה</span>
+            <input type="time" [(ngModel)]="shift.startTime">
+          </label>
+          <label class="shift-time-field">
+            <span class="shift-time-label">שעת סיום</span>
+            <input type="time" [(ngModel)]="shift.endTime">
+          </label>
+          <span class="shift-time-hint" *ngIf="!shift.startTime || !shift.endTime">
+            ⚠️ בלי שעות, לא ייבדק מרווח מנוחה למשמרת הזו
+          </span>
         </div>
 
         <div class="roles-list">

@@ -1,8 +1,5 @@
 <div class="admin-container">
-  <div class="admin-header-row">
-    <h3>ניהול הוצאת נשק לעובדים (אדמין)</h3>
-    <button class="btn-add-employee" (click)="openEmployeePicker()">+ הוסף עובד</button>
-  </div>
+  <h3>ניהול הוצאת נשק לעובדים (אדמין)</h3>
 
   <table class="admin-table">
     <thead>
@@ -18,21 +15,21 @@
     <tbody>
       <tr *ngFor="let item of employeesList">
         <td>{{ item.employeeName || item.employeeId }}</td>
-
+        
         <td>
           <input type="checkbox" [(ngModel)]="item.healthDeclarationSent" />
         </td>
-
+        
         <td>
           <input type="checkbox" [(ngModel)]="item.btfRequestSubmitted" />
         </td>
-
+        
         <td>
           <div class="date-group">
             <input type="checkbox" [checked]="!!item.btfAppointmentDate" (change)="toggleBtfDate(item, $event)" />
-            <input
-              type="datetime-local"
-              [(ngModel)]="item.btfAppointmentDate"
+            <input 
+              type="datetime-local" 
+              [(ngModel)]="item.btfAppointmentDate" 
               [disabled]="!item.btfAppointmentDate" />
           </div>
         </td>
@@ -41,32 +38,10 @@
           <input type="checkbox" [(ngModel)]="item.psychologistAppointment" />
         </td>
 
-        <td class="actions-cell">
+        <td>
           <button (click)="saveChanges(item)">שמור</button>
-          <button class="btn-remove" (click)="removeEmployee(item)" title="הסר מהמעקב">הסר</button>
         </td>
-      </tr>
-      <tr *ngIf="employeesList.length === 0">
-        <td colspan="6" class="empty-state">עדיין לא נוספו עובדים למעקב. לחצי "+ הוסף עובד" כדי להתחיל.</td>
       </tr>
     </tbody>
   </table>
-</div>
-
-<!-- חדש - בורר עובדים: רשימת כל מי שעדיין לא במעקב, לבחירה -->
-<div class="modal-backdrop" *ngIf="showEmployeePicker" (click)="closeEmployeePicker()"></div>
-<div class="employee-picker-modal" *ngIf="showEmployeePicker">
-  <h4>בחר עובד להוספה למעקב</h4>
-  <div class="picker-list">
-    <button
-      class="picker-item"
-      *ngFor="let emp of availableEmployees"
-      (click)="addEmployee(emp)">
-      {{ emp.name }}
-    </button>
-    <div class="empty-state" *ngIf="availableEmployees.length === 0">
-      כל העובדים כבר נמצאים במעקב.
-    </div>
-  </div>
-  <button class="btn-cancel-picker" (click)="closeEmployeePicker()">ביטול</button>
 </div>
