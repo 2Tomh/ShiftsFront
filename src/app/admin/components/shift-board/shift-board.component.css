@@ -401,22 +401,20 @@ tr.shift-night td {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-height: 20px;
+  width: 50%;
+  min-height: 15px;
   border: none;
-  border-bottom: 1px solid rgba(28, 36, 48, 0.08);
   background: transparent;
   color: var(--ink);
   border-radius: 3px;
   padding: 2px 3px;
-  font-size: 10.5px;
-  font-weight: 500;
+  font-size: 7px;
+  font-weight: 700;
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
-  transition: all 0.12s ease;
+  transition: all .12s ease;
 }
 
 .bank-cell .candidate-line:last-child {
@@ -446,9 +444,9 @@ tr.shift-night td {
   padding: 2px 0;
 }
 
-.assign-cell > .side-mini-title,
-.assign-cell > .assigned-display-box,
-.assign-cell > .empty-assignment {
+.assign-cell>.side-mini-title,
+.assign-cell>.assigned-display-box,
+.assign-cell>.empty-assignment {
   display: block;
 }
 
@@ -572,13 +570,11 @@ tr.shift-night td {
 }
 
 .hatched-cell {
-  background: repeating-linear-gradient(
-    45deg,
-    #e3e7ee,
-    #e3e7ee 4px,
-    #f4f6f9 4px,
-    #f4f6f9 8px
-  ) !important;
+  background: repeating-linear-gradient(45deg,
+      #e3e7ee,
+      #e3e7ee 4px,
+      #f4f6f9 4px,
+      #f4f6f9 8px) !important;
 }
 
 .empty-shift-cell {
@@ -706,9 +702,19 @@ tr.shift-night td {
   background: var(--teal-soft);
 }
 
-.num-requested { color: var(--ink-soft); }
-.num-total { color: var(--teal); font-weight: 700; }
-.num-night { color: var(--danger); font-weight: 700; }
+.num-requested {
+  color: var(--ink-soft);
+}
+
+.num-total {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.num-night {
+  color: var(--danger);
+  font-weight: 700;
+}
 
 .empty-state {
   color: var(--ink-soft);
@@ -767,8 +773,13 @@ tr.shift-night td {
   border-bottom: 1.5px solid var(--line);
 }
 
-.primary-label { color: var(--teal); }
-.secondary-label { color: var(--amber); }
+.primary-label {
+  color: var(--teal);
+}
+
+.secondary-label {
+  color: var(--amber);
+}
 
 .chip-row {
   display: flex;
@@ -988,11 +999,23 @@ tr.shift-night td {
   }
 }
 
-.shift-block-0 { background: #eaf4ff; }
-.shift-block-1 { background: #eafaf0; }
-.shift-block-2 { background: #f5f0ff; }
+.shift-block-0 {
+  background: #eaf4ff;
+}
 
-.extra-row-label { background: #fafafa; font-weight: 600; }
+.shift-block-1 {
+  background: #eafaf0;
+}
+
+.shift-block-2 {
+  background: #f5f0ff;
+}
+
+.extra-row-label {
+  background: #fafafa;
+  font-weight: 600;
+}
+
 .extra-row-input {
   width: 100%;
   border: 1px solid #e5e7eb;
