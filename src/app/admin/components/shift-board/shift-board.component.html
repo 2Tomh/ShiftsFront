@@ -39,6 +39,10 @@
       <span class="rest-legend-swatch rest-legend-red"></span>
       פחות מ-8 שעות הפרש בין משמרות
     </span>
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-purple"></span>
+      עובד/ת עם חופשה/מילואים מאושרים באותו יום
+    </span>
   </div>
 
   <div class="main-layout">
@@ -49,11 +53,18 @@
             <tr>
               <th class="col-side-label">משמרת</th>
               <th class="col-role-label">תפקיד</th>
-              <!-- תאריך מתחת לשם היום, לפי selectedWeekStart -->
-              <th *ngFor="let day of daysOfWeek" colspan="2">
+              <!-- תאריך מתחת לשם היום, לפי selectedWeekStart. חדש -
+                   מוסיפים גם תווית חג אם יש (מ-Hebcal API). -->
+              <th *ngFor="let day of daysOfWeek; let di = index" colspan="2"
+                  [class.blocked-day-header]="isFullDayBlocked(di)"
+                  [class.holiday-day-header]="isHolidayForDayIndex(di)">
                 <div class="day-header-cell">
                   <span class="day-name">{{ day }}</span>
                   <span class="day-date">{{ getDateLabelForDay(day) }}</span>
+                  <span class="day-holiday-label" *ngIf="isHolidayForDayIndex(di)" [title]="getHolidayForDayIndex(di)?.title">
+                    🕎 {{ getHolidayForDayIndex(di)?.titleHebrew }}
+                  </span>
+                  <span class="day-blocked-reason" *ngIf="isFullDayBlocked(di)">🚫 {{ getBlockedDateReason(di) }}</span>
                 </div>
               </th>
             </tr>
@@ -72,7 +83,7 @@
                   </td>
                   <td class="role-sidebar">{{ role }}</td>
                   <ng-container *ngFor="let day of daysOfWeek; let i = index">
-                    <td class="bank-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole">
+                    <td class="bank-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole && !isCellBlocked(i, block)">
                       <div class="side-mini-title">הגישו</div>
                       <button *ngFor="let c of getCandidatesForCell(i, block.type)" class="candidate-line"
                         [class.is-assigned]="isCandidateAssignedToAny(i, block.type, c.fullName, block.roles)"
@@ -81,13 +92,18 @@
                       </button>
                       <span class="no-candidates" *ngIf="getCandidatesForCell(i, block.type).length === 0">—</span>
                     </td>
-                    <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, block.type, role)">
+                    <td class="bank-cell hatched-cell blocked-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole && isCellBlocked(i, block)">
+                      <span class="blocked-label">{{ getCellBlockedLabel(i, block) }}</span>
+                    </td>
+                    <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, block.type, role)"
+                      *ngIf="!isCellBlocked(i, block) && !isRoleBlockedForDay(i, block, role)">
                       <div class="side-mini-title">{{ role }}</div>
                       <div class="assigned-display-box"
                         *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else emptySlot"
                         [class.rest-warning]="getRestSeverity(i, block.type, assignedName) === 'orange'"
                         [class.rest-violation]="getRestSeverity(i, block.type, assignedName) === 'red'"
-                        [title]="getRestSeverity(i, block.type, assignedName) === 'red' ? 'פחות מ-8 שעות הפרש ממשמרת סמוכה' : (getRestSeverity(i, block.type, assignedName) === 'orange' ? 'בדיוק 8 שעות הפרש ממשמרת סמוכה' : '')">
+                        [class.leave-conflict]="isEmployeeOnApprovedLeave(assignedName, i)"
+                        [title]="getAssignmentTooltip(i, block.type, assignedName)">
                         <span class="assigned-name-text">{{ assignedName }}</span>
                         <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)"
                           title="הסר שיבוץ">×</button>
@@ -97,6 +113,7 @@
                           title="בחר מהבנק">+</button>
                       </ng-template>
                     </td>
+                    <td class="assign-cell hatched-cell blocked-cell" *ngIf="isCellBlocked(i, block) || isRoleBlockedForDay(i, block, role)"></td>
                   </ng-container>
                 </tr>
               </ng-container>

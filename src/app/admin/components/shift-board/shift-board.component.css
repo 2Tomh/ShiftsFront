@@ -103,6 +103,11 @@
   border: 1.5px solid var(--danger);
 }
 
+.rest-legend-purple {
+  background: #f3e8ff;
+  border: 1.5px solid #7c3aed;
+}
+
 /* ===== Week navigator (ניווט שבועות - תמיד יום ראשון, בלי בחירת תאריך חופשי) ===== */
 .week-nav {
   display: inline-flex;
@@ -317,6 +322,38 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
+/* חדש - כותרת עמודת יום שנחסם לגמרי בתאריך ספציפי (BlockedDate) */
+.matrix-table thead th.blocked-day-header {
+  background: linear-gradient(180deg, #7f1d1d, #5c1414) !important;
+}
+
+.day-header-cell .day-blocked-reason {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  color: #fecaca;
+  white-space: normal;
+  line-height: 1.2;
+  max-width: 90px;
+}
+
+/* חדש - כותרת עמודת יום שיש בו חג (מ-Hebcal API). לא חוסמת שום
+   דבר בפועל - רק סימון ויזואלי. blocked-day-header (חסימה בפועל)
+   גובר על זה אם שניהם חלים על אותו יום, בזכות סדר ה-CSS. */
+.matrix-table thead th.holiday-day-header {
+  background: linear-gradient(180deg, #92640a, #6b4a07) !important;
+}
+
+.day-header-cell .day-holiday-label {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 9.5px;
+  color: #fde8c4;
+  white-space: normal;
+  line-height: 1.2;
+  max-width: 90px;
+}
+
 .matrix-table td {
   border-top: 1px solid var(--line);
   border-right: 1px solid var(--line);
@@ -401,20 +438,22 @@ tr.shift-night td {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50%;
-  min-height: 15px;
+  width: 100%;
+  min-height: 20px;
   border: none;
+  border-bottom: 1px solid rgba(28, 36, 48, 0.08);
   background: transparent;
   color: var(--ink);
   border-radius: 3px;
   padding: 2px 3px;
-  font-size: 7px;
-  font-weight: 700;
+  font-size: 10.5px;
+  font-weight: 500;
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  transition: all .12s ease;
+  text-overflow: ellipsis;
+  transition: all 0.12s ease;
 }
 
 .bank-cell .candidate-line:last-child {
@@ -444,9 +483,9 @@ tr.shift-night td {
   padding: 2px 0;
 }
 
-.assign-cell>.side-mini-title,
-.assign-cell>.assigned-display-box,
-.assign-cell>.empty-assignment {
+.assign-cell > .side-mini-title,
+.assign-cell > .assigned-display-box,
+.assign-cell > .empty-assignment {
   display: block;
 }
 
@@ -486,6 +525,19 @@ tr.shift-night td {
 
 .assigned-display-box.rest-violation .assigned-name-text {
   color: var(--danger);
+}
+
+/* חדש - סגול: העובד המשובץ יש לו בקשת חופשה/מילואים מאושרת שחופפת
+   ליום הזה (לרוב כי הבקשה אושרה אחרי שהוא כבר שובץ). צבע נפרד
+   מהאדום/כתום של מרווח מנוחה כדי לא לערבב בין שני סוגי בעיות שונים. */
+.assigned-display-box.leave-conflict {
+  border-color: #7c3aed;
+  background: #f3e8ff;
+  box-shadow: inset 0 0 0 1px #7c3aed;
+}
+
+.assigned-display-box.leave-conflict .assigned-name-text {
+  color: #5b21b6;
 }
 
 .assigned-name-text {
@@ -570,11 +622,13 @@ tr.shift-night td {
 }
 
 .hatched-cell {
-  background: repeating-linear-gradient(45deg,
-      #e3e7ee,
-      #e3e7ee 4px,
-      #f4f6f9 4px,
-      #f4f6f9 8px) !important;
+  background: repeating-linear-gradient(
+    45deg,
+    #e3e7ee,
+    #e3e7ee 4px,
+    #f4f6f9 4px,
+    #f4f6f9 8px
+  ) !important;
 }
 
 .empty-shift-cell {
@@ -582,6 +636,19 @@ tr.shift-night td {
   color: var(--line);
   font-size: 12px;
   padding: 8px 0;
+}
+
+/* חדש - תא של משמרת חסומה קבוע ליום הזה (BlockedDays בתצורה) */
+.blocked-cell {
+  vertical-align: middle !important;
+}
+
+.blocked-label {
+  display: block;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 /* ===== Stats panel ===== */
@@ -702,19 +769,9 @@ tr.shift-night td {
   background: var(--teal-soft);
 }
 
-.num-requested {
-  color: var(--ink-soft);
-}
-
-.num-total {
-  color: var(--teal);
-  font-weight: 700;
-}
-
-.num-night {
-  color: var(--danger);
-  font-weight: 700;
-}
+.num-requested { color: var(--ink-soft); }
+.num-total { color: var(--teal); font-weight: 700; }
+.num-night { color: var(--danger); font-weight: 700; }
 
 .empty-state {
   color: var(--ink-soft);
@@ -773,13 +830,8 @@ tr.shift-night td {
   border-bottom: 1.5px solid var(--line);
 }
 
-.primary-label {
-  color: var(--teal);
-}
-
-.secondary-label {
-  color: var(--amber);
-}
+.primary-label { color: var(--teal); }
+.secondary-label { color: var(--amber); }
 
 .chip-row {
   display: flex;
@@ -999,23 +1051,11 @@ tr.shift-night td {
   }
 }
 
-.shift-block-0 {
-  background: #eaf4ff;
-}
+.shift-block-0 { background: #eaf4ff; }
+.shift-block-1 { background: #eafaf0; }
+.shift-block-2 { background: #f5f0ff; }
 
-.shift-block-1 {
-  background: #eafaf0;
-}
-
-.shift-block-2 {
-  background: #f5f0ff;
-}
-
-.extra-row-label {
-  background: #fafafa;
-  font-weight: 600;
-}
-
+.extra-row-label { background: #fafafa; font-weight: 600; }
 .extra-row-input {
   width: 100%;
   border: 1px solid #e5e7eb;

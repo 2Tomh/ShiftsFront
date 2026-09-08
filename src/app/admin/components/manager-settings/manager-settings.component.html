@@ -1,0 +1,36 @@
+<div class="settings-shell">
+  <h1>פרטי מנהל הצוות</h1>
+  <p class="settings-subtitle">
+    השם והמייל שמוגדרים כאן משמשים לכל מקום במערכת ששולח מייל למנהל
+    (למשל הצהרת בריאות בטופס הוצאת נשק). שינוי כאן משנה את היעד מיד,
+    בלי לגעת בקוד.
+  </p>
+
+  <div *ngIf="isLoading" class="loading-hint">טוען...</div>
+
+  <div *ngIf="!isLoading">
+    <section class="settings-section">
+      <h2>פרטי קשר</h2>
+
+      <label class="field-label" for="managerName">שם המנהל</label>
+      <input
+        id="managerName"
+        type="text"
+        class="field-input"
+        [(ngModel)]="settings.name"
+        placeholder="לדוגמה: תום כהן">
+
+      <label class="field-label" for="managerEmail">כתובת מייל</label>
+      <input
+        id="managerEmail"
+        type="email"
+        class="field-input"
+        [(ngModel)]="settings.email"
+        placeholder="לדוגמה: manager@company.com">
+    </section>
+
+    <button class="btn-save-config" [disabled]="isSaving" (click)="save()">
+      {{ isSaving ? 'שומר...' : 'שמור פרטים' }}
+    </button>
+  </div>
+</div>

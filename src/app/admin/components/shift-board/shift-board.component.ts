@@ -1,10 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators'; // חדש
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { DataRefreshService } from '../../../services/data-refresh.service';
+import { VacationService } from '../../../services/vacation.service';
+import { SickLeaveService } from '../../../services/sickleave.service';
+import { BlockedDateService } from '../../../services/blocked-date.service';
+import { HolidayService } from '../../../services/holiday.service';
 import { Shift } from '../../../Models/shift.model';
 import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
+import { Holiday } from '../../../Models/holiday.model';
 
 interface DynamicShiftBlock {
   type: string;
@@ -16,6 +22,13 @@ interface DynamicShiftBlock {
   // בכלל (בטוח, לא נכשל).
   startTime: string;
   endTime: string;
+  // חדש - ימים (בעברית) שבהם המשמרת הזו חסומה קבוע (מגיע מ-
+  // BoardConfiguration.ShiftDefinition.BlockedDays).
+  blockedDays: string[];
+  // חדש - מפת חסימות ימים לפי תפקיד ספציפי בתוך המשמרת. מפתח = שם
+  // תפקיד, ערך = ימים חסומים לתפקיד הזה בלבד (שאר התפקידים באותה
+  // משמרת/יום ממשיכים לפעול כרגיל).
+  roleBlockedDays: { [role: string]: string[] };
 }
 
 // סוג חומרת התנגשות מרווח מנוחה: 'orange' = בדיוק 8 שעות הפרש (על
@@ -52,6 +65,26 @@ export class ShiftBoardComponent implements OnInit {
   // (computeRestViolations). ריקה = אין שום התנגשות מרווח מנוחה.
   private restSeverityMap: Map<string, RestSeverity> = new Map();
 
+  // חדש - כל בקשות החופשה/מילואים ה"מאושרות" (Approved) בלבד, בטווח
+  // תאריכים פשוט. נטען ב-loadData(), משמש כדי לא להציע עובד בבנק
+  // המועמדים ביום שהוא בחופשה/מילואים מאושרים, ולסמן אם הוא בכל
+  // זאת משובץ (למשל אושר אחרי השיבוץ).
+  private approvedLeaves: { employeeName: string; start: Date; end: Date }[] = [];
+
+  // חדש - מפה של תאריך (yyyy-MM-dd) -> סיבת חסימה, לתאריכים חסומים
+  // שנופלים בתוך השבוע המוצג כרגע (BlockedDate מ-BlockedDatesController).
+  // בניגוד ל-ShiftDefinition.BlockedDays (יום-בשבוע קבוע, כל המשמרות
+  // שמסומנות), זה תאריך בודד וחוסם את *כל* המשמרות של אותו יום.
+  private blockedDatesByDate: Map<string, string> = new Map();
+
+  // חדש - מפה של תאריך (yyyy-MM-dd) -> חג, לתאריכים שנופלים בתוך
+  // השבוע המוצג כרגע. נטען מ-Hebcal (דרך HolidayService) לפי השנה/ים
+  // שהשבוע חוצה (בד"כ שנה אחת, אלא אם השבוע חוצה את סוף דצמבר). לא
+  // חוסם שום דבר בפועל - רק תווית ויזואלית בכותרת העמודה. אם הטעינה
+  // נכשלת (בעיית רשת/API חיצוני) - נשארת ריקה, ולא מפילה את שאר הלוח
+  // (ראו catchError ב-loadData).
+  private holidaysByDate: Map<string, Holiday> = new Map();
+
   private dayMap: { [key: string]: string } = {
     'ראשון': 'Sunday', 'שני': 'Monday', 'שלישי': 'Tuesday', 'רביעי': 'Wednesday',
     'חמישי': 'Thursday', 'שישי': 'Friday', 'שבת': 'Saturday'
@@ -84,7 +117,11 @@ export class ShiftBoardComponent implements OnInit {
   constructor(
     private shiftService: ShiftService,
     private boardConfigService: BoardConfigurationService,
-    private dataRefreshService: DataRefreshService
+    private dataRefreshService: DataRefreshService,
+    private vacationService: VacationService,
+    private sickLeaveService: SickLeaveService,
+    private blockedDateService: BlockedDateService,
+    private holidayService: HolidayService
   ) { }
 
   ngOnInit(): void {
@@ -100,16 +137,71 @@ export class ShiftBoardComponent implements OnInit {
   loadData(): void {
     const weekStartParam = this.formatDateForApi(this.selectedWeekStart);
 
+    // חדש - השבוע עלול לחצות שנה אזרחית (למשל 28/12 - 03/01), אז
+    // מחשבים גם שנת התחלה וגם שנת סיום, וקוראים ל-API פעם אחת או
+    // פעמיים בהתאם (HolidayService שומר Cache פנימי, אז קריאה כפולה
+    // לאותה שנה בשבועות אחרים לא עולה בפועל בקריאת רשת נוספת).
+    const weekEndDate = new Date(this.selectedWeekStart);
+    weekEndDate.setDate(weekEndDate.getDate() + 6);
+    const startYear = this.selectedWeekStart.getFullYear();
+    const endYear = weekEndDate.getFullYear();
+
+    // חדש - טעינת חגים היא "best-effort" בלבד: היא רק מוסיפה תווית
+    // ויזואלית בכותרת העמודה, ולעולם לא צריכה למנוע טעינת שאר הלוח
+    // (עובדים, משמרות, תצורה וכו'). לכן עוטפים אותה ב-catchError
+    // שמחזיר מערך ריק אם הקריאה נכשלת (שרת Hebcal לא זמין, בעיית
+    // רשת, timeout וכו') - כדי ש-forkJoin לא ייכשל כולו בגלל זה.
+    const holidaysStartYear$ = this.holidayService.getHolidays(startYear).pipe(
+      catchError(err => {
+        console.warn('שגיאה בטעינת חגים (שנה ' + startYear + '), ממשיכים בלי תוויות חג:', err);
+        return of([] as Holiday[]);
+      })
+    );
+    const holidaysEndYear$ = startYear !== endYear
+      ? this.holidayService.getHolidays(endYear).pipe(
+          catchError(err => {
+            console.warn('שגיאה בטעינת חגים (שנה ' + endYear + '), ממשיכים בלי תוויות חג:', err);
+            return of([] as Holiday[]);
+          })
+        )
+      : of([] as Holiday[]);
+
     forkJoin({
       employees: this.shiftService.getEmployees(),
       shifts: this.shiftService.getShifts(weekStartParam),
       config: this.boardConfigService.getConfiguration(),
-      extraRows: this.boardConfigService.getExtraRows()
-    }).subscribe(({ employees, shifts, config, extraRows }) => {
+      extraRows: this.boardConfigService.getExtraRows(),
+      vacations: this.vacationService.getAll('Approved'),
+      sickLeaves: this.sickLeaveService.getAll('Approved'),
+      blockedDates: this.blockedDateService.getAll(),
+      holidaysStartYear: holidaysStartYear$,
+      holidaysEndYear: holidaysEndYear$
+    }).subscribe(({ employees, shifts, config, extraRows, vacations, sickLeaves, blockedDates, holidaysStartYear, holidaysEndYear }) => {
       this.allEmployees = employees;
       this.shifts = shifts;
       this.applyConfiguration(config);
       this.extraRowEntries = extraRows;
+      // חדש - מאחד חופשות ומילואים מאושרים לרשימה אחת פשוטה
+      // (employeeName + טווח תאריכים), בלי קשר לאיזה סוג בקשה זה היה.
+      this.approvedLeaves = [
+        ...vacations.map((v: any) => ({ employeeName: v.employeeName, start: new Date(v.startDate), end: new Date(v.endDate) })),
+        ...sickLeaves.map((s: any) => ({ employeeName: s.employeeName, start: new Date(s.startDate), end: new Date(s.endDate) }))
+      ];
+      // חדש - רק תאריכים חסומים שנופלים בטווח השבוע המוצג כרגע.
+      this.blockedDatesByDate = new Map();
+      (blockedDates as any[]).forEach(bd => {
+        const d = new Date(bd.date);
+        if (d >= this.selectedWeekStart && d <= weekEndDate) {
+          this.blockedDatesByDate.set(this.formatDateForApi(d), bd.reason || '');
+        }
+      });
+
+      // חדש - ממזג את חגי שתי השנים (אם רלוונטי) למפה אחת לפי תאריך.
+      // אם אחת מהקריאות נכשלה, המערך המתאים כבר ריק בזכות ה-catchError
+      // למעלה, כך שכל השאר ממשיך לעבוד כרגיל.
+      this.holidaysByDate = new Map();
+      [...holidaysStartYear, ...holidaysEndYear].forEach(h => this.holidaysByDate.set(h.date, h));
+
       this.calculateStats();
       this.computeRestViolations();
       // חדש - מודיע לרכיבים אחרים (בעיקר app-schedule-stats) שהנתונים
@@ -133,7 +225,9 @@ export class ShiftBoardComponent implements OnInit {
       roles: sd.roles,
       icon: this.icons[i % this.icons.length],
       startTime: sd.startTime || '',
-      endTime: sd.endTime || ''
+      endTime: sd.endTime || '',
+      blockedDays: sd.blockedDays || [],
+      roleBlockedDays: sd.roleBlockedDays || {}
     }));
   }
 
@@ -202,6 +296,68 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
+  // חדש - true אם המשמרת block חסומה קבוע ביום dayIndex (לפי
+  // BlockedDays בתצורה). משמש להצגת "אין משמרת" במקום "+" בתא.
+  isBlockedDayForShift(dayIndex: number, block: DynamicShiftBlock): boolean {
+    const dayName = this.daysOfWeek[dayIndex];
+    return block.blockedDays.includes(dayName);
+  }
+
+  // חדש - true אם התאריך הספציפי של dayIndex בשבוע המוצג נמצא ברשימת
+  // התאריכים החסומים (BlockedDatesController) - חוסם את *כל* המשמרות
+  // של אותו יום, לא רק אחת ספציפית.
+  isDateBlockedForDayIndex(dayIndex: number): boolean {
+    const d = this.getDateForDayIndex(dayIndex);
+    return this.blockedDatesByDate.has(this.formatDateForApi(d));
+  }
+
+  // חדש - הסיבה שצוינה לחסימת התאריך הספציפי הזה, אם יש.
+  getBlockedDateReason(dayIndex: number): string {
+    const d = this.getDateForDayIndex(dayIndex);
+    return this.blockedDatesByDate.get(this.formatDateForApi(d)) || '';
+  }
+
+  // חדש - true אם התא חסום מכל סיבה שהיא (תאריך ספציפי חסום, או
+  // המשמרת הזו חסומה קבוע ביום הזה). משמש ב-template במקום לבדוק
+  // כל תנאי בנפרד.
+  isCellBlocked(dayIndex: number, block: DynamicShiftBlock): boolean {
+    return this.isDateBlockedForDayIndex(dayIndex) || this.isBlockedDayForShift(dayIndex, block);
+  }
+
+  // חדש - הטקסט שמוצג בתא חסום: הסיבה אם זה תאריך ספציפי חסום,
+  // אחרת "אין משמרת" אם זו חסימה קבועה של המשמרת ביום הזה.
+  getCellBlockedLabel(dayIndex: number, block: DynamicShiftBlock): string {
+    return this.getBlockedDateReason(dayIndex) || 'אין משמרת';
+  }
+
+  // חדש - true אם היום הזה (dayIndex) חסום לגמרי בגלל תאריך ספציפי -
+  // משמש לעיצוב כותרת העמודה כולה (לא רק תאי המשמרות).
+  isFullDayBlocked(dayIndex: number): boolean {
+    return this.isDateBlockedForDayIndex(dayIndex);
+  }
+
+  // חדש - true אם תפקיד ספציפי (role) בתוך block חסום ביום dayIndex
+  // (לפי roleBlockedDays בתצורה). בניגוד ל-isBlockedDayForShift, זה
+  // חוסם רק את התפקיד הזה - שאר התפקידים באותה משמרת/יום ממשיכים
+  // לפעול כרגיל.
+  isRoleBlockedForDay(dayIndex: number, block: DynamicShiftBlock, role: string): boolean {
+    const dayName = this.daysOfWeek[dayIndex];
+    const blocked = block.roleBlockedDays[role];
+    return !!(blocked && blocked.includes(dayName));
+  }
+
+  // חדש - החג (אם יש) שנופל על התאריך של dayIndex בשבוע המוצג.
+  getHolidayForDayIndex(dayIndex: number): Holiday | undefined {
+    const d = this.getDateForDayIndex(dayIndex);
+    return this.holidaysByDate.get(this.formatDateForApi(d));
+  }
+
+  // חדש - true אם יש חג כלשהו (מרכזי או מינורי) בתאריך של dayIndex.
+  // משמש ב-template לצביעת כותרת העמודה, בדומה ל-isFullDayBlocked.
+  isHolidayForDayIndex(dayIndex: number): boolean {
+    return !!this.getHolidayForDayIndex(dayIndex);
+  }
+
   // מצמיד תאריך *כלשהו* ליום ראשון של אותו השבוע.
   private snapToSunday(date: Date): Date {
     const d = new Date(date);
@@ -250,6 +406,42 @@ export class ShiftBoardComponent implements OnInit {
   getDateLabelForDay(dayName: string): string {
     const d = this.getFullDateForDay(dayName);
     return d ? this.formatDateForDisplay(d) : '';
+  }
+
+  // חדש - התאריך המלא (Date) של אינדקס יום (0-6) בשבוע הנבחר, לפי
+  // selectedWeekStart. משמש לבדיקת חפיפה עם חופשה/מילואים מאושרים.
+  private getDateForDayIndex(dayIndex: number): Date {
+    const dayName = this.daysOfWeek[dayIndex];
+    const d = this.getFullDateForDay(dayName) || new Date(this.selectedWeekStart);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  // חדש - true אם לעובד יש בקשת חופשה/מילואים מאושרת שחופפת ליום
+  // dayIndex בשבוע הנבחר.
+  isEmployeeOnApprovedLeave(employeeName: string, dayIndex: number): boolean {
+    if (!employeeName) return false;
+    const day = this.getDateForDayIndex(dayIndex);
+    return this.approvedLeaves.some(l => {
+      if (l.employeeName !== employeeName) return false;
+      const start = new Date(l.start);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(l.end);
+      end.setHours(0, 0, 0, 0);
+      return day >= start && day <= end;
+    });
+  }
+
+  // חדש - טקסט tooltip משולב לתא שיבוץ: קודם מתריע על חופשה/מילואים
+  // מאושרים (חמור יותר), ורק אם אין - על התנגשות מרווח מנוחה.
+  getAssignmentTooltip(dayIndex: number, shiftType: any, employeeName: string): string {
+    if (this.isEmployeeOnApprovedLeave(employeeName, dayIndex)) {
+      return 'שים לב: לעובד/ת יש אישור חופשה/מילואים ביום זה';
+    }
+    const severity = this.getRestSeverity(dayIndex, shiftType, employeeName);
+    if (severity === 'red') return 'פחות מ-8 שעות הפרש ממשמרת סמוכה';
+    if (severity === 'orange') return 'בדיוק 8 שעות הפרש ממשמרת סמוכה';
+    return '';
   }
 
   // ניווט שבוע אחורה. תמיד קפיצה של 7 ימים בדיוק, כך selectedWeekStart
@@ -397,7 +589,10 @@ export class ShiftBoardComponent implements OnInit {
         return isDayMatch && isShiftMatch;
       });
 
-      if (hasMatch) {
+      // חדש - עובד עם חופשה/מילואים מאושרים ביום הזה לא מוצע כמועמד
+      // כלל, גם אם הוא בעצמו הגיש זמינות ליום הזה (למשל לפני שהוגשה
+      // ואושרה הבקשה).
+      if (hasMatch && !this.isEmployeeOnApprovedLeave(name, dayIndex)) {
         result.push({ ...emp, fullName: name });
       }
     });
@@ -444,9 +639,16 @@ export class ShiftBoardComponent implements OnInit {
       return;
     }
 
-    const openRole = roles.find(role => !this.getEmployeeForRole(dayIndex, shiftType, role));
+    // חדש - מדלג גם על תפקידים שחסומים ליום הזה (roleBlockedDays),
+    // לא רק תפקידים שכבר מאוישים - אחרת השיבוץ המהיר מהבנק היה יכול
+    // "לדחוף" עובד לתפקיד שאמור להיות לא רלוונטי באותו יום.
+    const block = this.shiftBlocks.find(b => b.type === shiftType);
+    const openRole = roles.find(role =>
+      !this.getEmployeeForRole(dayIndex, shiftType, role) &&
+      !(block && this.isRoleBlockedForDay(dayIndex, block, role))
+    );
     if (!openRole) {
-      alert('כל התפקידים כבר מאוישים במשמרת הזו. הסירי קודם שיבוץ קיים (×).');
+      alert('כל התפקידים כבר מאוישים או לא רלוונטיים ביום הזה. הסירי קודם שיבוץ קיים (×).');
       return;
     }
     this.assignFromBank(dayIndex, shiftType, openRole, candidate);

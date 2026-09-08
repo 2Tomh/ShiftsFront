@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
+import { BlockedDateService } from '../../../services/blocked-date.service';
 import { BoardConfiguration, ShiftDefinition } from '../../../Models/board-configuration.model';
+import { BlockedDate } from '../../../Models/blocked-date.model';
 
 @Component({
   selector: 'app-board-settings',
@@ -25,10 +27,21 @@ export class BoardSettingsComponent implements OnInit {
   // שדה עזר להוספת תפקיד חדש לכל משמרת (אחד לכל אינדקס משמרת)
   newRoleInputs: string[] = [];
 
-  constructor(private boardConfigService: BoardConfigurationService) { }
+  // חדש - תאריכים ספציפיים חסומים (חג/סגירה וכו'), נפרד מהתצורה
+  // הקבועה - נטען ונשמר בנפרד, לא חלק מ-BoardConfiguration.
+  blockedDates: BlockedDate[] = [];
+  isLoadingBlockedDates = true;
+  newBlockedDate = '';
+  newBlockedReason = '';
+
+  constructor(
+    private boardConfigService: BoardConfigurationService,
+    private blockedDateService: BlockedDateService
+  ) { }
 
   ngOnInit(): void {
     this.loadConfiguration();
+    this.loadBlockedDates();
   }
 
   loadConfiguration(): void {
@@ -42,6 +55,8 @@ export class BoardSettingsComponent implements OnInit {
         this.config.shiftDefinitions.forEach(sd => {
           if (sd.startTime === undefined || sd.startTime === null) sd.startTime = '';
           if (sd.endTime === undefined || sd.endTime === null) sd.endTime = '';
+          if (!sd.blockedDays) sd.blockedDays = [];
+          if (!sd.roleBlockedDays) sd.roleBlockedDays = {};
         });
         this.newRoleInputs = this.config.shiftDefinitions.map(() => '');
         this.isLoading = false;
@@ -73,8 +88,25 @@ export class BoardSettingsComponent implements OnInit {
   // כדי לתאום למודל ShiftDefinition המעודכן. המנהל ימלא אותן בעצמו
   // דרך שדות השעה החדשים בתבנית.
   addShiftDefinition(): void {
-    this.config.shiftDefinitions.push({ name: '', roles: [], startTime: '', endTime: '' });
+    this.config.shiftDefinitions.push({ name: '', roles: [], startTime: '', endTime: '', blockedDays: [], roleBlockedDays: {} });
     this.newRoleInputs.push('');
+  }
+
+  // חדש - האם המשמרת בשורה shiftIndex חסומה ביום day (קבוע בתבנית).
+  isDayBlockedForShift(shiftIndex: number, day: string): boolean {
+    return this.config.shiftDefinitions[shiftIndex].blockedDays.includes(day);
+  }
+
+  // חדש - הפעלה/כיבוי חסימה של יום מסוים למשמרת ספציפית. משמרת
+  // חסומה ביום מסוים פשוט לא תיווצר בכלל ב"צור שבוע חדש" עבור אותו יום.
+  toggleBlockedDay(shiftIndex: number, day: string): void {
+    const shift = this.config.shiftDefinitions[shiftIndex];
+    const index = shift.blockedDays.indexOf(day);
+    if (index > -1) {
+      shift.blockedDays.splice(index, 1);
+    } else {
+      shift.blockedDays.push(day);
+    }
   }
 
   removeShiftDefinition(index: number): void {
@@ -91,7 +123,34 @@ export class BoardSettingsComponent implements OnInit {
   }
 
   removeRole(shiftIndex: number, roleIndex: number): void {
-    this.config.shiftDefinitions[shiftIndex].roles.splice(roleIndex, 1);
+    const shift = this.config.shiftDefinitions[shiftIndex];
+    const roleName = shift.roles[roleIndex];
+    shift.roles.splice(roleIndex, 1);
+    // חדש - מנקה גם את חסימות הימים שהוגדרו לתפקיד הזה, אם היו
+    if (shift.roleBlockedDays && shift.roleBlockedDays[roleName]) {
+      delete shift.roleBlockedDays[roleName];
+    }
+  }
+
+  // חדש - האם תפקיד ספציפי (role) בתוך משמרת shiftIndex חסום ביום day.
+  isRoleDayBlocked(shiftIndex: number, role: string, day: string): boolean {
+    const map = this.config.shiftDefinitions[shiftIndex].roleBlockedDays;
+    return !!(map && map[role] && map[role].includes(day));
+  }
+
+  // חדש - הפעלה/כיבוי חסימה של יום מסוים לתפקיד ספציפי בתוך משמרת.
+  // בניגוד ל-toggleBlockedDay (חוסם את כל המשמרת), זה חוסם רק תפקיד
+  // אחד - שאר התפקידים באותה משמרת/יום ממשיכים לפעול כרגיל.
+  toggleRoleBlockedDay(shiftIndex: number, role: string, day: string): void {
+    const shift = this.config.shiftDefinitions[shiftIndex];
+    if (!shift.roleBlockedDays[role]) shift.roleBlockedDays[role] = [];
+    const list = shift.roleBlockedDays[role];
+    const index = list.indexOf(day);
+    if (index > -1) {
+      list.splice(index, 1);
+    } else {
+      list.push(day);
+    }
   }
 
   addExtraRow(): void {
@@ -107,6 +166,55 @@ export class BoardSettingsComponent implements OnInit {
 
   removeExtraRow(index: number): void {
     this.config.extraRowNames.splice(index, 1);
+  }
+
+  // ===== תאריכים ספציפיים חסומים (חג/סגירה) =====
+
+  loadBlockedDates(): void {
+    this.isLoadingBlockedDates = true;
+    this.blockedDateService.getAll().subscribe({
+      next: (dates) => {
+        this.blockedDates = dates;
+        this.isLoadingBlockedDates = false;
+      },
+      error: (err) => {
+        console.error('שגיאה בטעינת תאריכים חסומים', err);
+        this.isLoadingBlockedDates = false;
+      }
+    });
+  }
+
+  addBlockedDate(): void {
+    if (!this.newBlockedDate) {
+      alert('יש לבחור תאריך');
+      return;
+    }
+    const reason = this.newBlockedReason.trim() || 'ללא סיבה';
+
+    this.blockedDateService.create(this.newBlockedDate, reason).subscribe({
+      next: () => {
+        this.newBlockedDate = '';
+        this.newBlockedReason = '';
+        this.loadBlockedDates();
+      },
+      error: (err) => {
+        console.error('שגיאה בהוספת תאריך חסום', err);
+        alert('שגיאה בהוספת התאריך. נסה שוב.');
+      }
+    });
+  }
+
+  removeBlockedDate(date: BlockedDate): void {
+    if (!date.id) return;
+    if (!confirm(`להסיר את החסימה של ${date.date}?`)) return;
+
+    this.blockedDateService.delete(date.id).subscribe({
+      next: () => this.loadBlockedDates(),
+      error: (err) => {
+        console.error('שגיאה בהסרת תאריך חסום', err);
+        alert('שגיאה בהסרת התאריך. נסה שוב.');
+      }
+    });
   }
 
   save(): void {

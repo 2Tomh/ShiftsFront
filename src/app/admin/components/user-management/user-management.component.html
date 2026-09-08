@@ -62,6 +62,7 @@
           <th>שם משתמש</th>
           <th>תפקיד</th>
           <th>עובד מקושר</th>
+          <th>אימייל</th>
           <th></th>
         </tr>
       </thead>
@@ -74,12 +75,70 @@
             </span>
           </td>
           <td>{{ user.employeeName || '—' }}</td>
-          <td>
+          <td>{{ user.email || '—' }}</td>
+          <td class="row-actions">
+            <button class="btn-edit" (click)="startEdit(user)" title="ערוך משתמש">ערוך</button>
             <button class="btn-delete" (click)="deleteUser(user)" title="מחק משתמש">מחק</button>
           </td>
         </tr>
       </tbody>
     </table>
   </section>
+
+  <!-- ===== מודאל עריכת משתמש ===== -->
+  <div class="modal-overlay" *ngIf="editingUser" (click)="cancelEdit()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <h2>עריכת משתמש: {{ editingUser.username }}</h2>
+
+      <div class="field-row">
+        <label for="editUsername">שם משתמש</label>
+        <input id="editUsername" type="text" [(ngModel)]="editUsername">
+      </div>
+
+      <div class="field-row">
+        <label for="editPassword">סיסמה חדשה</label>
+        <input id="editPassword" type="text" [(ngModel)]="editPassword" placeholder="השאירי ריק אם לא רוצים לשנות">
+      </div>
+
+      <div class="field-row">
+        <label for="editEmail">אימייל</label>
+        <input id="editEmail" type="email" [(ngModel)]="editEmail" placeholder="example@mail.com">
+      </div>
+
+      <div class="field-row">
+        <label>תפקיד</label>
+        <div class="role-toggle">
+          <button
+            type="button"
+            class="role-btn"
+            [class.is-active]="editRole === 'Employee'"
+            (click)="editRole = 'Employee'">
+            עובד
+          </button>
+          <button
+            type="button"
+            class="role-btn"
+            [class.is-active]="editRole === 'Admin'"
+            (click)="editRole = 'Admin'">
+            מנהל
+          </button>
+        </div>
+      </div>
+
+      <div class="field-row" *ngIf="editRole === 'Employee'">
+        <label for="editEmployeeName">שם העובד המקושר</label>
+        <input id="editEmployeeName" type="text" [(ngModel)]="editEmployeeName" placeholder="לדוגמה: דנה כהן">
+      </div>
+
+      <div class="error-message" *ngIf="editError">{{ editError }}</div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelEdit()">ביטול</button>
+        <button class="btn-create" [disabled]="isSaving" (click)="saveEdit()">
+          {{ isSaving ? 'שומר...' : 'שמור שינויים' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
 </div>

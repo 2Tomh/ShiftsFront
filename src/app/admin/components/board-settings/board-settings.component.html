@@ -57,11 +57,41 @@
           </span>
         </div>
 
+        <!-- חדש - חסימת ימים קבועה למשמרת הזו: ימים שבהם המשמרת הזו
+             לעולם לא תיווצר, בכל שבוע (עד שתשני שוב כאן). -->
+        <div class="blocked-days-row">
+          <span class="blocked-days-label">אין משמרת זו בימים:</span>
+          <button
+            *ngFor="let day of allDayNames"
+            type="button"
+            class="blocked-day-toggle"
+            [class.is-blocked]="isDayBlockedForShift(i, day)"
+            (click)="toggleBlockedDay(i, day)">
+            {{ day }}
+          </button>
+        </div>
+
         <div class="roles-list">
           <span class="role-chip" *ngFor="let role of shift.roles; let ri = index">
             {{ role }}
             <button class="chip-remove" (click)="removeRole(i, ri)">×</button>
           </span>
+        </div>
+
+        <!-- חדש - חסימת ימים לפי תפקיד ספציפי בתוך המשמרת (לא כל
+             המשמרת) - למשל תפקיד שקיים רק א'-ה', לא בשישי-שבת. -->
+        <div class="role-blocked-section" *ngIf="shift.roles.length > 0">
+          <div class="role-blocked-row" *ngFor="let role of shift.roles">
+            <span class="role-blocked-name">{{ role }}:</span>
+            <button
+              *ngFor="let day of allDayNames"
+              type="button"
+              class="blocked-day-toggle blocked-day-toggle-sm"
+              [class.is-blocked]="isRoleDayBlocked(i, role, day)"
+              (click)="toggleRoleBlockedDay(i, role, day)">
+              {{ day }}
+            </button>
+          </div>
         </div>
 
         <div class="add-role-row">
@@ -96,6 +126,31 @@
           placeholder="שם שורה חדשה (לדוגמה: תיגבורים)"
           (keyup.enter)="addExtraRow()">
         <button (click)="addExtraRow()">הוסף שורה</button>
+      </div>
+    </section>
+
+    <!-- חדש - תאריכים ספציפיים חסומים (חג/סגירה) -->
+    <section class="settings-section">
+      <h2>ימים חסומים בתאריך (חגים, סגירת עסק וכו')</h2>
+      <p class="section-hint">
+        תאריך שנחסם כאן לא ייווצרו/יוצגו בו משמרות כלל, רק בשבוע שבו הוא נמצא - לא משפיע על שבועות אחרים.
+      </p>
+
+      <div *ngIf="isLoadingBlockedDates" class="loading-hint">טוען...</div>
+
+      <div *ngIf="!isLoadingBlockedDates" class="blocked-dates-list">
+        <div class="blocked-date-row" *ngFor="let bd of blockedDates">
+          <span class="blocked-date-value">{{ bd.date | date:'dd/MM/yyyy' }}</span>
+          <span class="blocked-date-reason">{{ bd.reason }}</span>
+          <button class="chip-remove" (click)="removeBlockedDate(bd)">×</button>
+        </div>
+        <p class="empty-hint" *ngIf="blockedDates.length === 0">אין תאריכים חסומים כרגע.</p>
+      </div>
+
+      <div class="add-blocked-date-row">
+        <input type="date" [(ngModel)]="newBlockedDate">
+        <input type="text" [(ngModel)]="newBlockedReason" placeholder="סיבה (לדוגמה: יום כיפור)">
+        <button (click)="addBlockedDate()">חסום תאריך</button>
       </div>
     </section>
 

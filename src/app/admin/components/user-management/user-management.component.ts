@@ -19,6 +19,16 @@ export class UserManagementComponent implements OnInit {
   isCreating = false;
   createError = '';
 
+  // ===== עריכת משתמש קיים =====
+  editingUser: AppUser | null = null;
+  editUsername = '';
+  editPassword = '';
+  editEmail = '';
+  editRole: 'Admin' | 'Employee' = 'Employee';
+  editEmployeeName = '';
+  isSaving = false;
+  editError = '';
+
   constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
@@ -82,6 +92,63 @@ export class UserManagementComponent implements OnInit {
       error: (err) => {
         console.error(err);
         alert('שגיאה במחיקת המשתמש');
+      }
+    });
+  }
+
+  // ===== עריכה =====
+
+  startEdit(user: AppUser): void {
+    this.editingUser = user;
+    this.editUsername = user.username;
+    this.editPassword = '';
+    this.editEmail = user.email || '';
+    this.editRole = user.role;
+    this.editEmployeeName = user.employeeName || '';
+    this.editError = '';
+  }
+
+  cancelEdit(): void {
+    this.editingUser = null;
+    this.editError = '';
+  }
+
+  saveEdit(): void {
+    if (!this.editingUser) return;
+    this.editError = '';
+
+    if (!this.editUsername.trim()) {
+      this.editError = 'נא למלא שם משתמש';
+      return;
+    }
+
+    if (this.editRole === 'Employee' && !this.editEmployeeName.trim()) {
+      this.editError = 'נא לציין שם עובד לקישור המשתמש';
+      return;
+    }
+
+    this.isSaving = true;
+
+    const payload: any = {
+      username: this.editUsername.trim(),
+      email: this.editEmail.trim(),
+      role: this.editRole,
+      employeeName: this.editRole === 'Employee' ? this.editEmployeeName.trim() : undefined
+    };
+
+    if (this.editPassword.trim()) {
+      payload.password = this.editPassword;
+    }
+
+    this.authService.updateUser(this.editingUser.id, payload).subscribe({
+      next: () => {
+        this.isSaving = false;
+        this.editingUser = null;
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.isSaving = false;
+        this.editError = err.error?.error || err.error || 'שגיאה בעדכון המשתמש';
       }
     });
   }
