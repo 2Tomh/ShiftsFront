@@ -29,6 +29,11 @@ export class VacationService {
     return this.http.put(`${this.apiUrl}/${id}/status`, { status, adminNote });
   }
 
+  // חדש - עריכת תאריכים/סיבה של בקשת חופשה קיימת (למנהל בלבד)
+  editRequest(id: string, payload: { startDate: string, endDate: string, reason?: string }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/${id}`, payload);
+  }
+
   deleteRequest(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }

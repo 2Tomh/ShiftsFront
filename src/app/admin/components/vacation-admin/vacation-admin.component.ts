@@ -9,8 +9,15 @@ import { VacationRequest } from '../../../Models/vacationRequest.model';
 })
 export class VacationAdminComponent implements OnInit {
   requests: VacationRequest[] = [];
-  activeFilter: 'All' | 'Pending' | 'Approved' | 'Rejected' = 'Pending';
+  // תוקן - ברירת מחדל "הכל" במקום "ממתינות".
+  activeFilter: 'All' | 'Pending' | 'Approved' | 'Rejected' = 'All';
   isLoading = false;
+
+  // חדש - עריכת בקשה קיימת (תאריכים/סיבה) inline בשורה עצמה.
+  editingId: string | null = null;
+  editStartDate: string = '';
+  editEndDate: string = '';
+  editReason: string = '';
 
   constructor(private vacationService: VacationService) { }
 
@@ -76,6 +83,78 @@ export class VacationAdminComponent implements OnInit {
         alert('שגיאה בדחיית הבקשה');
       }
     });
+  }
+
+  // חדש - עריכה
+  startEdit(req: VacationRequest): void {
+    this.editingId = req.id;
+    this.editStartDate = this.toDateInputValue(req.startDate);
+    this.editEndDate = this.toDateInputValue(req.endDate);
+    this.editReason = req.reason || '';
+  }
+
+  isEditing(req: VacationRequest): boolean {
+    return this.editingId === req.id;
+  }
+
+  cancelEdit(): void {
+    this.editingId = null;
+    this.editStartDate = '';
+    this.editEndDate = '';
+    this.editReason = '';
+  }
+
+  saveEdit(req: VacationRequest): void {
+    if (!this.editStartDate || !this.editEndDate) {
+      alert('יש לספק תאריך התחלה וסיום');
+      return;
+    }
+    if (this.editEndDate < this.editStartDate) {
+      alert('תאריך הסיום לא יכול להיות לפני תאריך ההתחלה');
+      return;
+    }
+
+    const payload = {
+      startDate: this.editStartDate,
+      endDate: this.editEndDate,
+      reason: this.editReason || undefined
+    };
+
+    this.vacationService.editRequest(req.id, payload).subscribe({
+      next: () => {
+        req.startDate = this.editStartDate;
+        req.endDate = this.editEndDate;
+        req.reason = this.editReason;
+        this.cancelEdit();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('שגיאה בשמירת השינויים');
+      }
+    });
+  }
+
+  // חדש - מחיקה
+  deleteRequest(req: VacationRequest): void {
+    if (!confirm(`למחוק לצמיתות את בקשת החופשה של ${req.employeeName}?`)) return;
+
+    this.vacationService.deleteRequest(req.id).subscribe({
+      next: () => {
+        this.requests = this.requests.filter(r => r.id !== req.id);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('שגיאה במחיקת הבקשה');
+      }
+    });
+  }
+
+  private toDateInputValue(date: any): string {
+    const d = new Date(date);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   }
 
   statusLabel(status: string): string {

@@ -21,28 +21,68 @@
     </div>
 
     <div class="request-row" *ngFor="let req of requests">
-      <div class="request-main">
-        <div class="request-employee">{{ req.employeeName }}</div>
-        <div class="request-dates">
-          {{ req.startDate | date:'dd/MM/yyyy' }} – {{ req.endDate | date:'dd/MM/yyyy' }}
-        </div>
-        <div class="request-reason" *ngIf="req.reason">{{ req.reason }}</div>
-        <div class="request-meta">
-          הוגש: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
-        </div>
-        <div class="admin-note" *ngIf="req.adminNote">הערה: {{ req.adminNote }}</div>
-      </div>
 
-      <div class="request-actions">
-        <span class="status-badge" [ngClass]="'status-' + req.status.toLowerCase()">
-          {{ statusLabel(req.status) }}
-        </span>
-
-        <div class="action-buttons" *ngIf="req.status === 'Pending'">
-          <button class="btn-approve" (click)="approve(req)">אשר</button>
-          <button class="btn-reject" (click)="reject(req)">דחה</button>
+      <ng-container *ngIf="!isEditing(req); else editForm">
+        <div class="request-main">
+          <div class="request-employee">{{ req.employeeName }}</div>
+          <div class="request-dates">
+            {{ req.startDate | date:'dd/MM/yyyy' }} – {{ req.endDate | date:'dd/MM/yyyy' }}
+          </div>
+          <div class="request-reason" *ngIf="req.reason">{{ req.reason }}</div>
+          <div class="request-meta">
+            הוגש: {{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}
+          </div>
+          <div class="admin-note" *ngIf="req.adminNote">הערה: {{ req.adminNote }}</div>
         </div>
-      </div>
+
+        <div class="request-actions">
+          <span class="status-badge" [ngClass]="'status-' + req.status.toLowerCase()">
+            {{ statusLabel(req.status) }}
+          </span>
+
+          <div class="action-buttons" *ngIf="req.status === 'Pending'">
+            <button class="btn-approve" (click)="approve(req)">אשר</button>
+            <button class="btn-reject" (click)="reject(req)">דחה</button>
+          </div>
+
+          <!-- חדש - עריכה/מחיקה זמינות תמיד, בכל סטטוס -->
+          <div class="action-buttons">
+            <button class="btn-edit" (click)="startEdit(req)" title="ערוך תאריכים/סיבה">✏️ ערוך</button>
+            <button class="btn-delete" (click)="deleteRequest(req)" title="מחק לצמיתות">🗑️ מחק</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-template #editForm>
+        <div class="request-edit-form" style="width:100%; display:flex; flex-direction:column; gap:8px;">
+          <div class="request-employee">{{ req.employeeName }}</div>
+
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+              מתאריך
+              <input type="date" [(ngModel)]="editStartDate"
+                style="border:1px solid #ccc; border-radius:4px; padding:4px 6px;">
+            </label>
+            <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+              עד תאריך
+              <input type="date" [(ngModel)]="editEndDate"
+                style="border:1px solid #ccc; border-radius:4px; padding:4px 6px;">
+            </label>
+          </div>
+
+          <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+            סיבה
+            <textarea [(ngModel)]="editReason" rows="2"
+              style="border:1px solid #ccc; border-radius:4px; padding:4px 6px; font-family:inherit;"></textarea>
+          </label>
+
+          <div style="display:flex; gap:8px;">
+            <button class="btn-approve" (click)="saveEdit(req)">שמור</button>
+            <button class="btn-reject" (click)="cancelEdit()">ביטול</button>
+          </div>
+        </div>
+      </ng-template>
+
     </div>
 
   </div>
