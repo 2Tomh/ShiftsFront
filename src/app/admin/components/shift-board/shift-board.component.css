@@ -286,10 +286,30 @@
   overflow-x: auto;
 }
 
+/* תוקן - table-layout: fixed כדי שכל עמודות היום יהיו ברוחב זהה,
+   ללא קשר לכמות התוכן (מספר מועמדים ב"הגישו" וכו'). בלי זה, ימים
+   עם פחות הגשות (כמו שבת) יוצאים צרים יותר מהשאר כי table-layout
+   auto (ברירת המחדל) מחשב רוחב עמודה לפי התוכן הרחב ביותר בה. */
 .matrix-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 12px;
+  table-layout: fixed;
+}
+
+/* חדש - רוחב קבוע לעמודות הצד (לא ימי שבוע) */
+.col-side-label {
+  width: 56px;
+}
+
+.col-role-label {
+  width: 48px;
+}
+
+/* חדש - רוחב קבוע וזהה לכל עמודת יום (מתפצל שווה בשווה בין תת-
+   העמודות "הגישו"/שיבוץ באותו יום, כי הן לא ממוספרות בנפרד ב-thead) */
+.col-day {
+  width: 190px;
 }
 
 .matrix-table thead th {
@@ -360,6 +380,7 @@
   padding: 4px;
   text-align: center;
   vertical-align: top;
+  overflow: hidden;
 }
 
 .matrix-table td:last-child {
@@ -414,15 +435,15 @@ tr.shift-night td {
 }
 
 .bank-cell {
-  min-width: 5%;
   vertical-align: top !important;
   background-color: rgba(255, 255, 255, 0.45);
+  overflow: hidden;
 }
 
 .assign-cell {
-  min-width: 10%;
   border-left: 1px solid;
   vertical-align: top !important;
+  overflow: hidden;
 }
 .btn-edit-mini{
   background: none;

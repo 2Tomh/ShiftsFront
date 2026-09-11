@@ -51,7 +51,7 @@
             <tr>
               <th class="col-side-label">משמרת</th>
               <th class="col-role-label">תפקיד</th>
-              <th *ngFor="let day of daysOfWeek; let di = index" colspan="2"
+              <th *ngFor="let day of daysOfWeek; let di = index" colspan="2" class="col-day"
                 [class.blocked-day-header]="isFullDayBlocked(di)" [class.holiday-day-header]="isHolidayForDayIndex(di)">
                 <div class="day-header-cell">
                   <span class="day-name">{{ day }}</span>
