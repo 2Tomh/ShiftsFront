@@ -54,29 +54,26 @@
       </ng-container>
 
       <ng-template #editForm>
-        <div class="request-edit-form" style="width:100%; display:flex; flex-direction:column; gap:8px;">
+        <div class="request-edit-form">
           <div class="request-employee">{{ req.employeeName }}</div>
 
-          <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+          <div class="edit-fields-row">
+            <label class="edit-field">
               מתאריך
-              <input type="date" [(ngModel)]="editStartDate"
-                style="border:1px solid #ccc; border-radius:4px; padding:4px 6px;">
+              <input type="date" [(ngModel)]="editStartDate">
             </label>
-            <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+            <label class="edit-field">
               עד תאריך
-              <input type="date" [(ngModel)]="editEndDate"
-                style="border:1px solid #ccc; border-radius:4px; padding:4px 6px;">
+              <input type="date" [(ngModel)]="editEndDate">
             </label>
           </div>
 
-          <label style="display:flex; flex-direction:column; font-size:12px; gap:2px;">
+          <label class="edit-field edit-field-full">
             סיבה
-            <textarea [(ngModel)]="editReason" rows="2"
-              style="border:1px solid #ccc; border-radius:4px; padding:4px 6px; font-family:inherit;"></textarea>
+            <textarea [(ngModel)]="editReason" rows="2"></textarea>
           </label>
 
-          <div style="display:flex; gap:8px;">
+          <div class="edit-form-actions">
             <button class="btn-approve" (click)="saveEdit(req)">שמור</button>
             <button class="btn-reject" (click)="cancelEdit()">ביטול</button>
           </div>

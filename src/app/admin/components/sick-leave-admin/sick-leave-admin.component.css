@@ -174,7 +174,9 @@
 }
 
 .btn-approve,
-.btn-reject {
+.btn-reject,
+.btn-edit,
+.btn-delete {
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
@@ -182,7 +184,7 @@
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .btn-approve {
@@ -204,6 +206,81 @@
   color: #fff;
 }
 
+/* חדש - עריכה/מחיקה, באותה שפה עיצובית כמו btn-approve/btn-reject
+   אך עם צבעים ניטרליים יותר כדי לא להתחרות ויזואלית עם אישור/דחייה */
+.btn-edit {
+  background: var(--paper);
+  color: var(--ink-soft);
+  border: 1.5px solid var(--line);
+}
+
+.btn-edit:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn-delete {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1.5px solid transparent;
+}
+
+.btn-delete:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+/* חדש - טופס עריכה inline בתוך השורה */
+.request-edit-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-fields-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.edit-field-full {
+  flex: 1;
+  min-width: 200px;
+}
+
+.edit-field input,
+.edit-field textarea {
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  background: var(--card);
+}
+
+.edit-field input:focus,
+.edit-field textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+
+.edit-form-actions {
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 560px) {
   .request-row {
     flex-direction: column;
@@ -219,7 +296,13 @@
   }
 
   .btn-approve,
-  .btn-reject {
+  .btn-reject,
+  .btn-edit,
+  .btn-delete {
     flex: 1;
+  }
+
+  .edit-fields-row {
+    flex-direction: column;
   }
 }
