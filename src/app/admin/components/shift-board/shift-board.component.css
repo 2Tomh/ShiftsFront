@@ -414,16 +414,19 @@ tr.shift-night td {
 }
 
 .bank-cell {
-  min-width: 90px;
+  min-width: 5%;
   vertical-align: top !important;
   background-color: rgba(255, 255, 255, 0.45);
 }
 
 .assign-cell {
-  min-width: 60px;
+  min-width: 10%;
   vertical-align: top !important;
 }
-
+.btn-edit-mini{
+  background: none;
+  border: none;
+}
 .side-mini-title {
   font-family: 'Heebo', sans-serif;
   font-size: 9px;

@@ -52,12 +52,12 @@
               <th class="col-side-label">משמרת</th>
               <th class="col-role-label">תפקיד</th>
               <th *ngFor="let day of daysOfWeek; let di = index" colspan="2"
-                  [class.blocked-day-header]="isFullDayBlocked(di)"
-                  [class.holiday-day-header]="isHolidayForDayIndex(di)">
+                [class.blocked-day-header]="isFullDayBlocked(di)" [class.holiday-day-header]="isHolidayForDayIndex(di)">
                 <div class="day-header-cell">
                   <span class="day-name">{{ day }}</span>
                   <span class="day-date">{{ getDateLabelForDay(day) }}</span>
-                  <span class="day-holiday-label" *ngIf="isHolidayForDayIndex(di)" [title]="getHolidayForDayIndex(di)?.title">
+                  <span class="day-holiday-label" *ngIf="isHolidayForDayIndex(di)"
+                    [title]="getHolidayForDayIndex(di)?.title">
                     🕎 {{ getHolidayForDayIndex(di)?.titleHebrew }}
                   </span>
                   <span class="day-blocked-reason" *ngIf="isFullDayBlocked(di)">🚫 {{ getBlockedDateReason(di) }}</span>
@@ -76,7 +76,8 @@
                   </td>
                   <td class="role-sidebar">{{ role }}</td>
                   <ng-container *ngFor="let day of daysOfWeek; let i = index">
-                    <td class="bank-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole && !isCellBlocked(i, block)">
+                    <td class="bank-cell" [attr.rowspan]="block.roles.length"
+                      *ngIf="firstRole && !isCellBlocked(i, block)">
                       <div class="side-mini-title">הגישו</div>
                       <button *ngFor="let c of getCandidatesForCell(i, block.type)" class="candidate-line"
                         [class.is-assigned]="isCandidateAssignedToAny(i, block.type, c.fullName, block.roles)"
@@ -85,10 +86,11 @@
                       </button>
                       <span class="no-candidates" *ngIf="getCandidatesForCell(i, block.type).length === 0">—</span>
                     </td>
-                    <td class="bank-cell hatched-cell blocked-cell" [attr.rowspan]="block.roles.length" *ngIf="firstRole && isCellBlocked(i, block)">
+                    <td class="bank-cell hatched-cell blocked-cell" [attr.rowspan]="block.roles.length"
+                      *ngIf="firstRole && isCellBlocked(i, block)">
                       <span class="blocked-label">{{ getCellBlockedLabel(i, block) }}</span>
                     </td>
-                    
+
                     <td class="assign-cell" [class.is-selecting]="isSelectingRole(i, block.type, role)"
                       *ngIf="!isCellBlocked(i, block) && !isRoleBlockedForDay(i, block, role)">
                       <div class="side-mini-title">{{ role }}</div>
@@ -97,11 +99,8 @@
                         <div class="assigned-display-box text-edit-mode">
                           <input type="text" class="inline-text-edit-input"
                             style="width:100%; box-sizing:border-box; border:1px solid #999; border-radius:4px; padding:2px 4px; font-size:inherit;"
-                            [(ngModel)]="editingTextValue"
-                            (keydown)="onTextEditKeydown($event)"
-                            (blur)="saveTextEdit()"
-                            placeholder="שם / כפולה (גיא/אלכס)"
-                            #textInput>
+                            [(ngModel)]="editingTextValue" (keydown)="onTextEditKeydown($event)" (blur)="saveTextEdit()"
+                            placeholder="שם / כפולה (גיא/אלכס)" #textInput>
                         </div>
                       </ng-container>
 
@@ -116,8 +115,10 @@
                           <span class="assigned-name-text">{{ assignedName }}</span>
 
                           <div class="assigned-actions">
-                            <button class="btn-edit-mini" (click)="startTextEdit(i, block.type, role)" title="עריכה ידנית / כפולה">✏️</button>
-                            <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)" title="הסר שיבוץ">×</button>
+                            <button class="btn-edit-mini" (click)="startTextEdit(i, block.type, role)"
+                              title="עריכה ידנית / כפולה">עריכת טקסט</button>
+                            <button class="btn-remove-mini" (click)="removeEmployee(i, block.type, role)"
+                              title="הסר שיבוץ">×</button>
                           </div>
                         </div>
 
@@ -130,7 +131,8 @@
                       </ng-template>
                     </td>
 
-                    <td class="assign-cell hatched-cell blocked-cell" *ngIf="isCellBlocked(i, block) || isRoleBlockedForDay(i, block, role)"></td>
+                    <td class="assign-cell hatched-cell blocked-cell"
+                      *ngIf="isCellBlocked(i, block) || isRoleBlockedForDay(i, block, role)"></td>
                   </ng-container>
                 </tr>
               </ng-container>
