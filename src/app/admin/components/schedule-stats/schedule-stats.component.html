@@ -1,9 +1,14 @@
 <div class="stats-page">
   <div class="stats-page-header">
     <h1>סטטיסטיקות עובדים</h1>
-    <button (click)="clearAll()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
-      נקה הגשות
-    </button>
+    <div class="header-actions">
+      <button type="button" (click)="openAddPicker()" class="btn-add-submission" title="הוסף הגשה בשם עובד שעדיין לא הגיש">
+        + הוסף הגשה לעובד
+      </button>
+      <button type="button" (click)="clearAll()" class="btn-clear-stats" title="נקה את כל הגשות העובדים">
+        נקה הגשות
+      </button>
+    </div>
   </div>
 
   <div *ngIf="isLoading" class="loading-hint">טוען...</div>
@@ -29,7 +34,7 @@
         <td class="num-night">{{ stat.night }}</td>
         <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
         <td>
-          <button class="icon-btn" title="ערוך הגשה" (click)="openEditModal(stat)">📋 ערוך הגשה</button>
+          <button type="button" class="icon-btn" title="ערוך הגשה" (click)="openEditModal(stat)">📋 ערוך הגשה</button>
         </td>
       </tr>
       <tr *ngIf="employeeStats.length === 0">
@@ -37,6 +42,25 @@
       </tr>
     </tbody>
   </table>
+
+  <!-- ===== בורר "הוסף הגשה לעובד" ===== -->
+  <div class="modal-backdrop" *ngIf="showAddPicker" (click)="closeAddPicker()"></div>
+  <div class="employee-picker-modal" *ngIf="showAddPicker">
+    <h4>בחר עובד להוספת הגשה</h4>
+    <div class="picker-list">
+      <button
+        type="button"
+        class="picker-item"
+        *ngFor="let emp of employeesWithoutSubmission"
+        (click)="selectEmployeeForSubmission(emp)">
+        {{ emp.name }}
+      </button>
+      <p class="empty-state" *ngIf="employeesWithoutSubmission.length === 0">
+        כל העובדים כבר הגישו לשבוע הזה.
+      </p>
+    </div>
+    <button type="button" class="btn-cancel-picker" (click)="closeAddPicker()">ביטול</button>
+  </div>
 
   <!-- מודאל עריכת הגשה -->
   <div class="modal-backdrop" *ngIf="showEditAvailabilityModal" (click)="closeEditModal()"></div>
@@ -51,7 +75,7 @@
         <div class="edit-row" *ngFor="let shiftLabel of editShiftLabels">
           <div class="edit-row-label">{{ shiftLabel }}</div>
           <div class="edit-day-col" *ngFor="let day of daysOfWeek">
-            <button class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)" (click)="toggleEditPreference(day, shiftLabel)">
+            <button type="button" class="toggle-icon" [class.is-on]="isEditSelected(day, shiftLabel)" (click)="toggleEditPreference(day, shiftLabel)">
               {{ isEditSelected(day, shiftLabel) ? '✓' : '⊘' }}
             </button>
           </div>
@@ -60,8 +84,8 @@
       <label class="edit-notes-label" for="editNotes">הערות</label>
       <textarea id="editNotes" class="edit-notes-input" rows="2" [(ngModel)]="editNotes"></textarea>
       <div class="edit-modal-actions">
-        <button class="btn-cancel-edit" (click)="closeEditModal()">ביטול</button>
-        <button class="btn-save-edit" (click)="saveEditedAvailability()">שמור שינויים</button>
+        <button type="button" class="btn-cancel-edit" (click)="closeEditModal()">ביטול</button>
+        <button type="button" class="btn-save-edit" (click)="saveEditedAvailability()">שמור שינויים</button>
       </div>
     </div>
     <ng-template #loadingTpl>

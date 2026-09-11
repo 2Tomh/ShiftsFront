@@ -256,7 +256,92 @@
   font-weight: 700;
   font-size: 13px;
 }
+.header-buttons {
+  display: flex;
+  gap: 8px;
+}
 
+.btn-secondary {
+  background: #fff;
+  color: #146356;
+  border: 1.5px solid #146356;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: #d9efe9;
+}
+
+.add-column-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-column-row input {
+  flex: 1;
+  border: 1.5px solid #dde3ec;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13.5px;
+}
+
+.add-column-row button {
+  background: #146356;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-remove-col {
+  background: transparent;
+  border: none;
+  color: #fecaca;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 4px;
+}
+
+.btn-remove-col:hover {
+  color: #fff;
+}
+
+/* חדש - תא תאריך רענון עם התראה ויזואלית */
+.refresh-date-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.days-left-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #5a6472;
+}
+
+.refresh-date-cell.refresh-orange .days-left-badge {
+  background: #fbe8c4;
+  color: #8a5c02;
+}
+
+.refresh-date-cell.refresh-red .days-left-badge {
+  background: #f8dcd7;
+  color: #c0392b;
+}
 /* ===== רספונסיביות למסכים קטנים ===== */
 @media (max-width: 900px) {
   .admin-container {

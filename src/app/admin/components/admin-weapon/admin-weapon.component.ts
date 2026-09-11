@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { WeaponTracking } from '../../../Models/weapon-tracking.model';
+import { WeaponTracking, WeaponTrackingConfig } from '../../../Models/weapon-tracking.model';
 import { WeaponTrackingService } from '../../../services/weapon-tracking.service';
-import { ShiftService } from '../../../services/shift.service'; // הנחה - זה השירות שכבר מחזיר את רשימת העובדים בפרויקט (shift-board משתמש בו). אם יש EmployeeService נפרד, יש להחליף.
+import { ShiftService } from '../../../services/shift.service';
 
 @Component({
   selector: 'app-admin-weapon',
@@ -11,15 +11,17 @@ import { ShiftService } from '../../../services/shift.service'; // הנחה - ז
 export class AdminWeaponComponent implements OnInit {
   employeesList: WeaponTracking[] = [];
 
-  // חדש - כל העובדים במערכת (מטבלת Employees), לצורך מילוי בורר
-  // העובדים (employee picker modal).
   allEmployees: any[] = [];
 
-  // חדש - האם מודאל בחירת העובד להוספה פתוח כרגע.
   showAddPicker = false;
 
   isAdding = false;
   isRemoving = false;
+
+  // חדש - תצורת עמודות מותאמות אישית, בדיוק כמו ב"ניהול עובדים"
+  config: WeaponTrackingConfig = { customColumns: [] };
+  newColumnName = '';
+  showAddColumn = false;
 
   constructor(
     private weaponService: WeaponTrackingService,
@@ -27,19 +29,78 @@ export class AdminWeaponComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.loadConfig();
     this.loadAllTracking();
     this.loadAllEmployees();
   }
 
-  loadAllTracking(): void {
-    this.weaponService.getAllTracking().subscribe(data => {
-      this.employeesList = data;
+  loadConfig(): void {
+    this.weaponService.getConfig().subscribe({
+      next: (config) => {
+        this.config = config;
+        // ודא שלכל שורה קיימת יש ערך (גם ריק) לכל עמודה - כדי
+        // שהטופס לא יישבר אם עמודה נוספה אחרי שהעובד כבר נוסף
+        this.employeesList.forEach(item => {
+          this.config.customColumns.forEach(col => {
+            if (!item.customFieldValues) item.customFieldValues = {};
+            if (!(col in item.customFieldValues)) item.customFieldValues[col] = '';
+          });
+        });
+      },
+      error: (err) => console.error('שגיאה בטעינת תצורת עמודות', err)
     });
   }
 
-  // חדש - טוען את כל העובדים במערכת, למילוי בורר העובדים.
+  addColumn(): void {
+    const name = this.newColumnName.trim();
+    if (!name) return;
+    if (this.config.customColumns.includes(name)) {
+      alert('עמודה בשם הזה כבר קיימת');
+      return;
+    }
+
+    this.config.customColumns.push(name);
+    this.weaponService.updateConfig(this.config).subscribe({
+      next: () => {
+        this.employeesList.forEach(item => {
+          if (!item.customFieldValues) item.customFieldValues = {};
+          item.customFieldValues[name] = '';
+        });
+        this.newColumnName = '';
+        this.showAddColumn = false;
+      },
+      error: (err) => {
+        console.error('שגיאה בהוספת עמודה', err);
+        alert('שגיאה בהוספת העמודה');
+      }
+    });
+  }
+
+  removeColumn(colName: string): void {
+    if (!confirm(`להסיר את העמודה "${colName}" מכולם? הנתונים שבה יימחקו.`)) return;
+
+    this.config.customColumns = this.config.customColumns.filter(c => c !== colName);
+    this.weaponService.updateConfig(this.config).subscribe({
+      next: () => this.loadAllTracking(),
+      error: (err) => console.error('שגיאה בהסרת עמודה', err)
+    });
+  }
+
+  loadAllTracking(): void {
+    this.weaponService.getAllTracking().subscribe(data => {
+      this.employeesList = data.map(item => {
+        if (!item.customFieldValues) item.customFieldValues = {};
+        this.config.customColumns.forEach(col => {
+          if (!(col in item.customFieldValues)) item.customFieldValues[col] = '';
+        });
+        return item;
+      });
+    });
+  }
+
   loadAllEmployees(): void {
-    this.shiftService.getEmployees().subscribe({
+    const weekStartParam = this.formatDateForApi(this.getCurrentWeekSunday());
+    this.shiftService.getEmployees(weekStartParam).subscribe({
       next: (data: any[]) => {
         this.allEmployees = data;
       },
@@ -47,8 +108,21 @@ export class AdminWeaponComponent implements OnInit {
     });
   }
 
-  // חדש - עובדים שעדיין אין להם רשומת מעקב (כלומר לא מופיעים כרגע
-  // ב-employeesList), כדי שהבורר לא יאפשר להוסיף כפילות.
+  private getCurrentWeekSunday(): Date {
+    const today = new Date();
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay());
+    sunday.setHours(0, 0, 0, 0);
+    return sunday;
+  }
+
+  private formatDateForApi(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   get availableEmployeesToAdd(): any[] {
     const existingIds = new Set(this.employeesList.map(e => e.employeeId));
     return this.allEmployees.filter(emp => !existingIds.has(emp.id));
@@ -62,8 +136,6 @@ export class AdminWeaponComponent implements OnInit {
     this.showAddPicker = false;
   }
 
-  // חדש - לחיצה ישירה על שם עובד ברשימת הבורר: מוסיפה אותו מיידית
-  // לרשומת המעקב וסוגרת את המודאל.
   selectEmployeeToAdd(emp: any): void {
     if (this.isAdding) return;
 
@@ -82,8 +154,6 @@ export class AdminWeaponComponent implements OnInit {
     });
   }
 
-  // חדש - מסיר עובד מרשימת המעקב (לא מוחק את העובד עצמו מהמערכת -
-  // רק את רשומת המעקב שלו כאן).
   removeEmployee(item: WeaponTracking): void {
     if (!confirm(`להסיר את ${item.employeeName || item.employeeId} ממעקב הנשק?`)) return;
 
@@ -107,6 +177,26 @@ export class AdminWeaponComponent implements OnInit {
     } else {
       item.btfAppointmentDate = null;
     }
+  }
+
+  // חדש - מספר הימים שנותרו עד תאריך הרענון. שלילי = כבר עבר.
+  daysUntilRefresh(item: WeaponTracking): number | null {
+    if (!item.refreshDate) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const refresh = new Date(item.refreshDate);
+    refresh.setHours(0, 0, 0, 0);
+    return Math.round((refresh.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  // חדש - סטטוס ויזואלי: "red" אם עבר/פחות משבוע, "orange" אם פחות
+  // מחודש, אחרת null (רגיל)
+  refreshStatus(item: WeaponTracking): 'red' | 'orange' | null {
+    const days = this.daysUntilRefresh(item);
+    if (days === null) return null;
+    if (days <= 7) return 'red';
+    if (days <= 30) return 'orange';
+    return null;
   }
 
   saveChanges(item: WeaponTracking): void {

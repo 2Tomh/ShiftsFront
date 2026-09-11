@@ -2,9 +2,19 @@
 
   <div class="admin-header-row">
     <h3>ניהול הוצאת נשק לעובדים (אדמין)</h3>
-    <button class="btn-add-employee" (click)="openAddPicker()">
-      + הוסף עובד
-    </button>
+    <div class="header-buttons">
+      <button class="btn-secondary" (click)="showAddColumn = !showAddColumn">+ הוסף עמודה</button>
+      <button class="btn-add-employee" (click)="openAddPicker()">+ הוסף עובד</button>
+    </div>
+  </div>
+
+  <div class="add-column-row" *ngIf="showAddColumn">
+    <input
+      type="text"
+      [(ngModel)]="newColumnName"
+      placeholder="כותרת העמודה החדשה (לדוגמה: מספר רישיון)"
+      (keyup.enter)="addColumn()">
+    <button (click)="addColumn()">הוסף</button>
   </div>
 
   <table class="admin-table" *ngIf="employeesList.length > 0">
@@ -15,6 +25,13 @@
         <th>הגשת בקשה לבט"פ</th>
         <th>תור לבט"פ (תאריך)</th>
         <th>תור לפסיכולוג</th>
+        <!-- חדש -->
+        <th>תאריך רענון</th>
+        <th>תאריך רישיון נשק</th>
+        <th *ngFor="let col of config.customColumns">
+          {{ col }}
+          <button class="btn-remove-col" title="הסר עמודה" (click)="removeColumn(col)">×</button>
+        </th>
         <th>פעולות</th>
       </tr>
     </thead>
@@ -42,6 +59,28 @@
         <td>
           <input type="checkbox" [(ngModel)]="item.psychologistAppointment" />
         </td>
+
+        <!-- חדש - תאריך רענון, עם אינדיקציה ויזואלית לפי קרבה -->
+        <td>
+          <div class="refresh-date-cell"
+               [class.refresh-red]="refreshStatus(item) === 'red'"
+               [class.refresh-orange]="refreshStatus(item) === 'orange'">
+            <input type="date" [(ngModel)]="item.refreshDate" />
+            <span class="days-left-badge" *ngIf="daysUntilRefresh(item) !== null">
+              {{ daysUntilRefresh(item)! >= 0 ? (daysUntilRefresh(item) + ' ימים') : 'פג תוקף' }}
+            </span>
+          </div>
+        </td>
+
+        <!-- חדש - תאריך רישיון נשק -->
+        <td>
+          <input type="date" [(ngModel)]="item.licenseDate" />
+        </td>
+
+        <td *ngFor="let col of config.customColumns">
+          <input type="text" [(ngModel)]="item.customFieldValues[col]">
+        </td>
+
         <td class="actions-cell">
           <button (click)="saveChanges(item)">שמור</button>
           <button class="btn-remove" [disabled]="isRemoving" (click)="removeEmployee(item)">הסר</button>

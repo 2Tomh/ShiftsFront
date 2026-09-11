@@ -1,0 +1,295 @@
+:host {
+  display: block;
+  font-family: 'Assistant', sans-serif;
+  color: #1c2430;
+  direction: rtl;
+  box-sizing: border-box;
+}
+
+.admin-container {
+  background: #ffffff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
+}
+
+.admin-header-row {
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #dde3ec;
+}
+
+.admin-container h3 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* ===== בורר תאריכים ===== */
+.range-picker {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: #f8fafc;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.range-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.range-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6472;
+}
+
+.range-field input {
+  border: 1.5px solid #dde3ec;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.btn-apply {
+  background: #146356;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 20px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-apply:hover {
+  background: #0f4c42;
+}
+
+.quick-ranges {
+  display: flex;
+  gap: 6px;
+  margin-right: auto;
+}
+
+.btn-quick {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  color: #5a6472;
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-quick:hover {
+  border-color: #146356;
+  color: #146356;
+}
+
+/* ===== מקטעים ===== */
+.stats-section {
+  margin-bottom: 30px;
+}
+
+.stats-section h4 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: #1c2430;
+}
+
+.section-hint {
+  font-size: 12px;
+  color: #5a6472;
+  margin: 8px 0 0;
+}
+
+/* ===== כרטיסי חימוש ===== */
+.armed-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.armed-card {
+  background: #f8fafc;
+  border: 1.5px solid #dde3ec;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+
+.armed-card:hover {
+  box-shadow: 0 6px 16px -8px rgba(28, 36, 48, 0.25);
+}
+
+.armed-card.is-expanded {
+  align-items: stretch;
+}
+
+.armed-count {
+  font-family: 'Heebo', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.armed-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a6472;
+}
+
+.armed-bar {
+  width: 100%;
+  height: 6px;
+  background: #eef1f6;
+  border-radius: 999px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.armed-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.armed-card-not .armed-count { color: #94a3b8; }
+.armed-card-not .armed-bar-fill { background: #94a3b8; }
+
+.armed-card-progress .armed-count { color: #d98e04; }
+.armed-card-progress .armed-bar-fill { background: #d98e04; }
+
+.armed-card-armed .armed-count { color: #146356; }
+.armed-card-armed .armed-bar-fill { background: #146356; }
+
+.armed-toggle-hint {
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.armed-names-list {
+  width: 100%;
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px dashed #dde3ec;
+  list-style: none;
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.armed-names-list li {
+  font-size: 12.5px;
+  color: #1c2430;
+  background: #fff;
+  border-radius: 5px;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+/* ===== כרטיסי סוגי משמרת ===== */
+.type-totals {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.type-total-card {
+  background: #eaf4ff;
+  border: 1.5px solid #cfe6f7;
+  border-radius: 10px;
+  padding: 14px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 100px;
+}
+
+.type-total-count {
+  font-family: 'Heebo', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: #1c2430;
+}
+
+.type-total-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5a6472;
+}
+
+/* ===== טבלאות ===== */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: right;
+}
+
+.admin-table th {
+  background: #1e293b;
+  color: #fff;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  padding: 10px 12px;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #dde3ec;
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.emp-name-cell {
+  font-weight: 700;
+}
+
+.total-cell {
+  font-weight: 700;
+  color: #146356;
+}
+
+.empty-state,
+.loading-hint {
+  text-align: center;
+  color: #94a3b8;
+  padding: 20px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .armed-cards {
+    grid-template-columns: 1fr;
+  }
+}

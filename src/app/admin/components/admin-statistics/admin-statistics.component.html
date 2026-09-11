@@ -1,0 +1,139 @@
+<div class="admin-container">
+  <div class="admin-header-row">
+    <h3>סטטיסטיקות</h3>
+  </div>
+
+  <!-- ===== בורר טווח תאריכים ===== -->
+  <div class="range-picker">
+    <div class="range-field">
+      <label for="startDate">מתאריך</label>
+      <input id="startDate" type="date" [(ngModel)]="startDate">
+    </div>
+    <div class="range-field">
+      <label for="endDate">עד תאריך</label>
+      <input id="endDate" type="date" [(ngModel)]="endDate">
+    </div>
+    <button class="btn-apply" (click)="loadStats()">החל</button>
+
+    <div class="quick-ranges">
+      <button class="btn-quick" (click)="setQuickRange(7)">7 ימים אחרונים</button>
+      <button class="btn-quick" (click)="setQuickRange(30)">30 ימים אחרונים</button>
+      <button class="btn-quick" (click)="setQuickRange(90)">90 ימים אחרונים</button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-hint">טוען...</div>
+
+  <ng-container *ngIf="!isLoading && data">
+
+    <!-- ===== 1. סטטוס חימוש ===== -->
+    <section class="stats-section">
+      <h4>סטטוס חימוש בצוות</h4>
+      <div class="armed-cards">
+
+        <div class="armed-card armed-card-not" [class.is-expanded]="isGroupExpanded('notArmed')" (click)="toggleGroup('notArmed')">
+          <span class="armed-count">{{ data.armedStats.notArmed.count }}</span>
+          <span class="armed-label">לא חמוש</span>
+          <div class="armed-bar"><div class="armed-bar-fill" [style.width.%]="armedPercent(data.armedStats.notArmed.count)"></div></div>
+          <span class="armed-toggle-hint" *ngIf="data.armedStats.notArmed.count > 0">
+            {{ isGroupExpanded('notArmed') ? 'הסתר שמות ▲' : 'הצג שמות ▼' }}
+          </span>
+          <ul class="armed-names-list" *ngIf="isGroupExpanded('notArmed')">
+            <li *ngFor="let name of data.armedStats.notArmed.names">{{ name }}</li>
+          </ul>
+        </div>
+
+        <div class="armed-card armed-card-progress" [class.is-expanded]="isGroupExpanded('inProgress')" (click)="toggleGroup('inProgress')">
+          <span class="armed-count">{{ data.armedStats.inProgress.count }}</span>
+          <span class="armed-label">בתהליך</span>
+          <div class="armed-bar"><div class="armed-bar-fill" [style.width.%]="armedPercent(data.armedStats.inProgress.count)"></div></div>
+          <span class="armed-toggle-hint" *ngIf="data.armedStats.inProgress.count > 0">
+            {{ isGroupExpanded('inProgress') ? 'הסתר שמות ▲' : 'הצג שמות ▼' }}
+          </span>
+          <ul class="armed-names-list" *ngIf="isGroupExpanded('inProgress')">
+            <li *ngFor="let name of data.armedStats.inProgress.names">{{ name }}</li>
+          </ul>
+        </div>
+
+        <div class="armed-card armed-card-armed" [class.is-expanded]="isGroupExpanded('armed')" (click)="toggleGroup('armed')">
+          <span class="armed-count">{{ data.armedStats.armed.count }}</span>
+          <span class="armed-label">חמוש</span>
+          <div class="armed-bar"><div class="armed-bar-fill" [style.width.%]="armedPercent(data.armedStats.armed.count)"></div></div>
+          <span class="armed-toggle-hint" *ngIf="data.armedStats.armed.count > 0">
+            {{ isGroupExpanded('armed') ? 'הסתר שמות ▲' : 'הצג שמות ▼' }}
+          </span>
+          <ul class="armed-names-list" *ngIf="isGroupExpanded('armed')">
+            <li *ngFor="let name of data.armedStats.armed.names">{{ name }}</li>
+          </ul>
+        </div>
+
+      </div>
+      <p class="section-hint">מתוך {{ armedTotal }} עובדים בסה"כ (סטטוס נוכחי, לא תלוי בטווח התאריכים) — לחצו על כרטיס כדי לראות שמות</p>
+    </section>
+
+    <!-- ===== 2. סה"כ משמרות לפי סוג ===== -->
+    <section class="stats-section">
+      <h4>סה"כ משמרות מאוישות לפי סוג ({{ data.rangeStart | date:'dd/MM/yyyy' }} - {{ data.rangeEnd | date:'dd/MM/yyyy' }})</h4>
+      <div class="type-totals" *ngIf="data.shiftTypeTotals.length > 0">
+        <div class="type-total-card" *ngFor="let t of data.shiftTypeTotals">
+          <span class="type-total-count">{{ t.count }}</span>
+          <span class="type-total-label">{{ t.type }}</span>
+        </div>
+      </div>
+      <p class="empty-state" *ngIf="data.shiftTypeTotals.length === 0">אין משמרות מאוישות בטווח הזה.</p>
+    </section>
+
+    <!-- ===== 3. פילוח לפי עובד ===== -->
+    <section class="stats-section">
+      <h4>פילוח משמרות לפי עובד</h4>
+      <div class="table-scroll" *ngIf="data.perEmployee.length > 0">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>עובד</th>
+              <th *ngFor="let col of shiftTypeColumns">{{ col }}</th>
+              <th>סה"כ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let emp of data.perEmployee">
+              <td class="emp-name-cell">{{ emp.employeeName }}</td>
+              <td *ngFor="let col of shiftTypeColumns">{{ getEmployeeShiftCount(emp, col) }}</td>
+              <td class="total-cell">{{ emp.total }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="empty-state" *ngIf="data.perEmployee.length === 0">אין נתונים בטווח הזה.</p>
+    </section>
+
+    <!-- ===== 4. טבלה מלאה - מי עבד מתי ===== -->
+    <section class="stats-section">
+      <h4>לוח מלא - מי עבד מתי</h4>
+      <div class="table-scroll" *ngIf="data.scheduleTable.length > 0">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>תאריך</th>
+              <th>יום</th>
+              <th>משמרת</th>
+              <th>תפקיד</th>
+              <th>עובד</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of data.scheduleTable">
+              <td>{{ row.date | date:'dd/MM/yyyy' }}</td>
+              <td>{{ row.dayName }}</td>
+              <td>{{ row.shiftType }}</td>
+              <td>{{ row.role }}</td>
+              <td>{{ row.employeeName }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="empty-state" *ngIf="data.scheduleTable.length === 0">אין שיבוצים בטווח הזה.</p>
+    </section>
+
+  </ng-container>
+</div>

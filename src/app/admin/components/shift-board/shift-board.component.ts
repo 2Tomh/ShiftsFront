@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { forkJoin, of } from 'rxjs';
-import { catchError } from 'rxjs/operators'; // חדש
+import { catchError } from 'rxjs/operators';
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { DataRefreshService } from '../../../services/data-refresh.service';
@@ -17,22 +17,12 @@ interface DynamicShiftBlock {
   label: string;
   roles: string[];
   icon: string;
-  // שעות המשמרת בפורמט "HH:mm" (מגיעות מ-BoardConfiguration). ריקות
-  // אם המנהל עדיין לא הגדיר - ואז לא מתבצע עבורן חישוב מרווח מנוחה
-  // בכלל (בטוח, לא נכשל).
   startTime: string;
   endTime: string;
-  // חדש - ימים (בעברית) שבהם המשמרת הזו חסומה קבוע (מגיע מ-
-  // BoardConfiguration.ShiftDefinition.BlockedDays).
   blockedDays: string[];
-  // חדש - מפת חסימות ימים לפי תפקיד ספציפי בתוך המשמרת. מפתח = שם
-  // תפקיד, ערך = ימים חסומים לתפקיד הזה בלבד (שאר התפקידים באותה
-  // משמרת/יום ממשיכים לפעול כרגיל).
   roleBlockedDays: { [role: string]: string[] };
 }
 
-// סוג חומרת התנגשות מרווח מנוחה: 'orange' = בדיוק 8 שעות הפרש (על
-// הגבול - אזהרה קלה), 'red' = פחות מ-8 שעות הפרש (חריגה ממש).
 type RestSeverity = 'orange' | 'red';
 
 @Component({
@@ -47,42 +37,19 @@ export class ShiftBoardComponent implements OnInit {
   isProcessing = false;
   isPublishing = false;
 
-  // הכל נטען מהתצורה (BoardConfiguration) במקום להיות קבוע בקוד.
-  // daysOfWeek ו-shiftBlocks מתמלאים ב-loadData(), לא כברירת מחדל
-  // קבועה יותר.
   daysOfWeek: string[] = [];
   shiftBlocks: DynamicShiftBlock[] = [];
   extraRowNames: string[] = [];
   extraRowEntries: ExtraRowEntry[] = [];
 
-  // הניווט הוא רק בקפיצות של שבוע שלם (previousWeek/nextWeek/
-  // goToCurrentWeek) - כך selectedWeekStart הוא *תמיד* יום ראשון,
-  // בלי אפשרות לבחור תאריך אחר בטעות.
-  selectedWeekStart: Date = this.snapToSunday(new Date());
+  selectedWeekStart: Date = this.getNextWeekSunday();
 
-  // מפת חומרת התנגשות מרווח מנוחה: מפתח = "employeeName|dayIndex|shiftType",
-  // ערך = 'red' או 'orange'. מחושבת מחדש בכל טעינת/עדכון נתונים
-  // (computeRestViolations). ריקה = אין שום התנגשות מרווח מנוחה.
   private restSeverityMap: Map<string, RestSeverity> = new Map();
 
-  // חדש - כל בקשות החופשה/מילואים ה"מאושרות" (Approved) בלבד, בטווח
-  // תאריכים פשוט. נטען ב-loadData(), משמש כדי לא להציע עובד בבנק
-  // המועמדים ביום שהוא בחופשה/מילואים מאושרים, ולסמן אם הוא בכל
-  // זאת משובץ (למשל אושר אחרי השיבוץ).
   private approvedLeaves: { employeeName: string; start: Date; end: Date }[] = [];
 
-  // חדש - מפה של תאריך (yyyy-MM-dd) -> סיבת חסימה, לתאריכים חסומים
-  // שנופלים בתוך השבוע המוצג כרגע (BlockedDate מ-BlockedDatesController).
-  // בניגוד ל-ShiftDefinition.BlockedDays (יום-בשבוע קבוע, כל המשמרות
-  // שמסומנות), זה תאריך בודד וחוסם את *כל* המשמרות של אותו יום.
   private blockedDatesByDate: Map<string, string> = new Map();
 
-  // חדש - מפה של תאריך (yyyy-MM-dd) -> חג, לתאריכים שנופלים בתוך
-  // השבוע המוצג כרגע. נטען מ-Hebcal (דרך HolidayService) לפי השנה/ים
-  // שהשבוע חוצה (בד"כ שנה אחת, אלא אם השבוע חוצה את סוף דצמבר). לא
-  // חוסם שום דבר בפועל - רק תווית ויזואלית בכותרת העמודה. אם הטעינה
-  // נכשלת (בעיית רשת/API חיצוני) - נשארת ריקה, ולא מפילה את שאר הלוח
-  // (ראו catchError ב-loadData).
   private holidaysByDate: Map<string, Holiday> = new Map();
 
   private dayMap: { [key: string]: string } = {
@@ -90,20 +57,19 @@ export class ShiftBoardComponent implements OnInit {
     'חמישי': 'Thursday', 'שישי': 'Friday', 'שבת': 'Saturday'
   };
 
-  // היסט (במספר ימים מיום ראשון) לכל שם יום בעברית. משמש לחישוב
-  // התאריך הספציפי של כל עמודה בטבלה לפי selectedWeekStart, וגם
-  // לבניית זמני משמרת לחישוב מרווח מנוחה.
   private readonly hebrewDayOffsets: { [key: string]: number } = {
     'ראשון': 0, 'שני': 1, 'שלישי': 2, 'רביעי': 3,
     'חמישי': 4, 'שישי': 5, 'שבת': 6
   };
 
-  // אין יותר מגבלת 3 (לא indexToEnum, לא Enum בכלל) - כמה בלוקי
-  // משמרת שיהיו בתצורה, כולם יוצגו. type הוא כעת פשוט שם המשמרת
-  // עצמו (מחרוזת), שתואם בדיוק למה שנשמר ב-Shift.Type בשרת.
   private readonly icons = ['☀️', '🌤️', '🌙', '⭐', '🌗', '🌌'];
 
   selectedTarget: { dayIndex: number, shiftType: any, role: string } | null = null;
+
+  // עריכת טקסט חופשי inline בתוך התא (במקום prompt() קופץ)
+  editingTextCell: { dayIndex: number, shiftType: any, role: string } | null = null;
+  editingTextValue: string = '';
+  @ViewChild('textInput') textInputRef?: ElementRef<HTMLInputElement>;
 
   showEditAvailabilityModal = false;
   editingEmployeeName = '';
@@ -128,29 +94,14 @@ export class ShiftBoardComponent implements OnInit {
     this.loadData();
   }
 
-  /**
-   * נטען עכשיו גם config וגם extraRows, לצד employees ו-shifts כבר
-   * קיימים, הכל במקביל (forkJoin), לא ברצף. shifts נטענים מסוננים
-   * ל-selectedWeekStart בלבד. בסוף מחושבים גם הפרשי מנוחה
-   * (computeRestViolations).
-   */
   loadData(): void {
     const weekStartParam = this.formatDateForApi(this.selectedWeekStart);
 
-    // חדש - השבוע עלול לחצות שנה אזרחית (למשל 28/12 - 03/01), אז
-    // מחשבים גם שנת התחלה וגם שנת סיום, וקוראים ל-API פעם אחת או
-    // פעמיים בהתאם (HolidayService שומר Cache פנימי, אז קריאה כפולה
-    // לאותה שנה בשבועות אחרים לא עולה בפועל בקריאת רשת נוספת).
     const weekEndDate = new Date(this.selectedWeekStart);
     weekEndDate.setDate(weekEndDate.getDate() + 6);
     const startYear = this.selectedWeekStart.getFullYear();
     const endYear = weekEndDate.getFullYear();
 
-    // חדש - טעינת חגים היא "best-effort" בלבד: היא רק מוסיפה תווית
-    // ויזואלית בכותרת העמודה, ולעולם לא צריכה למנוע טעינת שאר הלוח
-    // (עובדים, משמרות, תצורה וכו'). לכן עוטפים אותה ב-catchError
-    // שמחזיר מערך ריק אם הקריאה נכשלת (שרת Hebcal לא זמין, בעיית
-    // רשת, timeout וכו') - כדי ש-forkJoin לא ייכשל כולו בגלל זה.
     const holidaysStartYear$ = this.holidayService.getHolidays(startYear).pipe(
       catchError(err => {
         console.warn('שגיאה בטעינת חגים (שנה ' + startYear + '), ממשיכים בלי תוויות חג:', err);
@@ -167,7 +118,7 @@ export class ShiftBoardComponent implements OnInit {
       : of([] as Holiday[]);
 
     forkJoin({
-      employees: this.shiftService.getEmployees(),
+      employees: this.shiftService.getEmployees(weekStartParam),
       shifts: this.shiftService.getShifts(weekStartParam),
       config: this.boardConfigService.getConfiguration(),
       extraRows: this.boardConfigService.getExtraRows(),
@@ -181,13 +132,10 @@ export class ShiftBoardComponent implements OnInit {
       this.shifts = shifts;
       this.applyConfiguration(config);
       this.extraRowEntries = extraRows;
-      // חדש - מאחד חופשות ומילואים מאושרים לרשימה אחת פשוטה
-      // (employeeName + טווח תאריכים), בלי קשר לאיזה סוג בקשה זה היה.
       this.approvedLeaves = [
         ...vacations.map((v: any) => ({ employeeName: v.employeeName, start: new Date(v.startDate), end: new Date(v.endDate) })),
         ...sickLeaves.map((s: any) => ({ employeeName: s.employeeName, start: new Date(s.startDate), end: new Date(s.endDate) }))
       ];
-      // חדש - רק תאריכים חסומים שנופלים בטווח השבוע המוצג כרגע.
       this.blockedDatesByDate = new Map();
       (blockedDates as any[]).forEach(bd => {
         const d = new Date(bd.date);
@@ -196,17 +144,11 @@ export class ShiftBoardComponent implements OnInit {
         }
       });
 
-      // חדש - ממזג את חגי שתי השנים (אם רלוונטי) למפה אחת לפי תאריך.
-      // אם אחת מהקריאות נכשלה, המערך המתאים כבר ריק בזכות ה-catchError
-      // למעלה, כך שכל השאר ממשיך לעבוד כרגיל.
       this.holidaysByDate = new Map();
       [...holidaysStartYear, ...holidaysEndYear].forEach(h => this.holidaysByDate.set(h.date, h));
 
       this.calculateStats();
       this.computeRestViolations();
-      // חדש - מודיע לרכיבים אחרים (בעיקר app-schedule-stats) שהנתונים
-      // נטענו/השתנו, כדי שגם הם יטענו מחדש ולא יישארו "קפואים" עם
-      // נתונים ישנים עד לרענון מלא של הדף (F5).
       this.dataRefreshService.notifyDataChanged();
     });
   }
@@ -215,10 +157,6 @@ export class ShiftBoardComponent implements OnInit {
     this.daysOfWeek = config.workDays;
     this.extraRowNames = config.extraRowNames || [];
 
-    // כל המשמרות מהתצורה, בלי הגבלת 3. type הוא שם המשמרת עצמו
-    // (מחרוזת), לא Enum - זה בדיוק מה שנשמר ב-Shift.Type בשרת.
-    // startTime/endTime מגיעים גם הם מהתצורה (יכולים להיות מחרוזת
-    // ריקה אם המנהל עדיין לא הגדיר).
     this.shiftBlocks = config.shiftDefinitions.map((sd, i) => ({
       type: sd.name,
       label: sd.name,
@@ -237,8 +175,6 @@ export class ShiftBoardComponent implements OnInit {
       this.shifts = shifts;
       this.calculateStats();
       this.computeRestViolations();
-      // חדש - שיבוץ/הסרת שיבוץ עשויים לשנות את הסטטיסטיקות (סה"כ
-      // משמרות, לילות) - מודיעים כדי ש-app-schedule-stats יתעדכן.
       this.dataRefreshService.notifyDataChanged();
     });
   }
@@ -296,69 +232,48 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
-  // חדש - true אם המשמרת block חסומה קבוע ביום dayIndex (לפי
-  // BlockedDays בתצורה). משמש להצגת "אין משמרת" במקום "+" בתא.
   isBlockedDayForShift(dayIndex: number, block: DynamicShiftBlock): boolean {
     const dayName = this.daysOfWeek[dayIndex];
     return block.blockedDays.includes(dayName);
   }
 
-  // חדש - true אם התאריך הספציפי של dayIndex בשבוע המוצג נמצא ברשימת
-  // התאריכים החסומים (BlockedDatesController) - חוסם את *כל* המשמרות
-  // של אותו יום, לא רק אחת ספציפית.
   isDateBlockedForDayIndex(dayIndex: number): boolean {
     const d = this.getDateForDayIndex(dayIndex);
     return this.blockedDatesByDate.has(this.formatDateForApi(d));
   }
 
-  // חדש - הסיבה שצוינה לחסימת התאריך הספציפי הזה, אם יש.
   getBlockedDateReason(dayIndex: number): string {
     const d = this.getDateForDayIndex(dayIndex);
     return this.blockedDatesByDate.get(this.formatDateForApi(d)) || '';
   }
 
-  // חדש - true אם התא חסום מכל סיבה שהיא (תאריך ספציפי חסום, או
-  // המשמרת הזו חסומה קבוע ביום הזה). משמש ב-template במקום לבדוק
-  // כל תנאי בנפרד.
   isCellBlocked(dayIndex: number, block: DynamicShiftBlock): boolean {
     return this.isDateBlockedForDayIndex(dayIndex) || this.isBlockedDayForShift(dayIndex, block);
   }
 
-  // חדש - הטקסט שמוצג בתא חסום: הסיבה אם זה תאריך ספציפי חסום,
-  // אחרת "אין משמרת" אם זו חסימה קבועה של המשמרת ביום הזה.
   getCellBlockedLabel(dayIndex: number, block: DynamicShiftBlock): string {
     return this.getBlockedDateReason(dayIndex) || 'אין משמרת';
   }
 
-  // חדש - true אם היום הזה (dayIndex) חסום לגמרי בגלל תאריך ספציפי -
-  // משמש לעיצוב כותרת העמודה כולה (לא רק תאי המשמרות).
   isFullDayBlocked(dayIndex: number): boolean {
     return this.isDateBlockedForDayIndex(dayIndex);
   }
 
-  // חדש - true אם תפקיד ספציפי (role) בתוך block חסום ביום dayIndex
-  // (לפי roleBlockedDays בתצורה). בניגוד ל-isBlockedDayForShift, זה
-  // חוסם רק את התפקיד הזה - שאר התפקידים באותה משמרת/יום ממשיכים
-  // לפעול כרגיל.
   isRoleBlockedForDay(dayIndex: number, block: DynamicShiftBlock, role: string): boolean {
     const dayName = this.daysOfWeek[dayIndex];
     const blocked = block.roleBlockedDays[role];
     return !!(blocked && blocked.includes(dayName));
   }
 
-  // חדש - החג (אם יש) שנופל על התאריך של dayIndex בשבוע המוצג.
   getHolidayForDayIndex(dayIndex: number): Holiday | undefined {
     const d = this.getDateForDayIndex(dayIndex);
     return this.holidaysByDate.get(this.formatDateForApi(d));
   }
 
-  // חדש - true אם יש חג כלשהו (מרכזי או מינורי) בתאריך של dayIndex.
-  // משמש ב-template לצביעת כותרת העמודה, בדומה ל-isFullDayBlocked.
   isHolidayForDayIndex(dayIndex: number): boolean {
     return !!this.getHolidayForDayIndex(dayIndex);
   }
 
-  // מצמיד תאריך *כלשהו* ליום ראשון של אותו השבוע.
   private snapToSunday(date: Date): Date {
     const d = new Date(date);
     d.setDate(d.getDate() - d.getDay());
@@ -366,11 +281,31 @@ export class ShiftBoardComponent implements OnInit {
     return d;
   }
 
-  private getCurrentWeekSunday(): Date {
-    return this.snapToSunday(new Date());
+  private getNextWeekSunday(): Date {
+    const d = this.snapToSunday(new Date());
+    d.setDate(d.getDate() + 7);
+    return d;
   }
 
-  // פורמט yyyy-MM-dd לפי הזמן המקומי (לא UTC), לשליחה ל-API.
+  previousWeek(): void {
+    const d = new Date(this.selectedWeekStart);
+    d.setDate(d.getDate() - 7);
+    this.selectedWeekStart = d;
+    this.loadData();
+  }
+
+  nextWeek(): void {
+    const d = new Date(this.selectedWeekStart);
+    d.setDate(d.getDate() + 7);
+    this.selectedWeekStart = d;
+    this.loadData();
+  }
+
+  goToCurrentWeek(): void {
+    this.selectedWeekStart = this.getNextWeekSunday();
+    this.loadData();
+  }
+
   private formatDateForApi(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -378,14 +313,12 @@ export class ShiftBoardComponent implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
-  // פורמט dd/MM קצר לתצוגה בלבד (בכותרות הימים ובטווח השבוע).
   private formatDateForDisplay(date: Date): string {
     const d = String(date.getDate()).padStart(2, '0');
     const m = String(date.getMonth() + 1).padStart(2, '0');
     return `${d}/${m}`;
   }
 
-  // טווח התאריכים של השבוע הנבחר, לתצוגה ליד הניווט (למשל "06/09 - 12/09").
   get selectedWeekRangeLabel(): string {
     const start = this.selectedWeekStart;
     const end = new Date(start);
@@ -393,7 +326,6 @@ export class ShiftBoardComponent implements OnInit {
     return `${this.formatDateForDisplay(start)} - ${this.formatDateForDisplay(end)}`;
   }
 
-  // התאריך המלא (Date) של עמודת יום נתון בטבלה, לפי selectedWeekStart.
   private getFullDateForDay(dayName: string): Date | null {
     const offset = this.hebrewDayOffsets[dayName];
     if (offset === undefined) return null;
@@ -402,14 +334,11 @@ export class ShiftBoardComponent implements OnInit {
     return d;
   }
 
-  // התאריך הספציפי (dd/MM) של עמודת יום נתון, לתצוגה מתחת לשם היום.
   getDateLabelForDay(dayName: string): string {
     const d = this.getFullDateForDay(dayName);
     return d ? this.formatDateForDisplay(d) : '';
   }
 
-  // חדש - התאריך המלא (Date) של אינדקס יום (0-6) בשבוע הנבחר, לפי
-  // selectedWeekStart. משמש לבדיקת חפיפה עם חופשה/מילואים מאושרים.
   private getDateForDayIndex(dayIndex: number): Date {
     const dayName = this.daysOfWeek[dayIndex];
     const d = this.getFullDateForDay(dayName) || new Date(this.selectedWeekStart);
@@ -417,8 +346,6 @@ export class ShiftBoardComponent implements OnInit {
     return d;
   }
 
-  // חדש - true אם לעובד יש בקשת חופשה/מילואים מאושרת שחופפת ליום
-  // dayIndex בשבוע הנבחר.
   isEmployeeOnApprovedLeave(employeeName: string, dayIndex: number): boolean {
     if (!employeeName) return false;
     const day = this.getDateForDayIndex(dayIndex);
@@ -432,8 +359,6 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
-  // חדש - טקסט tooltip משולב לתא שיבוץ: קודם מתריע על חופשה/מילואים
-  // מאושרים (חמור יותר), ורק אם אין - על התנגשות מרווח מנוחה.
   getAssignmentTooltip(dayIndex: number, shiftType: any, employeeName: string): string {
     if (this.isEmployeeOnApprovedLeave(employeeName, dayIndex)) {
       return 'שים לב: לעובד/ת יש אישור חופשה/מילואים ביום זה';
@@ -444,36 +369,6 @@ export class ShiftBoardComponent implements OnInit {
     return '';
   }
 
-  // ניווט שבוע אחורה. תמיד קפיצה של 7 ימים בדיוק, כך selectedWeekStart
-  // נשאר תמיד יום ראשון.
-  previousWeek(): void {
-    const d = new Date(this.selectedWeekStart);
-    d.setDate(d.getDate() - 7);
-    this.selectedWeekStart = d;
-    this.loadData();
-  }
-
-  // ניווט שבוע קדימה.
-  nextWeek(): void {
-    const d = new Date(this.selectedWeekStart);
-    d.setDate(d.getDate() + 7);
-    this.selectedWeekStart = d;
-    this.loadData();
-  }
-
-  // קפיצה מיידית לשבוע הנוכחי (מהיום).
-  goToCurrentWeek(): void {
-    this.selectedWeekStart = this.snapToSunday(new Date());
-    this.loadData();
-  }
-
-  // ===== חוק מרווח מנוחה של 8 שעות בין משמרות =====
-
-  // בונה זמן התחלה/סיום מלאים (Date) למשמרת נתונה ביום נתון בשבוע,
-  // לפי startTime/endTime של הבלוק. אם אין שעות מוגדרות (מחרוזת
-  // ריקה) - מחזיר null, ואז אין חישוב מרווח מנוחה למשמרת הזו. אם
-  // EndTime "לפני" StartTime (למשל 22:00 -> 06:00) - המשמרת חוצה
-  // חצות, הסיום מחושב ליום שאחרי.
   private buildShiftDateTime(dayIndex: number, block: DynamicShiftBlock): { start: Date, end: Date } | null {
     if (!block.startTime || !block.endTime) return null;
 
@@ -494,18 +389,12 @@ export class ShiftBoardComponent implements OnInit {
     const end = new Date(dayDate);
     end.setHours(eh, em, 0, 0);
     if (end.getTime() <= start.getTime()) {
-      end.setDate(end.getDate() + 1); // המשמרת חוצה חצות
+      end.setDate(end.getDate() + 1);
     }
 
     return { start, end };
   }
 
-  // עובר על כל השיבוצים בשבוע המוצג, אוסף לכל עובד את המשמרות שהוא
-  // משובץ אליהן (עם זמני התחלה/סיום מלאים), וממיין לפי זמן התחלה.
-  // עבור כל שתי משמרות סמוכות של אותו עובד, מחשב את מרווח המנוחה
-  // ביניהן: פחות מ-8 שעות -> 'red', בדיוק 8 שעות -> 'orange'. משמרות
-  // בלי שעות מוגדרות (startTime/endTime ריקים) פשוט לא נכללות
-  // בחישוב - לא נכשל, פשוט אין להן השפעה.
   private computeRestViolations(): void {
     this.restSeverityMap = new Map();
 
@@ -522,7 +411,6 @@ export class ShiftBoardComponent implements OnInit {
 
           if (!perEmployee.has(name)) perEmployee.set(name, []);
           const list = perEmployee.get(name)!;
-          // מונע כפילות אם עובד משובץ בכמה תפקידים באותה משמרת/יום
           if (!list.some(e => e.dayIndex === dayIndex && e.block === block)) {
             list.push({ dayIndex, block, start: dt.start, end: dt.end });
           }
@@ -537,7 +425,7 @@ export class ShiftBoardComponent implements OnInit {
         const curr = sorted[i];
         const gapHours = (curr.start.getTime() - prev.end.getTime()) / (1000 * 60 * 60);
 
-        if (gapHours < 0) continue; // חפיפה בפועל - לא מטופל כאן
+        if (gapHours < 0) continue;
 
         let severity: RestSeverity | null = null;
         if (gapHours < 8) {
@@ -556,13 +444,10 @@ export class ShiftBoardComponent implements OnInit {
 
   private markRestSeverity(employeeName: string, dayIndex: number, shiftType: string, severity: RestSeverity): void {
     const key = `${employeeName}|${dayIndex}|${shiftType}`;
-    // 'red' חמור יותר מ-'orange' - אם כבר יש red לא מורידים לorange
     if (this.restSeverityMap.get(key) === 'red') return;
     this.restSeverityMap.set(key, severity);
   }
 
-  // חומרת ההתנגשות (אם יש) של עובד נתון במשמרת נתונה. משמש
-  // ב-template לצביעת התא (כתום/אדום).
   getRestSeverity(dayIndex: number, shiftType: any, employeeName: string): RestSeverity | null {
     if (!employeeName) return null;
     return this.restSeverityMap.get(`${employeeName}|${dayIndex}|${shiftType}`) || null;
@@ -589,9 +474,6 @@ export class ShiftBoardComponent implements OnInit {
         return isDayMatch && isShiftMatch;
       });
 
-      // חדש - עובד עם חופשה/מילואים מאושרים ביום הזה לא מוצע כמועמד
-      // כלל, גם אם הוא בעצמו הגיש זמינות ליום הזה (למשל לפני שהוגשה
-      // ואושרה הבקשה).
       if (hasMatch && !this.isEmployeeOnApprovedLeave(name, dayIndex)) {
         result.push({ ...emp, fullName: name });
       }
@@ -639,9 +521,6 @@ export class ShiftBoardComponent implements OnInit {
       return;
     }
 
-    // חדש - מדלג גם על תפקידים שחסומים ליום הזה (roleBlockedDays),
-    // לא רק תפקידים שכבר מאוישים - אחרת השיבוץ המהיר מהבנק היה יכול
-    // "לדחוף" עובד לתפקיד שאמור להיות לא רלוונטי באותו יום.
     const block = this.shiftBlocks.find(b => b.type === shiftType);
     const openRole = roles.find(role =>
       !this.getEmployeeForRole(dayIndex, shiftType, role) &&
@@ -665,7 +544,7 @@ export class ShiftBoardComponent implements OnInit {
 
     const shift = this.getShiftForDay(dayIndex, shiftType);
     if (!shift || !shift.id) {
-      alert("שגיאה: לא נמצאה משמרת תואמת במערכת. נסה לרענן (F5).");
+      alert("שגיאה: המשמרת עדיין לא קיימת בשרת. לחץ קודם על כפתור 'צור שבוע חדש' למעלה כדי לאתחל את השבוע.");
       return;
     }
 
@@ -697,11 +576,77 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
-  // ⚠️ שים לב - הפעולה הזו עדיין גלובלית לחלוטין (מוחקת את כל
-  // העובדים, כל ההגשות וכל המשמרות בכל השבועות, לא רק את השבוע
-  // הנבחר). עד שנעדכן גם את EmployeesController.ResetAll בצד השרת
-  // כדי שיקבל weekStart, מומלץ להימנע מהכפתור הזה כשעובדים על כמה
-  // שבועות מקבילים.
+  // עריכת טקסט חופשי inline בתוך התא (החליף prompt() קופץ)
+  startTextEdit(dayIndex: number, shiftType: any, role: string): void {
+    const currentName = this.getEmployeeForRole(dayIndex, shiftType, role);
+    this.editingTextValue = currentName || '';
+    this.editingTextCell = { dayIndex, shiftType, role };
+    this.selectedTarget = null; // סגירת מצב בחירה מהבנק אם היה פתוח
+
+    setTimeout(() => this.textInputRef?.nativeElement?.focus());
+  }
+
+  isEditingText(dayIndex: number, shiftType: any, role: string): boolean {
+    return !!this.editingTextCell
+      && this.editingTextCell.dayIndex === dayIndex
+      && this.editingTextCell.shiftType === shiftType
+      && this.editingTextCell.role === role;
+  }
+
+  cancelTextEdit(): void {
+    this.editingTextCell = null;
+    this.editingTextValue = '';
+  }
+
+  saveTextEdit(): void {
+    if (!this.editingTextCell) return;
+    const { dayIndex, shiftType, role } = this.editingTextCell;
+    const newText = this.editingTextValue.trim();
+    this.editingTextCell = null;
+
+    const shift = this.getShiftForDay(dayIndex, shiftType);
+    if (!shift || !shift.id) {
+      alert("שגיאה: המשמרת עדיין לא קיימת בשרת. לחץ קודם על כפתור 'צור שבוע חדש' למעלה כדי לאתחל את השבוע.");
+      return;
+    }
+
+    const existingName = this.getEmployeeForRole(dayIndex, shiftType, role);
+    if (newText === existingName) return; // אין שינוי בפועל
+
+    if (!newText) {
+      this.removeEmployee(dayIndex, shiftType, role);
+      return;
+    }
+
+    let assignment = shift.assignments.find((a: any) => a.role === role);
+    if (assignment) {
+      assignment.employeeName = newText;
+    } else {
+      shift.assignments.push({ id: 'temp-' + Date.now(), role, employeeName: newText } as any);
+    }
+
+    this.shiftService.assignEmployee(shift.id, null, role, newText).subscribe({
+      next: () => {
+        this.loadShiftsOnly();
+      },
+      error: (err) => {
+        console.error("שגיאה בשמירת טקסט חופשי:", err);
+        alert("שגיאה בשמירת השינוי בשרת.");
+      }
+    });
+  }
+
+  onTextEditKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      (event.target as HTMLInputElement).blur(); // יגרום ל-saveTextEdit דרך (blur)
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelTextEdit();
+      (event.target as HTMLInputElement).blur();
+    }
+  }
+
   clearAllAvailabilities() {
     if (confirm("האם אתה בטוח? כל העובדים והנתונים (מכל השבועות) יימחקו לצמיתות מהמערכת.")) {
       this.shiftService.clearAllData().subscribe({
@@ -724,8 +669,6 @@ export class ShiftBoardComponent implements OnInit {
     return this.shifts.length > 0 && this.shifts.every((s: any) => s.isPublished);
   }
 
-  // מפרסם רק את השבוע הנבחר (selectedWeekStart), לא את כל המשמרות
-  // בכל השבועות.
   publishWeek(): void {
     if (!confirm('לפרסם את הלוח הנוכחי לעובדים? הם יוכלו לראות אותו החל מעכשיו.')) return;
 
@@ -745,15 +688,14 @@ export class ShiftBoardComponent implements OnInit {
     });
   }
 
-  // יוצר את השבוע לפי selectedWeekStart (השבוע שמוצג כרגע בניווט),
-  // לא תמיד את "השבוע הנוכחי". כך אפשר ליצור גם את שבוע החגים מבלי
-  // לגעת בשבוע הרגיל.
   generateWeek() {
     if (!confirm("האם למחוק את השבוע הנבחר וליצור אותו מחדש?")) return;
 
-    this.shiftService.generateWeek(this.selectedWeekStart).subscribe({
+    const weekStartParam = this.formatDateForApi(this.selectedWeekStart);
+
+    this.shiftService.generateWeek(weekStartParam).subscribe({
       next: (res: any) => {
-        alert(res.message);
+        alert(res.message || "השבוע נוצר בהצלחה!");
         this.loadData();
       },
       error: (err) => {
@@ -798,7 +740,8 @@ export class ShiftBoardComponent implements OnInit {
     this.editPreferredShifts = [];
     this.editNotes = '';
 
-    this.shiftService.getAvailabilityForEmployee(stat.name).subscribe({
+    const weekStartParam = this.formatDateForApi(this.selectedWeekStart);
+    this.shiftService.getAvailabilityForEmployee(stat.name, weekStartParam).subscribe({
       next: (res: any) => {
         this.isLoadingEdit = false;
         if (res && res.found) {
@@ -836,8 +779,6 @@ export class ShiftBoardComponent implements OnInit {
     }
   }
 
-  // שולח את weekStartDate של השבוע הנבחר (selectedWeekStart), לא
-  // תמיד את השבוע הנוכחי, כדי שעריכת הגשה תשויך לשבוע הנכון.
   saveEditedAvailability(): void {
     const payload = {
       employeeName: this.editingEmployeeName,
@@ -880,11 +821,6 @@ export class ShiftBoardComponent implements OnInit {
       }
     });
   }
-
-  // ===== שורות עצמאיות (תיגבורים/מטווחים/חפיפות) =====
-  // ⚠️ שים לב - extraRowEntries עדיין מפתח (rowName, day) בלבד, בלי
-  // תאריך/שבוע. כלומר אם תמלא "תיגבור" ליום שני בשבוע הרגיל, אותו
-  // ערך יופיע גם ביום שני של שבוע החגים.
 
   getExtraRowText(rowName: string, dayIndex: number): string {
     const dayEng = this.dayMap[this.daysOfWeek[dayIndex]];

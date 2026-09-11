@@ -1,9 +1,9 @@
-<p>employee-management works!</p>
 <div class="admin-container">
   <div class="admin-header-row">
     <h3>ניהול עובדים</h3>
     <div class="header-buttons">
       <button class="btn-secondary" (click)="showAddColumn = !showAddColumn">+ הוסף עמודה</button>
+      <button class="btn-secondary btn-cleanup" (click)="cleanupEmptyRows()">🧹 נקה שורות ריקות</button>
       <button class="btn-add-employee" (click)="addEmployee()">+ הוסף עובד</button>
     </div>
   </div>
@@ -31,32 +31,55 @@
             {{ col }}
             <button class="btn-remove-col" title="הסר עמודה" (click)="removeColumn(col)">×</button>
           </th>
+          <th>שם משתמש</th>
+          <th>סיסמה</th>
+          <th>הרשאה</th>
           <th>פעולות</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let profile of profiles">
-          <td><input type="text" [(ngModel)]="profile.fullName" placeholder="שם מלא"></td>
-          <td><input type="email" [(ngModel)]="profile.email" placeholder="email@example.com"></td>
-          <td><input type="date" [(ngModel)]="profile.hireDate"></td>
-          <td class="armed-cell">
-            <input type="checkbox" [(ngModel)]="profile.isArmed">
-            <span>{{ profile.isArmed ? 'חמוש' : 'לא חמוש' }}</span>
+        <tr *ngFor="let row of rows">
+          <td class="col-name"><input type="text" [(ngModel)]="row.fullName" placeholder="שם מלא"></td>
+          <td class="col-email"><input type="email" [(ngModel)]="row.email" placeholder="email@example.com"></td>
+          <td class="col-date"><input type="date" [(ngModel)]="row.hireDate"></td>
+          <td>
+            <select class="role-select" [(ngModel)]="row.armedStatus">
+              <option value="NotArmed">לא חמוש</option>
+              <option value="InProgress">בתהליך</option>
+              <option value="Armed">חמוש</option>
+            </select>
           </td>
           <td *ngFor="let col of config.customColumns">
-            <input type="text" [(ngModel)]="profile.customFieldValues[col]">
+            <input type="text" [(ngModel)]="row.customFieldValues[col]">
           </td>
+
+          <td class="col-username">
+            <input type="text" [(ngModel)]="row.username" placeholder="לדוגמה: dana.k">
+          </td>
+          <td class="col-password">
+            <input type="text" [(ngModel)]="row.password"
+              [placeholder]="row.username ? 'ריק = ללא שינוי' : 'לפחות 4 תווים'">
+          </td>
+          <td>
+            <select class="role-select" [(ngModel)]="row.systemRole">
+              <option [ngValue]="'Employee'">עובד</option>
+              <option [ngValue]="'Admin'">מנהל</option>
+            </select>
+          </td>
+
           <td class="actions-cell">
-            <button (click)="save(profile)">שמור</button>
-            <button class="btn-remove" (click)="deleteProfile(profile)">מחק</button>
+            <button (click)="save(row)">שמור</button>
+            <button class="btn-remove-small" *ngIf="row.username" (click)="removeAccess(row)">הסר גישה</button>
+            <button class="btn-remove" (click)="deleteProfile(row)">מחק</button>
           </td>
         </tr>
-        <tr *ngIf="profiles.length === 0">
-          <td [attr.colspan]="5 + config.customColumns.length" class="empty-state">
+        <tr *ngIf="rows.length === 0">
+          <td [attr.colspan]="8 + config.customColumns.length" class="empty-state">
             עדיין לא נוספו עובדים. לחצי "+ הוסף עובד" כדי להתחיל.
           </td>
         </tr>
       </tbody>
     </table>
   </div>
+
 </div>

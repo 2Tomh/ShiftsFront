@@ -4,14 +4,6 @@ import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { DataRefreshService } from '../../../services/data-refresh.service';
 
-// הקומפוננטה הזו הפכה מ-@Input/@Output תלוי-הורה (שריד מת, לא
-// מנותב) לעמוד עצמאי לגמרי: טוענת בעצמה עובדים+משמרות+תצורה,
-// ומחשבת סטטיסטיקות בדיוק כמו הפאנל הצדדי ב-shift-board, אבל כעמוד
-// רחב ונפרד עם עוד מקום לפרטים.
-// חדש - נרשמת ל-DataRefreshService.refresh$ כדי לדעת מתי shift-board
-// טען/שינה נתונים (למשל לחיצה על "רענן הגשות"), ולטעון את עצמה
-// מחדש בהתאם - בלי זה היא נשארת "קפואה" עם הנתונים מהטעינה הראשונה
-// עד שהדף כולו מתרענן (F5).
 @Component({
   selector: 'app-schedule-stats',
   templateUrl: './schedule-stats.component.html',
@@ -34,6 +26,10 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
   daysOfWeek: string[] = [];
   editShiftLabels: string[] = [];
 
+  // חדש - בורר "הוסף הגשה לעובד": מציג רק עובדים שעדיין אין להם
+  // הגשה לשבוע הפתוח (לא מופיעים ב-employeeStats).
+  showAddPicker = false;
+
   constructor(
     private shiftService: ShiftService,
     private boardConfigService: BoardConfigurationService,
@@ -43,8 +39,6 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadData();
 
-    // חדש - בכל פעם שמשהו אחר במערכת (בעיקר shift-board) מודיע על
-    // שינוי נתונים, טוענים מחדש גם כאן.
     this.refreshSubscription = this.dataRefreshService.refresh$.subscribe(() => {
       this.loadData();
     });
@@ -54,18 +48,34 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     this.refreshSubscription?.unsubscribe();
   }
 
+  private getSubmittableWeekSunday(): Date {
+    const today = new Date();
+    const sunday = new Date(today);
+    sunday.setDate(today.getDate() - today.getDay() + 7);
+    sunday.setHours(0, 0, 0, 0);
+    return sunday;
+  }
+
+  private formatDateForApi(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
   loadData(): void {
     this.isLoading = true;
+    const weekStartParam = this.formatDateForApi(this.getSubmittableWeekSunday());
+
     forkJoin({
-      employees: this.shiftService.getEmployees(),
-      shifts: this.shiftService.getShifts(),
+      employees: this.shiftService.getEmployees(weekStartParam),
+      shifts: this.shiftService.getShifts(weekStartParam),
       config: this.boardConfigService.getConfiguration()
     }).subscribe(({ employees, shifts, config }) => {
       this.allEmployees = employees;
       this.shifts = shifts;
       this.daysOfWeek = config.workDays;
       this.editShiftLabels = config.shiftDefinitions.map(sd => sd.name);
-      // ה"בלוק לילה" הוא השלישי בתצורה (בהתאמה למוסכמה בשאר המערכת)
       this.nightBlockType = config.shiftDefinitions.length > 2 ? config.shiftDefinitions[2].name : null;
       this.calculateStats();
       this.isLoading = false;
@@ -99,6 +109,29 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     this.employeeStats = Array.from(statsMap.values()).sort((a, b) => b.total - a.total);
   }
 
+  // חדש - כל העובדים שעדיין אין להם הגשה לשבוע הפתוח (לא מופיעים
+  // ב-employeeStats). זו הרשימה שמוצגת בבורר "הוסף הגשה לעובד".
+  get employeesWithoutSubmission(): any[] {
+    const existingNames = new Set(this.employeeStats.map(s => s.name));
+    return this.allEmployees.filter(e => e.name && !existingNames.has(e.name));
+  }
+
+  openAddPicker(): void {
+    this.showAddPicker = true;
+  }
+
+  closeAddPicker(): void {
+    this.showAddPicker = false;
+  }
+
+  // חדש - בחירת עובד מהבורר: סוגר את הבורר, ופותח את אותו מודאל
+  // עריכה (ריק, כי אין עדיין הגשה) - openEditModal כבר משתמש רק
+  // ב-stat.name, אז אפשר להעביר אובייקט מינימלי כזה.
+  selectEmployeeForSubmission(emp: any): void {
+    this.showAddPicker = false;
+    this.openEditModal({ name: emp.name });
+  }
+
   clearAll(): void {
     if (!confirm('האם אתה בטוח? כל העובדים והנתונים יימחקו לצמיתות מהמערכת.')) return;
 
@@ -106,7 +139,6 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
       next: () => {
         alert('המערכת אופסה! כל השמות והנתונים נמחקו.');
         this.loadData();
-        // חדש - מודיע גם לרכיבים אחרים (shift-board) שהנתונים השתנו
         this.dataRefreshService.notifyDataChanged();
       },
       error: (err) => {
@@ -147,7 +179,8 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     this.editPreferredShifts = [];
     this.editNotes = '';
 
-    this.shiftService.getAvailabilityForEmployee(stat.name).subscribe({
+    const weekStartParam = this.formatDateForApi(this.getSubmittableWeekSunday());
+    this.shiftService.getAvailabilityForEmployee(stat.name, weekStartParam).subscribe({
       next: (res: any) => {
         this.isLoadingEdit = false;
         if (res && res.found) {
@@ -182,18 +215,10 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     }
   }
 
-  private getCurrentWeekSunday(): Date {
-    const today = new Date();
-    const sunday = new Date(today);
-    sunday.setDate(today.getDate() - today.getDay());
-    sunday.setHours(0, 0, 0, 0);
-    return sunday;
-  }
-
   saveEditedAvailability(): void {
     const payload = {
       employeeName: this.editingEmployeeName,
-      weekStartDate: this.getCurrentWeekSunday(),
+      weekStartDate: this.getSubmittableWeekSunday(),
       preferredShifts: this.editPreferredShifts,
       notes: this.editNotes
     };

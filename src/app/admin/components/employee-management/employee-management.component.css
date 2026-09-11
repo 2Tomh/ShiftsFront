@@ -16,18 +16,7 @@
   box-sizing: border-box;
 }
 
-.admin-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #dde3ec;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.admin-header-row h3 {
+.admin-container h3 {
   font-family: 'Heebo', sans-serif;
   font-size: 20px;
   font-weight: 700;
@@ -35,77 +24,45 @@
   margin: 0;
 }
 
-.header-buttons {
+.admin-header-row {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #dde3ec;
+  flex-wrap: wrap;
   gap: 10px;
 }
 
-/* ===== כפתורים עליונים ===== */
-.btn-secondary {
-  background: #ffffff;
-  color: #146356;
-  border: 1.5px solid #146356;
-  border-radius: 8px;
-  padding: 8px 14px;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.btn-secondary:hover {
-  background: #d9efe9;
+.header-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-add-employee {
   background: #146356;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
+  border-radius: 6px;
+  padding: 9px 18px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
 }
 
 .btn-add-employee:hover {
   background: #0f4c42;
 }
 
-/* ===== שורה להוספת עמודה ===== */
-.add-column-row {
-  display: flex;
-  gap: 10px;
-  background: #f8fafc;
-  border: 1px solid #dde3ec;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 20px;
-  align-items: center;
-}
-
-.add-column-row input[type="text"] {
-  flex-grow: 1;
-  border: 1.5px solid #dde3ec;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-family: 'Assistant', sans-serif;
-  font-size: 13px;
-  outline: none;
-  transition: border-color 0.15s ease;
-}
-
-.add-column-row input[type="text"]:focus {
-  border-color: #146356;
-}
-
-.add-column-row button {
-  background: #1c2430;
-  color: #ffffff;
-  border: none;
+.btn-secondary {
+  background: #fff;
+  color: #146356;
+  border: 1.5px solid #146356;
   border-radius: 6px;
   padding: 8px 16px;
   font-family: 'Heebo', sans-serif;
@@ -113,22 +70,87 @@
   font-size: 13px;
   cursor: pointer;
   transition: background 0.15s ease;
+  white-space: nowrap;
 }
 
-.add-column-row button:hover {
+.btn-secondary:hover {
+  background: #d9efe9;
+}
+
+/* חדש - כפתור ניקוי שורות ריקות (בכתום/ענבר, לאבחנה ויזואלית
+   מפעולות "רגילות") */
+.btn-cleanup {
+  color: #b45309;
+  border-color: #f0c674;
+}
+
+.btn-cleanup:hover {
+  background: #fff4e0;
+}
+
+/* חדש - כפתור שחזור עובדים חסרים (בכחול, פעולת "תיקון") */
+.btn-repair {
+  color: #1d4ed8;
+  border-color: #93c5fd;
+}
+
+.btn-repair:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.btn-repair:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.add-column-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-column-row input {
+  flex: 1;
+  border: 1.5px solid #dde3ec;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13.5px;
+}
+
+.add-column-row button {
   background: #146356;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.loading-hint {
-  text-align: center;
-  color: #5a6472;
-  font-style: italic;
-  padding: 20px;
-}
-
-/* ===== טבלה ===== */
+/* ===== טבלה - עם גלילה אופקית ברורה ===== */
 .table-scroll {
   overflow-x: auto;
+  overflow-y: hidden;
+  /* חדש - פס גלילה אופקי תמיד גלוי ומודגש, כדי שברור שיש עוד תוכן
+     בצד ולא נראה כאילו הטבלה "נחתכת" בשקט */
+  padding-bottom: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #146356 #eef1f6;
+}
+
+.table-scroll::-webkit-scrollbar {
+  height: 10px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+  background: #eef1f6;
+  border-radius: 6px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: #146356;
+  border-radius: 6px;
 }
 
 .admin-table {
@@ -136,7 +158,6 @@
   border-collapse: collapse;
   font-size: 13.5px;
   text-align: right;
-  min-width: 800px;
 }
 
 .admin-table th {
@@ -145,12 +166,20 @@
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
   font-size: 13px;
-  padding: 12px 14px;
+  padding: 12px 10px;
   white-space: nowrap;
 }
 
+.admin-table th:first-child {
+  border-top-right-radius: 8px;
+}
+
+.admin-table th:last-child {
+  border-top-left-radius: 8px;
+}
+
 .admin-table td {
-  padding: 10px 14px;
+  padding: 10px 10px;
   border-bottom: 1px solid #dde3ec;
   vertical-align: middle;
   color: #1c2430;
@@ -164,74 +193,81 @@
   background-color: #f8fafc;
 }
 
-/* עיצוב שדות קלט בתוך הטבלה */
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* חדש - שדות מצומצמים משמעותית ברוחב, כדי שכל השורה לא תגלוש
+   הרחק מעבר למסך. כל שדה מקבל רוחב שמתאים לתוכן שלו בפועל, לא
+   ברירת מחדל אחידה של 110px לכולם. */
 .admin-table input[type="text"],
 .admin-table input[type="email"],
 .admin-table input[type="date"] {
-  width: 100%;
-  box-sizing: border-box;
-  border: 1px solid #dde3ec;
+  border: 1.5px solid #dde3ec;
   border-radius: 6px;
-  padding: 6px 10px;
+  padding: 6px 7px;
   font-family: 'Assistant', sans-serif;
-  font-size: 13px;
-  background: #ffffff;
-  color: #1c2430;
-  transition: border-color 0.15s ease;
+  font-size: 12px;
+  box-sizing: border-box;
 }
 
-.admin-table input[type="text"]:focus,
-.admin-table input[type="email"]:focus,
-.admin-table input[type="date"]:focus {
-  border-color: #146356;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(20, 99, 86, 0.1);
+.col-name input { width: 100px; }
+.col-email input { width: 130px; }
+.col-date input { width: 120px; }
+.col-username input { width: 90px; }
+.col-password input { width: 100px; }
+
+.admin-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #146356;
+  cursor: pointer;
+  vertical-align: middle;
 }
 
-/* תא חמוש */
 .armed-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-top: 15px !important;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 12px;
 }
 
-.armed-cell input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #146356;
-  cursor: pointer;
-}
-
-.armed-cell span {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #5a6472;
-}
-
-/* כפתור מחיקת עמודה בותר */
 .btn-remove-col {
   background: transparent;
   border: none;
-  color: #f8dcd7;
-  font-size: 16px;
+  color: #fecaca;
+  font-size: 13px;
   cursor: pointer;
-  margin-right: 6px;
-  padding: 0 4px;
-  border-radius: 4px;
-  transition: background 0.15s ease, color 0.15s ease;
+  margin-right: 4px;
 }
 
 .btn-remove-col:hover {
-  background: rgba(192, 57, 43, 0.2);
-  color: #c0392b;
+  color: #fff;
 }
 
-/* פעולות בשורת העובד */
+.role-select {
+  border: 1.5px solid #dde3ec;
+  border-radius: 6px;
+  padding: 6px 6px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 12px;
+  background: #fff;
+  width: 72px;
+  cursor: pointer;
+}
+
+.role-select:focus {
+  outline: none;
+  border-color: #146356;
+}
+
+/* ===== כפתורי פעולה - נערמים אנכית, לא נשברים לרוחב ===== */
 .actions-cell {
   display: flex;
-  gap: 8px;
-  white-space: nowrap;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 78px;
 }
 
 .actions-cell button {
@@ -239,29 +275,46 @@
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  padding: 6px 12px;
+  padding: 5px 8px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11.5px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .actions-cell button:hover {
   background: #0f4c42;
 }
 
-.actions-cell .btn-remove {
-  background: #c0392b;
+.actions-cell button:active {
+  transform: scale(0.97);
 }
 
-.actions-cell .btn-remove:hover {
-  background: #a93226;
+.btn-remove,
+.btn-remove-small {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fecaca !important;
 }
 
-.empty-state {
+.btn-remove:hover,
+.btn-remove-small:hover {
+  background: #fee2e2 !important;
+}
+
+.empty-state,
+.loading-hint {
   text-align: center;
-  color: #5a6472;
-  font-style: italic;
-  padding: 24px !important;
+  color: #94a3b8;
+  padding: 24px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 900px) {
+  .admin-container {
+    padding: 16px;
+  }
 }
