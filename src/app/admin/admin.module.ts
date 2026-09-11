@@ -7,11 +7,12 @@ import { AdminLayoutComponent } from './components/admin-layout/admin-layout.com
 import { ShiftBoardComponent } from './components/shift-board/shift-board.component';
 import { VacationAdminComponent } from './components/vacation-admin/vacation-admin.component';
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
-import { UserManagementComponent } from './components/user-management/user-management.component';
 import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
 import { BoardSettingsComponent } from './components/board-settings/board-settings.component';
 import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component';
-import { EmployeeManagementComponent } from './components/employee-management/employee-management.component'; // חדש
+import { EmployeeManagementComponent } from './components/employee-management/employee-management.component';
+import { ManagerSettingsComponent } from './components/manager-settings/manager-settings.component';
+import { AdminStatisticsComponent } from './components/admin-statistics/admin-statistics.component'; // חדש
 
 @NgModule({
   declarations: [
@@ -19,11 +20,12 @@ import { EmployeeManagementComponent } from './components/employee-management/em
     ShiftBoardComponent,
     VacationAdminComponent,
     SickLeaveAdminComponent,
-    UserManagementComponent,
     AdminWeaponComponent,
     BoardSettingsComponent,
     ScheduleStatsComponent,
-    EmployeeManagementComponent
+    EmployeeManagementComponent,
+    ManagerSettingsComponent,
+    AdminStatisticsComponent
   ],
   imports: [
     CommonModule,

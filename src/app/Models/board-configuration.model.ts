@@ -6,6 +6,12 @@ export interface ShiftDefinition {
   // משמרות סמוכות של אותו עובד (ShiftBoardComponent).
   startTime: string;
   endTime: string;
+  // חדש - ימים (בעברית) שבהם המשמרת הזו לא רצה בכלל, בכל שבוע
+  // (למשל ["שישי"] - "אין משמרת לילה בימי שישי"). שינוי קבוע בתבנית.
+  blockedDays: string[];
+  // חדש - חסימת ימים ברמת תפקיד בודד בתוך המשמרת. מפתח = שם התפקיד
+  // (בדיוק כמו במחרוזות ב-roles), ערך = ימים חסומים לתפקיד הזה.
+  roleBlockedDays: { [role: string]: string[] };
 }
 
 export interface BoardConfiguration {

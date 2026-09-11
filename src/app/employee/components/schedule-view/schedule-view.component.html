@@ -31,35 +31,32 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="row-general">
-            <td class="shift-label-vertical">כללי</td>
-            <td class="role-sidebar">מאבטח</td>
-            <td *ngFor="let day of daysOfWeek; let i = index" class="shift-cell">
-              <span *ngIf="i < 5" class="assigned-name"
-                [class.is-empty]="!getGuardForDay(i)"
-                [class.is-me]="getGuardForDay(i).trim() === highlightName.trim() && highlightName.trim()">
-                {{ getGuardForDay(i) || 'לא שובץ' }}
-              </span>
-              <span *ngIf="i >= 5" class="assigned-name is-empty">—</span>
-            </td>
-          </tr>
-          <ng-container *ngFor="let st of shiftTypes">
-            <tr *ngFor="let role of roles; let firstRole = first" [ngClass]="st.cssClass">
-              <td *ngIf="firstRole" [attr.rowspan]="3" class="shift-label-vertical">
-                <span class="shift-icon">{{ st.icon }}</span>
-                {{ st.label }}
+
+          <ng-container *ngFor="let block of shiftBlocks">
+            <tr *ngFor="let role of block.roles; let firstRole = first" [ngClass]="block.cssClass">
+              <td *ngIf="firstRole" [attr.rowspan]="block.roles.length" class="shift-label-vertical">
+                <span class="shift-icon">{{ block.icon }}</span>
+                {{ block.label }}
               </td>
               <td class="role-sidebar">{{ role }}</td>
               <td *ngFor="let day of daysOfWeek" class="shift-cell">
                 <span
                   class="assigned-name"
-                  [class.is-empty]="!getEmployeeForRole(day, st.label, role)"
-                  [class.is-me]="isMe(day, st.label, role)">
-                  {{ getEmployeeForRole(day, st.label, role) || 'לא שובץ' }}
+                  [class.is-empty]="!getEmployeeForRole(day, block.type, role)"
+                  [class.is-me]="isMe(day, block.type, role)">
+                  {{ getEmployeeForRole(day, block.type, role) || 'לא שובץ' }}
                 </span>
               </td>
             </tr>
           </ng-container>
+
+          <tr class="extra-row" *ngFor="let rowName of extraRowNames">
+            <td class="shift-label-vertical extra-row-label" colspan="2">{{ rowName }}</td>
+            <td class="shift-cell extra-row-cell" *ngFor="let day of daysOfWeek">
+              {{ getExtraRowText(rowName, day) || '—' }}
+            </td>
+          </tr>
+
         </tbody>
       </table>
     </div>

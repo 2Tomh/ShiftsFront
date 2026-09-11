@@ -21,12 +21,18 @@ export class EmployeeProfileService {
     return this.http.get<EmployeeProfile[]>(`${environment.apiUrl}/EmployeeProfile`);
   }
 
+  // יצירת עובד חדש - POST עם אובייקט מלא (רשומה חדשה, אין "מה השתנה")
   create(profile: Partial<EmployeeProfile>) {
     return this.http.post<EmployeeProfile>(`${environment.apiUrl}/EmployeeProfile`, profile);
   }
 
-  update(id: string, profile: EmployeeProfile) {
-    return this.http.put(`${environment.apiUrl}/EmployeeProfile/${id}`, profile);
+  // עריכת עובד קיים - PATCH עם רק השדות שהשתנו בפועל
+  update(id: string, changes: Partial<EmployeeProfile>) {
+    return this.http.patch(`${environment.apiUrl}/EmployeeProfile/${id}`, changes);
+  }
+
+  removeAccess(id: string) {
+    return this.http.delete(`${environment.apiUrl}/EmployeeProfile/${id}/access`);
   }
 
   delete(id: string) {

@@ -1,28 +1,77 @@
 <div class="weapon-container">
   <h3>מעקב הוצאת נשק אישי</h3>
-  
-  <div class="status-item">
-    <input type="checkbox" [checked]="tracking.healthDeclarationSent" disabled />
-    <label>1. הצהרת בריאות (נשלח למייל למנהל)</label>
-    <button *ngIf="!tracking.healthDeclarationSent" (click)="sendDeclaration()">שלח הצהרה</button>
-  </div>
 
-  <div class="status-item">
-    <input type="checkbox" [checked]="tracking.btfRequestSubmitted" disabled />
-    <label>2. הגשת בקשה לבט"פ</label>
-    <button *ngIf="!tracking.btfRequestSubmitted" (click)="sendBtf()">שלח הפניה</button>
-  </div>
+  <div class="tracker-steps">
+    <div class="step-row" [class.is-done]="tracking.healthDeclarationSent">
+      <div class="step-marker">
+        <input type="checkbox" [checked]="tracking.healthDeclarationSent" disabled class="sr-only" />
+        <span class="step-check">✓</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">הצהרת בריאות</span>
+        <span class="step-sublabel">נשלח למייל למנהל</span>
+      </div>
+      <button *ngIf="!tracking.healthDeclarationSent" class="step-action" (click)="sendDeclaration()">שלח הצהרה</button>
+    </div>
 
-  <div class="status-item">
-    <input type="checkbox" [checked]="!!tracking.btfAppointmentDate" disabled />
-    <label>3. תור לבט"פ</label>
-    <span *ngIf="tracking.btfAppointmentDate" class="date-text">
-      (תאריך: {{ tracking.btfAppointmentDate | date:'dd/MM/yyyy HH:mm' }})
-    </span>
-  </div>
+    <div class="step-row" [class.is-done]="tracking.btfRequestSubmitted">
+      <div class="step-marker">
+        <input type="checkbox" [checked]="tracking.btfRequestSubmitted" disabled class="sr-only" />
+        <span class="step-check">✓</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">הגשת בקשה לבט"פ</span>
+      </div>
+      <button *ngIf="!tracking.btfRequestSubmitted" class="step-action" (click)="sendBtf()">שלח הפניה</button>
+    </div>
 
-  <div class="status-item">
-    <input type="checkbox" [checked]="tracking.psychologistAppointment" disabled />
-    <label>4. תור לפסיכולוג</label>
+    <div class="step-row" [class.is-done]="!!tracking.btfAppointmentDate">
+      <div class="step-marker">
+        <input type="checkbox" [checked]="!!tracking.btfAppointmentDate" disabled class="sr-only" />
+        <span class="step-check">✓</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">תור לבט"פ</span>
+        <span class="step-sublabel step-date" *ngIf="tracking.btfAppointmentDate">
+          {{ tracking.btfAppointmentDate | date:'dd/MM/yyyy HH:mm' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="step-row" [class.is-done]="tracking.psychologistAppointment">
+      <div class="step-marker">
+        <input type="checkbox" [checked]="tracking.psychologistAppointment" disabled class="sr-only" />
+        <span class="step-check">✓</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">תור לפסיכולוג</span>
+      </div>
+    </div>
+
+    <!-- חדש - תצוגת מידע בלבד (לא אינטראקטיבי, אין checkbox/כפתור):
+         רק מציג לעובד את תאריך הרענון והרישיון שהמנהל הזין, אם קיים. -->
+    <div class="step-row info-row" *ngIf="tracking.refreshDate">
+      <div class="step-marker">
+        <span class="step-check">📅</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">תאריך רענון</span>
+        <span class="step-sublabel step-date">
+          {{ tracking.refreshDate | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="step-row info-row is-last" *ngIf="tracking.licenseDate">
+      <div class="step-marker">
+        <span class="step-check">📄</span>
+      </div>
+      <div class="step-body">
+        <span class="step-label">תאריך רישיון נשק</span>
+        <span class="step-sublabel step-date">
+          {{ tracking.licenseDate | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+    </div>
   </div>
 </div>

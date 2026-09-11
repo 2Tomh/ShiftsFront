@@ -6,12 +6,17 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './login/login.component';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { AuthExpiredInterceptor } from './interceptors/auth-expired.interceptor'; // חדש
 
 // עדכון: נוסף LoginComponent (חי ברמת ה-Root - נטען מיד, לא Lazy, כי
 // הוא נקודת הכניסה לפני שידוע בכלל אם המשתמש אדמין או עובד). נוסף גם
 // FormsModule (בשביל ngModel בטופס ההתחברות), ו-HTTP_INTERCEPTORS
 // שמצמיד את הטוקן אוטומטית לכל בקשה יוצאת. חדש - ServiceWorkerModule
 // נדרש לתמיכה ב-Push Notifications, פעיל רק ב-Production.
+// חדש - AuthExpiredInterceptor נוסף כ-provider שני: מאזין לתשובות
+// 401 מהשרת ומנתק+מנתב אוטומטית ל-Login. שני ה-Interceptors רצים
+// יחד (multi: true) - AuthInterceptor מוסיף את הטוקן לבקשה היוצאת,
+// AuthExpiredInterceptor בודק את התשובה החוזרת.
 @NgModule({
   declarations: [
     AppComponent,
@@ -24,7 +29,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     AppRoutingModule,
   ],
   providers: [
-    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthExpiredInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]
 })

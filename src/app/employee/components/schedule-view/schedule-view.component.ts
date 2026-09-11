@@ -1,6 +1,15 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ShiftService } from '../../../services/shift.service';
+import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { Shift } from '../../../Models/shift.model';
+import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
+
+interface DynamicShiftBlock {
+  type: string;
+  label: string;
+  roles: string[];
+  cssClass: string;
+}
 
 @Component({
   selector: 'app-schedule-view',
@@ -13,31 +22,82 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   lastUpdated: Date | null = null;
   highlightName: string = '';
 
-  daysOfWeek: string[] = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+  // תוקן - הכל דינמי לפי BoardConfiguration (בדיוק כמו לוח הניהול),
+  // במקום רשימת roles/shiftTypes מקובעת בקוד. כך גם שורות "עצמאיות"
+  // (extra rows, כמו "חפיפה"/"תגבור") מוצגות כאן, וגם תפקיד כמו
+  // "מאבטח" מופיע בדיוק איפה שהוגדר בהגדרות - בלי צורך בשורת "כללי"
+  // נפרדת ומקובעת שהייתה קיימת רק ב-5 הימים הראשונים.
+  daysOfWeek: string[] = [];
+  shiftBlocks: DynamicShiftBlock[] = [];
+  extraRowNames: string[] = [];
+  extraRowEntries: ExtraRowEntry[] = [];
 
-  shiftTypes = [
-    { label: 'בוקר', icon: '☀️', cssClass: 'shift-morning' },
-    { label: 'צהריים', icon: '🌤️', cssClass: 'shift-afternoon' },
-    { label: 'לילה', icon: '🌙', cssClass: 'shift-night' }
-  ];
+  // תוקן - צבע נקבע לפי שם המשמרת בפועל ("בוקר"/"צהריים"/"לילה"),
+  // ולא לפי הסדר שהיא מופיעה בתצורה. קודם ההתאמה הייתה לפי אינדקס
+  // בלבד (בלוק ראשון = shift-morning וכו'), וזה שבר את הצבעים אם
+  // סדר ההגדרות בהגדרות הלוח לא היה בדיוק בוקר->צהריים->לילה.
+  private readonly extraBlockCssClasses = ['shift-color-4', 'shift-color-5', 'shift-color-6'];
 
-  roles = ['אחמ״ש', 'סייר', 'בקרה'];
+  private getCssClassForBlock(label: string, fallbackIndex: number): string {
+    if (label.includes('בוקר')) return 'shift-morning';
+    if (label.includes('צהריים')) return 'shift-afternoon';
+    if (label.includes('לילה')) return 'shift-night';
+    return this.extraBlockCssClasses[fallbackIndex % this.extraBlockCssClasses.length];
+  }
+
+  private dayMap: { [key: string]: string } = {
+    'ראשון': 'Sunday', 'שני': 'Monday', 'שלישי': 'Tuesday', 'רביעי': 'Wednesday',
+    'חמישי': 'Thursday', 'שישי': 'Friday', 'שבת': 'Saturday'
+  };
 
   private refreshInterval: any;
 
   constructor(
-    private shiftService: ShiftService
+    private shiftService: ShiftService,
+    private boardConfigService: BoardConfigurationService
   ) { }
 
   ngOnInit(): void {
-    this.loadShifts();
-    this.refreshInterval = setInterval(() => this.loadShifts(), 30000);
+    this.loadAll();
+    this.refreshInterval = setInterval(() => this.loadAll(), 30000);
   }
 
   ngOnDestroy(): void {
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
+  }
+
+  loadAll(): void {
+    this.isLoading = true;
+
+    this.boardConfigService.getConfiguration().subscribe({
+      next: (config) => {
+        this.applyConfiguration(config);
+        this.loadShifts();
+      },
+      error: (err) => {
+        console.error('שגיאה בטעינת תצורת הלוח:', err);
+        this.loadShifts();
+      }
+    });
+
+    this.boardConfigService.getExtraRows().subscribe({
+      next: (rows) => this.extraRowEntries = rows || [],
+      error: (err) => console.error('שגיאה בטעינת שורות עצמאיות:', err)
+    });
+  }
+
+  private applyConfiguration(config: BoardConfiguration): void {
+    this.daysOfWeek = config.workDays;
+    this.extraRowNames = config.extraRowNames || [];
+
+    this.shiftBlocks = config.shiftDefinitions.map((sd, i) => ({
+      type: sd.name,
+      label: sd.name,
+      roles: sd.roles,
+      cssClass: this.getCssClassForBlock(sd.name, i)
+    }));
   }
 
   loadShifts(): void {
@@ -55,15 +115,15 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   }
 
   refreshNow(): void {
-    this.isLoading = true;
-    this.loadShifts();
+    this.loadAll();
   }
 
-  getEmployeeForRole(dayName: string, shiftTypeLabel: string, role: string): string {
+  getEmployeeForRole(dayName: string, shiftType: string, role: string): string {
+    const dayEnglish = this.dayMap[dayName];
     const shift = this.shifts.find((s: any) => {
-      const sDay = this.translateDayToHebrew(s.day || s.Day);
-      const sType = this.getShiftTypeLabel(s.type || s.Type);
-      return sDay === dayName && sType === shiftTypeLabel;
+      const sDay = s.day || s.Day;
+      const sType = s.type || s.Type;
+      return sDay === dayEnglish && sType === shiftType;
     });
 
     const assignments = (shift as any)?.assignments || (shift as any)?.Assignments;
@@ -73,32 +133,15 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
     return assignment ? assignment.employeeName : '';
   }
 
-  isMe(dayName: string, shiftTypeLabel: string, role: string): boolean {
+  isMe(dayName: string, shiftType: string, role: string): boolean {
     if (!this.highlightName.trim()) return false;
-    const name = this.getEmployeeForRole(dayName, shiftTypeLabel, role);
+    const name = this.getEmployeeForRole(dayName, shiftType, role);
     return name.trim() === this.highlightName.trim();
   }
 
-  private translateDayToHebrew(englishDay: string): string {
-    const map: { [key: string]: string } = {
-      'Sunday': 'ראשון', 'Monday': 'שני', 'Tuesday': 'שלישי', 'Wednesday': 'רביעי',
-      'Thursday': 'חמישי', 'Friday': 'שישי', 'Saturday': 'שבת'
-    };
-    return map[englishDay] || englishDay;
-  }
-
-  // תוקן - Type כבר מגיע מהשרת בדיוק כמו שהמנהל הגדיר אותו ב"הגדרות
-  // לוח" (למשל "בוקר", "צהריים", "לילה" - או כל שם אחר שהמנהל בחר),
-  // לא כ-Enum באנגלית ("Morning"/"Afternoon"/"Night") ולא כמספר
-  // (0/1/2) כמו שהיה פעם. אין יותר צורך (ואי אפשר) "לתרגם" - הערך
-  // כבר מוכן להשוואה ישירה.
-  private getShiftTypeLabel(type: any): string {
-    return type || '';
-  }
-
-  // אותה לוגיקה כמו שורת "כללי/מאבטח" בלוח המנהל - קשורה למשמרת
-  // הבוקר (לפי המבנה המקורי), ולא רלוונטית ביום שישי/שבת.
-  getGuardForDay(dayIndex: number): string {
-    return this.getEmployeeForRole(this.daysOfWeek[dayIndex], 'בוקר', 'מאבטח');
+  getExtraRowText(rowName: string, dayName: string): string {
+    const dayEng = this.dayMap[dayName];
+    const entry = this.extraRowEntries.find(e => e.rowName === rowName && e.day === dayEng);
+    return entry ? entry.text : '';
   }
 }

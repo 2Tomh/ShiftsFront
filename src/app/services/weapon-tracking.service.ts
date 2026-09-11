@@ -2,18 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { WeaponTracking } from '../Models/weapon-tracking.model';
+import { WeaponTracking, WeaponTrackingConfig } from '../Models/weapon-tracking.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WeaponTrackingService {
-  // תוקן - חוזר לשימוש ב-environment.apiUrl (כמו כל שאר השירותים
-  // בפרויקט), במקום כתובת קשיחה - כדי ש-localhost:7278 בפיתוח
-  // ימשיך לעבוד, לא רק הפרודקשן.
   constructor(private http: HttpClient) {}
 
-  // תוקן - אין יותר employeeId כפרמטר: השרת קובע לפי ה-Token שלך
   getMyTracking(): Observable<WeaponTracking> {
     return this.http.get<WeaponTracking>(`${environment.apiUrl}/weapon-tracking/my`);
   }
@@ -26,7 +22,6 @@ export class WeaponTrackingService {
     return this.http.put<WeaponTracking>(`${environment.apiUrl}/weapon-tracking/${employeeId}`, data);
   }
 
-  // חדש - הוספה/הסרה של עובד מרשימת המעקב
   addEmployee(employeeId: string): Observable<any> {
     return this.http.post(`${environment.apiUrl}/weapon-tracking/${employeeId}`, {});
   }
@@ -41,5 +36,14 @@ export class WeaponTrackingService {
 
   sendBtfRequest(): Observable<any> {
     return this.http.post(`${environment.apiUrl}/weapon-tracking/send-btf-request`, {});
+  }
+
+  // חדש - תצורת עמודות מותאמות אישית
+  getConfig(): Observable<WeaponTrackingConfig> {
+    return this.http.get<WeaponTrackingConfig>(`${environment.apiUrl}/weapon-tracking/config`);
+  }
+
+  updateConfig(config: WeaponTrackingConfig): Observable<any> {
+    return this.http.put(`${environment.apiUrl}/weapon-tracking/config`, config);
   }
 }

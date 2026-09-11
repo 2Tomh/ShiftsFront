@@ -46,18 +46,40 @@
         <span class="info-icon">ⓘ</span>
         <h2>משמרות</h2>
       </div>
+      <p class="select-all-hint">טיפ: לחצו על שם היום כדי לסמן את כל המשמרות שלו, או על שם המשמרת כדי לסמן אותה בכל השבוע.</p>
 
       <div class="shifts-table">
         <div class="shifts-row header-row">
           <div class="row-label"></div>
-          <div class="day-col" *ngFor="let day of dayNames; let i = index">
+          <!-- חדש - כל תא בכותרת לחיץ: מסמן/מבטל את כל המשמרות של
+               אותו יום. חג (אם יש) מוצג כתווית נוספת. -->
+          <button
+            type="button"
+            class="day-col day-col-btn"
+            *ngFor="let day of dayNames; let i = index"
+            [class.is-holiday-col]="isHolidayForDay(i)"
+            [class.is-blocked]="isDayBlocked(day)"
+            [disabled]="isDayBlocked(day) || isLocked"
+            (click)="toggleAllShiftsForDay(day)"
+            title="לחצו לסימון/ביטול כל המשמרות של היום">
             <span class="day-name">{{ day }}</span>
             <span class="day-date">{{ formatDateLabel(weekDates[i]) }}</span>
-          </div>
+            <span class="day-holiday-label" *ngIf="isHolidayForDay(i)" [title]="getHolidayForDay(i)?.title">
+              🕎 {{ getHolidayForDay(i)?.titleHebrew }}
+            </span>
+          </button>
         </div>
 
         <div class="shifts-row" *ngFor="let shift of shiftLabels">
-          <div class="row-label">{{ shift }}</div>
+          <!-- חדש - שם המשמרת לחיץ: מסמן/מבטל אותה בכל ימי השבוע -->
+          <button
+            type="button"
+            class="row-label row-label-btn"
+            [disabled]="isLocked"
+            (click)="toggleAllDaysForShift(shift)"
+            title="לחצו לסימון/ביטול המשמרת בכל השבוע">
+            {{ shift }}
+          </button>
           <div class="day-col" *ngFor="let day of dayNames">
             <button
               class="toggle-icon"

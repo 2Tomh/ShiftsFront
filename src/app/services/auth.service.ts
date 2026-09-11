@@ -3,12 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { LoginResponse, AppUser } from '../Models/user.model';
+import { LoginResponse } from '../Models/user.model';
 
-// חדש - שירות האימות המרכזי. שומר את הטוקן ופרטי המשתמש ב-localStorage
-// (לא ב-Cookie, כי אין צורך ב-Server-Side Rendering כאן) - כך המשתמש
-// נשאר מחובר גם אחרי רענון דף (F5), עד שיתנתק במפורש או שהטוקן יפוג
-// (12 שעות, כמו שהוגדר ב-AuthController בשרת).
 @Injectable({
   providedIn: 'root'
 })
@@ -64,18 +60,5 @@ export class AuthService {
 
   isAdmin(): boolean {
     return this.getRole() === 'Admin';
-  }
-
-  // ===== ניהול משתמשים (רק אדמין) =====
-  createUser(payload: { username: string, password: string, role: string, employeeName?: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/create-user`, payload);
-  }
-
-  getUsers(): Observable<AppUser[]> {
-    return this.http.get<AppUser[]>(`${this.apiUrl}/users`);
-  }
-
-  deleteUser(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/users/${id}`);
   }
 }
