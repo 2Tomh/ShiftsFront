@@ -421,6 +421,7 @@ tr.shift-night td {
 
 .assign-cell {
   min-width: 10%;
+  border-left: 1px solid;
   vertical-align: top !important;
 }
 .btn-edit-mini{
