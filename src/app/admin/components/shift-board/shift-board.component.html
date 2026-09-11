@@ -47,6 +47,14 @@
     <div class="table-container">
       <div class="table-scroll">
         <table class="schedule-table matrix-table">
+          <colgroup>
+            <col class="col-side-label">
+            <col class="col-role-label">
+            <ng-container *ngFor="let day of daysOfWeek">
+              <col class="col-bank">
+              <col class="col-assign">
+            </ng-container>
+          </colgroup>
           <thead>
             <tr>
               <th class="col-side-label">משמרת</th>
