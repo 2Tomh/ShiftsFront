@@ -68,6 +68,12 @@
   margin-bottom: 14px;
 }
 
+/* חדש - name-row הכללי (מחוץ ללולאת השבועות, מוצג פעם אחת בראש
+   הדף) מקבל קצת יותר מרחק מתחתיו לפני שמתחילים בלוקי השבועות. */
+.global-name-row {
+  margin-bottom: 4px;
+}
+
 .name-row label {
   display: block;
   font-size: 13px;
@@ -314,6 +320,40 @@
 
 .toggle-icon:active {
   transform: scale(0.85);
+}
+
+/* חדש - חסר קודם: מצב "טוען..." שמופיע בזמן שהתצורה (submissionWeeksCount
+   וכו') עוד נטענת מהשרת, לפני שנבנו בלוקי השבועות. */
+.loading-hint {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 24px 0;
+  font-size: 13.5px;
+}
+
+/* חדש - כותרת/הודעת נעילה גלובליות (deadline-banner/deadline-hint),
+   שעברו מחוץ ל-panel והוצגו כעת ישירות ב-app-main. לא היה להן עיצוב
+   קודם כי הן היו רק בתוך panel (שכבר נותן padding/רקע/מסגרת) - עכשיו
+   הן "חשופות" ישירות על רקע העמוד, אז נותנים להן מראה של באנר עצמאי. */
+.deadline-banner {
+  background: #fdeceb;
+  border: 1px solid #f2b8b3;
+  color: #a33a34;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.deadline-hint {
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.4;
 }
 
 /* ===== Mobile tightening ===== */
