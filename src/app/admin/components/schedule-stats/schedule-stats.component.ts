@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, Input } from '@angular/core';
 import { forkJoin, Subscription } from 'rxjs';
 import { ShiftService } from '../../../services/shift.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
@@ -9,7 +9,13 @@ import { DataRefreshService } from '../../../services/data-refresh.service';
   templateUrl: './schedule-stats.component.html',
   styleUrls: ['./schedule-stats.component.css']
 })
-export class ScheduleStatsComponent implements OnInit, OnDestroy {
+export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
+  // חדש - השבוע שמוצג כרגע בלוח המנהל הראשי (ShiftBoardComponent
+  // מעביר את selectedWeekStart שלו לכאן). אם לא מועבר בכלל (למשל אם
+  // הרכיב הזה משמש במקום אחר איפשהו) - נופלים בחזרה להתנהגות
+  // המקורית (getSubmittableWeekSunday, "השבוע הבא" הקבוע).
+  @Input() weekStart?: Date;
+
   employeeStats: any[] = [];
   isLoading = true;
 
@@ -44,6 +50,16 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     });
   }
 
+  // חדש - כשההורה (לוח המנהל) מחליף שבוע (חץ קודם/הבא), weekStart
+  // מתעדכן וטוען מחדש את הנתונים לשבוע הנכון. firstChange מדולג כי
+  // ngOnInit כבר טוען עם הערך ההתחלתי (Angular מריץ ngOnChanges לפני
+  // ngOnInit, אז הערך הראשון כבר "בפנים" כשה-ngOnInit רץ).
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['weekStart'] && !changes['weekStart'].firstChange) {
+      this.loadData();
+    }
+  }
+
   ngOnDestroy(): void {
     this.refreshSubscription?.unsubscribe();
   }
@@ -56,6 +72,12 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     return sunday;
   }
 
+  // חדש - השבוע שבפועל צריך להציג: אם ההורה סיפק weekStart, משתמשים
+  // בו; אחרת נופלים בחזרה ל"שבוע הבא" הקבוע כמו קודם.
+  private getEffectiveWeekStart(): Date {
+    return this.weekStart ? new Date(this.weekStart) : this.getSubmittableWeekSunday();
+  }
+
   private formatDateForApi(date: Date): string {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -63,9 +85,24 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     return `${y}-${m}-${d}`;
   }
 
+  private formatDateForDisplay(date: Date): string {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    return `${d}/${m}`;
+  }
+
+  // חדש - תווית טווח תאריכים להצגה מתחת לכותרת ("סטטיסטיקות לשבוע
+  // 20/09 - 26/09"), כדי שיהיה ברור לאיזה שבוע בדיוק הטבלה מתייחסת.
+  get weekRangeLabel(): string {
+    const start = this.getEffectiveWeekStart();
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    return `${this.formatDateForDisplay(start)} - ${this.formatDateForDisplay(end)}`;
+  }
+
   loadData(): void {
     this.isLoading = true;
-    const weekStartParam = this.formatDateForApi(this.getSubmittableWeekSunday());
+    const weekStartParam = this.formatDateForApi(this.getEffectiveWeekStart());
 
     forkJoin({
       employees: this.shiftService.getEmployees(weekStartParam),
@@ -179,7 +216,7 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
     this.editPreferredShifts = [];
     this.editNotes = '';
 
-    const weekStartParam = this.formatDateForApi(this.getSubmittableWeekSunday());
+    const weekStartParam = this.formatDateForApi(this.getEffectiveWeekStart());
     this.shiftService.getAvailabilityForEmployee(stat.name, weekStartParam).subscribe({
       next: (res: any) => {
         this.isLoadingEdit = false;
@@ -218,7 +255,7 @@ export class ScheduleStatsComponent implements OnInit, OnDestroy {
   saveEditedAvailability(): void {
     const payload = {
       employeeName: this.editingEmployeeName,
-      weekStartDate: this.getSubmittableWeekSunday(),
+      weekStartDate: this.getEffectiveWeekStart(),
       preferredShifts: this.editPreferredShifts,
       notes: this.editNotes
     };

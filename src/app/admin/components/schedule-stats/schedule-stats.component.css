@@ -108,6 +108,15 @@
   margin: 0;
 }
 
+/* חדש - תווית טווח התאריכים מתחת לכותרת, כדי שיהיה ברור לאיזה
+   שבוע בדיוק הסטטיסטיקות מתייחסות (מסונכרן עם הלוח הראשי). */
+.stats-week-label {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
 .btn-clear-stats {
   background: #fef2f2;
   color: #b91c1c;

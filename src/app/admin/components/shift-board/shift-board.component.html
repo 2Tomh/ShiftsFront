@@ -159,7 +159,7 @@
       </div>
     </div>
 
-    <app-schedule-stats></app-schedule-stats>
+    <app-schedule-stats [weekStart]="selectedWeekStart"></app-schedule-stats>
   </div>
 
   <div class="modal-backdrop" *ngIf="showEditAvailabilityModal" (click)="closeEditAvailabilityModal()"></div>
