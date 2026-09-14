@@ -3,6 +3,7 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Shift } from '../Models/shift.model';
 import { Employee } from '../Models/emplyee.model';
+import { EmployeeHistoryEntry } from '../Models/employee-history-entry.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -63,6 +64,16 @@ export class ShiftService {
   getAvailabilityForEmployee(employeeName: string, weekStart: string): Observable<any> {
     const params = new HttpParams().set('weekStart', weekStart);
     return this.http.get(`${this.apiUrl}/Import/availability/${encodeURIComponent(employeeName)}`, { params });
+  }
+
+  // חדש - דוח אישי מאוחד לעובד: הגשות זמינות + משמרות בפועל +
+  // בקשות חופשה/מחלה, הכל בטווח תאריכים אחד, ממוין ומסונכרן.
+  getEmployeeHistory(employeeName: string, startDate: string, endDate: string): Observable<EmployeeHistoryEntry[]> {
+    const params = new HttpParams()
+      .set('employeeName', employeeName)
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+    return this.http.get<EmployeeHistoryEntry[]>(`${this.apiUrl}/Import/employee-history`, { params });
   }
 
   // תוקן - Angular HttpClient לא הופך מחרוזת גולמית ל-JSON באופן

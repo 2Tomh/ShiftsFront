@@ -8,7 +8,7 @@ import { HolidayService } from '../../../services/holiday.service';
 import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { Holiday } from '../../../Models/holiday.model';
 
-// חדש - כל שבוע שעובד יכול להגיש עבורו זמינות מנוהל בנפרד: לכל
+// כל שבוע שעובד יכול להגיש עבורו זמינות מנוהל בנפרד: לכל
 // שבוע יש את התאריכים שלו, את המשמרות שסומנו בו, הערות משלו, ימים
 // חסומים (חופשה מאושרת) משלו וכו'. הדדליין (locked/deadlineLabel)
 // נשאר משותף לכולם - זה עדיין "מועד ההגשה השבועי" הגלובלי, לא
@@ -35,13 +35,13 @@ export class EmployeeRegistrationComponent implements OnInit {
 
   shiftLabels = ['בוקר', 'צהריים', 'לילה'];
 
-  // חדש - רשימת השבועות הפתוחים להגשה (לפי config.submissionWeeksCount
+  // רשימת השבועות הפתוחים להגשה (לפי config.submissionWeeksCount
   // שהמנהל קבע בהגדרות לוח). ברירת מחדל שבוע אחד, בדיוק כמו ההתנהגות
   // המקורית, עד שהתצורה נטענת בפועל.
   weeks: WeekEntry[] = [];
   isLoadingConfig = true;
 
-  // תוקן - במקום להציג את כל השבועות אחד מתחת לשני, מציגים שבוע
+  // במקום להציג את כל השבועות אחד מתחת לשני, מציגים שבוע
   // אחד בכל פעם ומנווטים בין ה"כרטיסים" עם חצים (בדיוק כמו ניווט
   // השבועות בלוח המנהל).
   selectedWeekIndex = 0;
@@ -108,7 +108,7 @@ export class EmployeeRegistrationComponent implements OnInit {
     });
   }
 
-  // חדש - השבוע המוצג כרגע (getter נוח לשימוש ב-HTML במקום
+  // השבוע המוצג כרגע (getter נוח לשימוש ב-HTML במקום
   // weeks[selectedWeekIndex] בכל מקום).
   get currentWeek(): WeekEntry | null {
     return this.weeks[this.selectedWeekIndex] || null;
@@ -140,7 +140,7 @@ export class EmployeeRegistrationComponent implements OnInit {
     });
   }
 
-  // חדש - יום ראשון של השבוע *הנוכחי* (לא שבוע היעד) - משמש רק
+  // יום ראשון של השבוע *הנוכחי* (לא שבוע היעד) - משמש רק
   // לחישוב הדדליין (יום שלישי שלו). זה נשאר גלובלי (לא תלוי שבוע
   // יעד ספציפי) - ההגשה לכל השבועות הפתוחים ננעלת יחד.
   private getCurrentWeekSunday(): Date {
@@ -200,15 +200,25 @@ export class EmployeeRegistrationComponent implements OnInit {
     return !!this.getHolidayForDay(week, dayIndex);
   }
 
-  // תוקן - קריטי: הדדליין מחושב לפי יום שלישי של *השבוע הנוכחי*,
-  // ומשותף לכל השבועות הפתוחים להגשה יחד (לא דדליין נפרד לכל שבוע).
+  // תוקן - הדדליין מחושב לפי יום שלישי של השבוע הנוכחי, ומשותף לכל
+  // השבועות הפתוחים להגשה יחד (לא דדליין נפרד לכל שבוע). אבל אם
+  // הדדליין הזה כבר עבר (למשל בודקים במערכת אחרי יום שלישי 15:00),
+  // מתקדמים אוטומטית למחזור השבועי הבא (יום שלישי הבא) - במקום
+  // להישאר תקועים בהצגת תאריך שכבר חלף. כך גם isLocked תמיד ישקף
+  // נכון האם המועד הפעיל באמת עבר, לא מועד ישן שכבר "התגלגל" הלאה.
   private computeDeadline(): void {
     const currentSunday = this.getCurrentWeekSunday();
     const tuesday = new Date(currentSunday);
     tuesday.setDate(tuesday.getDate() + 2);
     tuesday.setHours(15, 0, 0, 0);
+
+    const now = new Date();
+    while (now > tuesday) {
+      tuesday.setDate(tuesday.getDate() + 7);
+    }
+
     this.deadlineLabel = this.formatDateLabel(tuesday);
-    this.isLocked = new Date() > tuesday;
+    this.isLocked = now > tuesday;
   }
 
   loadExistingAvailabilityForWeek(week: WeekEntry): void {

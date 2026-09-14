@@ -7,10 +7,9 @@ import { VacationAdminComponent } from './components/vacation-admin/vacation-adm
 import { SickLeaveAdminComponent } from './components/sick-leave-admin/sick-leave-admin.component';
 import { AdminWeaponComponent } from './components/admin-weapon/admin-weapon.component';
 import { BoardSettingsComponent } from './components/board-settings/board-settings.component';
-import { ScheduleStatsComponent } from './components/schedule-stats/schedule-stats.component';
+import { AdminStatisticsComponent } from './components/admin-statistics/admin-statistics.component';
 import { EmployeeManagementComponent } from './components/employee-management/employee-management.component';
-import { ManagerSettingsComponent } from './components/manager-settings/manager-settings.component';
-import { AdminStatisticsComponent } from './components/admin-statistics/admin-statistics.component'; // חדש
+import { PersonalReportComponent } from './components/personal-report/personal-report.component';
 
 const routes: Routes = [
   {
@@ -20,12 +19,11 @@ const routes: Routes = [
       { path: 'board', component: ShiftBoardComponent },
       { path: 'vacations', component: VacationAdminComponent },
       { path: 'sick-leaves', component: SickLeaveAdminComponent },
-      { path: 'users', redirectTo: 'employee-management', pathMatch: 'full' },
       { path: 'weapon', component: AdminWeaponComponent },
       { path: 'board-settings', component: BoardSettingsComponent },
+      { path: 'stats', component: AdminStatisticsComponent },
       { path: 'employee-management', component: EmployeeManagementComponent },
-      { path: 'manager-settings', component: ManagerSettingsComponent },
-      { path: 'statistics', component: AdminStatisticsComponent }, // חדש
+      { path: 'personal-report', component: PersonalReportComponent },
       { path: '', redirectTo: 'board', pathMatch: 'full' }
     ]
   }
