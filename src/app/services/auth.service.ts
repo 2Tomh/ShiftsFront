@@ -18,40 +18,63 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password }).pipe(
+  // תוקן - נוסף rememberMe: כשמסומן, שומרים ב-localStorage (נשאר
+  // גם אחרי סגירת הדפדפן/המחשב). כשלא מסומן, שומרים ב-sessionStorage
+  // (נמחק אוטומטית כשהטאב/הדפדפן נסגר) - בדיוק כמו "זכור אותי" בכל
+  // אתר רגיל. גם השרת מקבל את זה כדי להנפיק טוקן שתקף ל-30 יום
+  // במקום 12 שעות, כדי שלא יידרש login חוזר תוך כדי.
+  login(username: string, password: string, rememberMe: boolean = false): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, { username, password, rememberMe }).pipe(
       tap(res => {
-        localStorage.setItem(this.TOKEN_KEY, res.token);
-        localStorage.setItem(this.ROLE_KEY, res.role);
-        localStorage.setItem(this.USERNAME_KEY, res.username);
+        this.clearBothStorages();
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem(this.TOKEN_KEY, res.token);
+        storage.setItem(this.ROLE_KEY, res.role);
+        storage.setItem(this.USERNAME_KEY, res.username);
         if (res.employeeName) {
-          localStorage.setItem(this.EMPLOYEE_NAME_KEY, res.employeeName);
+          storage.setItem(this.EMPLOYEE_NAME_KEY, res.employeeName);
         }
       })
     );
   }
 
   logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.ROLE_KEY);
-    localStorage.removeItem(this.USERNAME_KEY);
-    localStorage.removeItem(this.EMPLOYEE_NAME_KEY);
+    this.clearBothStorages();
+  }
+
+  // חדש - מנקה גם localStorage וגם sessionStorage, כדי לא להשאיר
+  // נתונים ישנים סותרים ממקור קודם (למשל אם פעם התחברו עם "זכור
+  // אותי" ופעם בלי).
+  private clearBothStorages(): void {
+    [localStorage, sessionStorage].forEach(s => {
+      s.removeItem(this.TOKEN_KEY);
+      s.removeItem(this.ROLE_KEY);
+      s.removeItem(this.USERNAME_KEY);
+      s.removeItem(this.EMPLOYEE_NAME_KEY);
+    });
+  }
+
+  // חדש - בודק קודם localStorage (זכור אותי), ואם אין - נופל בחזרה
+  // ל-sessionStorage. כך שאר האפליקציה (guards, interceptors וכו')
+  // ממשיכה לעבוד בלי לדעת/להתעניין באיזה אחסון בפועל נעשה שימוש.
+  private getItem(key: string): string | null {
+    return localStorage.getItem(key) ?? sessionStorage.getItem(key);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    return this.getItem(this.TOKEN_KEY);
   }
 
   getRole(): 'Admin' | 'Employee' | null {
-    return localStorage.getItem(this.ROLE_KEY) as 'Admin' | 'Employee' | null;
+    return this.getItem(this.ROLE_KEY) as 'Admin' | 'Employee' | null;
   }
 
   getUsername(): string | null {
-    return localStorage.getItem(this.USERNAME_KEY);
+    return this.getItem(this.USERNAME_KEY);
   }
 
   getEmployeeName(): string | null {
-    return localStorage.getItem(this.EMPLOYEE_NAME_KEY);
+    return this.getItem(this.EMPLOYEE_NAME_KEY);
   }
 
   isLoggedIn(): boolean {

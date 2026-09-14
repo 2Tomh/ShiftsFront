@@ -10,6 +10,8 @@ import { AuthService } from '../services/auth.service';
 export class LoginComponent {
   username = '';
   password = '';
+  // חדש - "זכור אותי"
+  rememberMe = false;
   isSubmitting = false;
   errorMessage = '';
 
@@ -24,7 +26,7 @@ export class LoginComponent {
     this.isSubmitting = true;
     this.errorMessage = '';
 
-    this.authService.login(this.username.trim(), this.password).subscribe({
+    this.authService.login(this.username.trim(), this.password, this.rememberMe).subscribe({
       next: (res) => {
         this.isSubmitting = false;
         // ניתוב לפי תפקיד - אדמין ללוח הניהול, עובד ללוח המשמרות שלו.
