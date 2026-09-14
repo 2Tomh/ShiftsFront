@@ -38,8 +38,9 @@
         <td class="num-total">{{ stat.total }}</td>
         <td class="num-night">{{ stat.night }}</td>
         <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
-        <td>
+        <td class="actions-cell">
           <button type="button" class="icon-btn" title="ערוך הגשה" (click)="openEditModal(stat)">📋 ערוך הגשה</button>
+          <button type="button" class="icon-btn-delete" title="מחק הגשה" (click)="deleteSubmission(stat)">🗑</button>
         </td>
       </tr>
       <tr *ngIf="employeeStats.length === 0">

@@ -34,16 +34,11 @@ export class ShiftService {
     return this.http.put(`${this.apiUrl}/Shifts/publish`, {}, { params });
   }
 
-  // חדש - weekStart חובה כעת (yyyy-MM-dd), כי GetEmployees בשרת
-  // דורש אותו כדי לסנן זמינויות לפי שבוע.
   getEmployees(weekStart: string): Observable<Employee[]> {
     const params = new HttpParams().set('weekStart', weekStart);
     return this.http.get<Employee[]>(`${this.apiUrl}/Employees`, { params });
   }
 
-  // תוקן - נוסף employeeName אופציונלי: כשעורכים טקסט חופשי (כפולה,
-  // "גיא/אלכס" וכו') אין employeeId אמיתי, אז בלי לשלוח את השם עצמו
-  // השרת לא ידע מה לשמור והיה מפרש את זה כבקשת "הסר שיבוץ".
   assignEmployee(shiftId: string, employeeId: string | null, role: string, employeeName?: string | null): Observable<any> {
     const payload = { shiftId, employeeId, role, employeeName: employeeName ?? null };
     return this.http.post(`${this.apiUrl}/Shifts/assign`, payload);
@@ -66,8 +61,15 @@ export class ShiftService {
     return this.http.get(`${this.apiUrl}/Import/availability/${encodeURIComponent(employeeName)}`, { params });
   }
 
-  // חדש - דוח אישי מאוחד לעובד: הגשות זמינות + משמרות בפועל +
-  // בקשות חופשה/מחלה, הכל בטווח תאריכים אחד, ממוין ומסונכרן.
+  // חדש - מחיקת כל ההגשות של עובד לשבוע ספציפי. שימושי לניקוי
+  // הגשות תקועות/כפולות (למשל מבאג ישן), וגם ככפתור "מחק הגשה" רגיל.
+  deleteEmployeeAvailabilityForWeek(employeeName: string, weekStart: string): Observable<any> {
+    const params = new HttpParams()
+      .set('employeeName', employeeName)
+      .set('weekStart', weekStart);
+    return this.http.delete(`${this.apiUrl}/Import/employee-availability`, { params });
+  }
+
   getEmployeeHistory(employeeName: string, startDate: string, endDate: string): Observable<EmployeeHistoryEntry[]> {
     const params = new HttpParams()
       .set('employeeName', employeeName)
@@ -76,11 +78,6 @@ export class ShiftService {
     return this.http.get<EmployeeHistoryEntry[]>(`${this.apiUrl}/Import/employee-history`, { params });
   }
 
-  // תוקן - Angular HttpClient לא הופך מחרוזת גולמית ל-JSON באופן
-  // אוטומטי (הוא שולח אותה כ-text/plain), וזה גרם לשרת להחזיר
-  // 415 Unsupported Media Type ולדלג בשקט על כל יצירת השבוע.
-  // כאן אנחנו עושים JSON.stringify במפורש וקובעים Content-Type,
-  // כדי שהשרת יקבל JSON תקין ויוכל לעשות Bind ל-DateTime.
   generateWeek(startDate: any): Observable<any> {
     return this.http.post(
       `${this.apiUrl}/Shifts/generate-week`,

@@ -108,8 +108,6 @@
   margin: 0;
 }
 
-/* חדש - תווית טווח התאריכים מתחת לכותרת, כדי שיהיה ברור לאיזה
-   שבוע בדיוק הסטטיסטיקות מתייחסות (מסונכרן עם הלוח הראשי). */
 .stats-week-label {
   font-size: 12.5px;
   color: #94a3b8;
@@ -177,12 +175,16 @@
   margin-right: 6px;
 }
 
-/* חדש - עמודת שעת ההגשה: פונט קצת קטן יותר וצבע עמום, כי זה מידע
-   משני שלא צריך למשוך תשומת לב כמו המספרים העיקריים. */
 .submitted-at-cell {
   font-size: 12px;
   color: #5a6472;
   white-space: nowrap;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
 }
 
 .icon-btn {
@@ -193,6 +195,23 @@
   cursor: pointer;
   font-family: 'Heebo', sans-serif;
   font-size: 12.5px;
+}
+
+/* חדש - כפתור מחיקת הגשה, אדום עדין כדי שיהיה ברור שזו פעולה
+   הרסנית, אבל לא צורח כמו "נקה הגשות" הגלובלי. */
+.icon-btn-delete {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.icon-btn-delete:hover {
+  background: #fee2e2;
 }
 
 .empty-state {
@@ -207,7 +226,6 @@
   padding: 40px;
 }
 
-/* מודאל עריכת הגשה */
 .modal-backdrop {
   position: fixed;
   inset: 0;

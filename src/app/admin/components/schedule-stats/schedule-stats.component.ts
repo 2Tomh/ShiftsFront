@@ -10,10 +10,6 @@ import { DataRefreshService } from '../../../services/data-refresh.service';
   styleUrls: ['./schedule-stats.component.css']
 })
 export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
-  // חדש - השבוע שמוצג כרגע בלוח המנהל הראשי (ShiftBoardComponent
-  // מעביר את selectedWeekStart שלו לכאן). אם לא מועבר בכלל (למשל אם
-  // הרכיב הזה משמש במקום אחר איפשהו) - נופלים בחזרה להתנהגות
-  // המקורית (getSubmittableWeekSunday, "השבוע הבא" הקבוע).
   @Input() weekStart?: Date;
 
   employeeStats: any[] = [];
@@ -32,8 +28,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
   daysOfWeek: string[] = [];
   editShiftLabels: string[] = [];
 
-  // חדש - בורר "הוסף הגשה לעובד": מציג רק עובדים שעדיין אין להם
-  // הגשה לשבוע הפתוח (לא מופיעים ב-employeeStats).
   showAddPicker = false;
 
   constructor(
@@ -50,10 +44,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  // חדש - כשההורה (לוח המנהל) מחליף שבוע (חץ קודם/הבא), weekStart
-  // מתעדכן וטוען מחדש את הנתונים לשבוע הנכון. firstChange מדולג כי
-  // ngOnInit כבר טוען עם הערך ההתחלתי (Angular מריץ ngOnChanges לפני
-  // ngOnInit, אז הערך הראשון כבר "בפנים" כשה-ngOnInit רץ).
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['weekStart'] && !changes['weekStart'].firstChange) {
       this.loadData();
@@ -72,8 +62,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     return sunday;
   }
 
-  // חדש - השבוע שבפועל צריך להציג: אם ההורה סיפק weekStart, משתמשים
-  // בו; אחרת נופלים בחזרה ל"שבוע הבא" הקבוע כמו קודם.
   private getEffectiveWeekStart(): Date {
     return this.weekStart ? new Date(this.weekStart) : this.getSubmittableWeekSunday();
   }
@@ -91,8 +79,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     return `${d}/${m}`;
   }
 
-  // חדש - תווית טווח תאריכים להצגה מתחת לכותרת ("סטטיסטיקות לשבוע
-  // 20/09 - 26/09"), כדי שיהיה ברור לאיזה שבוע בדיוק הטבלה מתייחסת.
   get weekRangeLabel(): string {
     const start = this.getEffectiveWeekStart();
     const end = new Date(start);
@@ -125,8 +111,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
       const name = emp.name;
       const requested = emp.requestedCount || 0;
       if (name && requested > 0) {
-        // submittedAt מגיע מהשרת (SubmittedAt), שעת ההגשה
-        // האחרונה של העובד לשבוע הזה. מוצג כעמודה נוספת בטבלה.
         statsMap.set(name, {
           name,
           total: 0,
@@ -155,8 +139,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     this.employeeStats = Array.from(statsMap.values()).sort((a, b) => b.total - a.total);
   }
 
-  // עיצוב שעת ההגשה לתצוגה ("14/09, 21:03"). מחזיר "—" אם
-  // אין תאריך.
   formatSubmittedAt(dateStr: string | null): string {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
@@ -169,8 +151,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     });
   }
 
-  // חדש - כל העובדים שעדיין אין להם הגשה לשבוע הפתוח (לא מופיעים
-  // ב-employeeStats). זו הרשימה שמוצגת בבורר "הוסף הגשה לעובד".
   get employeesWithoutSubmission(): any[] {
     const existingNames = new Set(this.employeeStats.map(s => s.name));
     return this.allEmployees.filter(e => e.name && !existingNames.has(e.name));
@@ -184,9 +164,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     this.showAddPicker = false;
   }
 
-  // חדש - בחירת עובד מהבורר: סוגר את הבורר, ופותח את אותו מודאל
-  // עריכה (ריק, כי אין עדיין הגשה) - openEditModal כבר משתמש רק
-  // ב-stat.name, אז אפשר להעביר אובייקט מינימלי כזה.
   selectEmployeeForSubmission(emp: any): void {
     this.showAddPicker = false;
     this.openEditModal({ name: emp.name });
@@ -204,6 +181,25 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
       error: (err) => {
         console.error('Delete failed:', err);
         alert('המחיקה נכשלה בשרת. בדוק את ה-Console לשגיאות.');
+      }
+    });
+  }
+
+  // חדש - מחיקת ההגשה של עובד ספציפי לשבוע הפתוח בלבד (לא כל
+  // המערכת כמו clearAll). שימושי גם לניקוי הגשות תקועות/כפולות
+  // מבאגים ישנים, וגם כפעולה רגילה כשעובד רוצה לבטל הגשה לגמרי.
+  deleteSubmission(stat: any): void {
+    if (!confirm(`למחוק את כל ההגשה של "${stat.name}" לשבוע זה? הפעולה לא ניתנת לביטול.`)) return;
+
+    const weekStartParam = this.formatDateForApi(this.getEffectiveWeekStart());
+    this.shiftService.deleteEmployeeAvailabilityForWeek(stat.name, weekStartParam).subscribe({
+      next: () => {
+        this.loadData();
+        this.dataRefreshService.notifyDataChanged();
+      },
+      error: (err) => {
+        console.error('שגיאה במחיקת ההגשה:', err);
+        alert('שגיאה במחיקת ההגשה. נסה שוב.');
       }
     });
   }
@@ -276,15 +272,6 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   saveEditedAvailability(): void {
-    // תוקן - הבאג: היה נשלח כאן אובייקט Date גולמי
-    // (this.getEffectiveWeekStart()), ש-Angular הופך ל-ISO string
-    // עם אזור זמן UTC בעת סריאליזציה ל-JSON. בגלל שישראל היא
-    // UTC+2/+3, חצות יום ראשון לפי השעון המקומי הופך ל"שבת בלילה"
-    // ב-UTC - וכך ה-WeekStartDate שנשמר בפועל בשרת היה יום אחד
-    // אחורה מהשבוע שבאמת מוצג על המסך. לכן ה-GetEmployees (שמסנן
-    // לפי תאריך מדויק) לא מצא את ההגשה החדשה, וזה נראה כאילו
-    // "לא נוסף". כעת שולחים מחרוזת תאריך פשוטה ("2026-09-20", בלי
-    // שעה/אזור זמן) - בדיוק כמו בכל שאר המערכת (employee-registration).
     const payload = {
       employeeName: this.editingEmployeeName,
       weekStartDate: this.formatDateForApi(this.getEffectiveWeekStart()),
