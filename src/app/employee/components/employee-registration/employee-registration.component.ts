@@ -338,7 +338,7 @@ export class EmployeeRegistrationComponent implements OnInit {
 
     const payload = {
       employeeName: this.employeeName.trim(),
-      weekStartDate: week.dates[0],
+      weekStartDate: this.formatDateForApi(week.dates[0]),
       preferredShifts: week.preferredShifts,
       notes: week.notes
     };
