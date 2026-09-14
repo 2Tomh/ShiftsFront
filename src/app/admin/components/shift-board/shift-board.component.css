@@ -1,17 +1,49 @@
+/* ==============================================================
+   שליטה על רוחב העמודות - שנה רק את המספרים כאן, בפיקסלים (px).
+   אחרי שינוי: שמור, ותעשה רענון קשיח בדפדפן (Ctrl+Shift+R) כדי
+   לוודא שהדפדפן לא מציג גרסה ישנה שמורה מהקאש.
+   ============================================================== */
+:root {
+  --col-width-shift-name: 44px;   /* עמודת "משמרת" (עם האייקון) */
+  --col-width-role: 48px;         /* עמודת "תפקיד" */
+  --col-width-bank: 60px;         /* עמודת "הגישו" (המועמדים) */
+  --col-width-assign: 130px;      /* עמודת השיבוץ עצמו (השם שנבחר) */
+
+  --cell-padding: 4px;            /* ריווח פנימי בכל תא בטבלה - משפיע על הגובה */
+  --assigned-box-min-height: 32px; /* גובה מינימלי לתיבת השיבוץ (השם שנבחר) */
+  --candidate-line-min-height: 20px; /* גובה מינימלי לכל שורת מועמד ב"הגישו" */
+}
+
 /* הוסר: @import של Google Fonts הועבר ל-styles.css הגלובלי */
 
+/* חדש - 'Suez One' נטען כאן ברמת הרכיב כגיבוי; עדיף להעביר גם
+   ל-styles.css הגלובלי (כמו Assistant/Heebo) כדי למנוע טעינה כפולה
+   אם הפונט הזה נחוץ ברכיבים נוספים. */
+@import url('https://fonts.googleapis.com/css2?family=Suez+One&display=swap');
+
 :host {
-  --ink: #1c2430;
+  /* עיצוב חדש - "קונסולת בקרה" (מסגרת כהה) עוטפת "דף עבודה" בהיר -
+     במקום פלטת ה-SaaS התכלת/רכה הקודמת. */
+  --ink: #1b2430;
   --ink-soft: #5a6472;
-  --paper: #eef1f6;
+  --paper: #f4f2ec;
   --card: #ffffff;
-  --line: #dde3ec;
-  --amber: #d98e04;
-  --amber-soft: #fbe8c4;
-  --teal: #146356;
-  --teal-soft: #d9efe9;
-  --danger: #c0392b;
-  --danger-soft: #f8dcd7;
+  --line: #ded9c9;
+  --amber: #e2932a;
+  --amber-soft: #f7e2bc;
+  --teal: #2f7a52;
+  --teal-soft: #dcefe1;
+  --danger: #c1443a;
+  --danger-soft: #f6d7d3;
+  --violet: #6a4fb0;
+  --violet-soft: #e7ddf5;
+
+  /* חדש - צבעי מסגרת הבקרה הכהה (header/legend/כפתורים) */
+  --frame: #101a24;
+  --frame-2: #16232f;
+  --frame-line: #2a3b4c;
+  --frame-text: #e7eaee;
+  --frame-text-soft: #8695a6;
 
   display: block;
   font-family: 'Assistant', sans-serif;
@@ -24,10 +56,12 @@
 }
 
 .schedule-page {
-  padding: 24px 28px 56px;
+  padding: 18px 20px 40px;
   max-width: 1800px;
   margin: 0 auto;
   box-sizing: border-box;
+  background: var(--frame);
+  border-radius: 4px;
 }
 
 /* ===== Header ===== */
@@ -36,24 +70,25 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
-  margin-bottom: 22px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--frame-line);
 }
 
 .page-title {
-  font-family: 'Heebo', sans-serif;
-  font-weight: 800;
-  font-size: 22px;
+  font-family: 'Suez One', serif;
+  font-weight: 400;
+  font-size: 23px;
   margin: 0;
   text-align: center;
-  color: var(--ink);
+  color: var(--frame-text);
+  letter-spacing: 0.2px;
 }
 
 .eyebrow {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--amber);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--frame-text-soft);
   margin: 0;
   text-align: left;
   justify-self: end;
@@ -82,13 +117,13 @@
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--ink-soft);
+  color: var(--frame-text-soft);
 }
 
 .rest-legend-swatch {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
   flex-shrink: 0;
   display: inline-block;
 }
@@ -104,8 +139,8 @@
 }
 
 .rest-legend-purple {
-  background: #f3e8ff;
-  border: 1.5px solid #7c3aed;
+  background: var(--violet-soft);
+  border: 1.5px solid var(--violet);
 }
 
 /* ===== Week navigator (ניווט שבועות - תמיד יום ראשון, בלי בחירת תאריך חופשי) ===== */
@@ -113,19 +148,19 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #ffffff;
-  border: 1.5px solid var(--line);
-  border-radius: 8px;
+  background: #0a121a;
+  border: 1px solid var(--frame-line);
+  border-radius: 3px;
   padding: 4px 6px;
 }
 
 .week-nav-btn {
   width: 26px;
   height: 26px;
-  border: none;
-  background: var(--paper);
-  color: var(--ink);
-  border-radius: 6px;
+  border: 1px solid var(--frame-line);
+  background: var(--frame-2);
+  color: var(--amber);
+  border-radius: 2px;
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
@@ -136,8 +171,7 @@
 }
 
 .week-nav-btn:hover {
-  background: var(--teal-soft);
-  color: var(--teal);
+  border-color: var(--amber);
 }
 
 .week-nav-label {
@@ -149,26 +183,27 @@
 }
 
 .week-nav-caption {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 10px;
-  font-weight: 700;
-  color: var(--ink-soft);
+  font-weight: 600;
+  color: var(--frame-text-soft);
 }
 
 .week-nav-range {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 13px;
   font-weight: 700;
-  color: var(--ink);
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
 }
 
 .week-nav-today {
-  border: 1px solid var(--line);
-  background: var(--paper);
-  color: var(--ink-soft);
-  border-radius: 6px;
+  border: 1px solid var(--frame-line);
+  background: var(--frame-2);
+  color: var(--frame-text-soft);
+  border-radius: 2px;
   padding: 5px 10px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 11.5px;
   cursor: pointer;
@@ -177,20 +212,20 @@
 }
 
 .week-nav-today:hover {
-  border-color: var(--teal);
-  color: var(--teal);
+  border-color: var(--amber);
+  color: var(--amber);
 }
 
 .btn-create-week {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--ink);
-  color: #fff;
+  background: var(--amber);
+  color: #241505;
   border: none;
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 10px 16px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -198,19 +233,19 @@
 }
 
 .btn-create-week:hover {
-  background: var(--teal);
+  background: #c97e18;
 }
 
 .btn-refresh-data {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ffffff;
-  color: var(--ink);
-  border: 1.5px solid var(--line);
-  border-radius: 8px;
+  background: var(--frame-2);
+  color: var(--frame-text);
+  border: 1px solid var(--frame-line);
+  border-radius: 3px;
   padding: 10px 16px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -218,20 +253,20 @@
 }
 
 .btn-refresh-data:hover {
-  border-color: var(--teal);
-  color: var(--teal);
+  border-color: var(--amber);
+  color: var(--amber);
 }
 
 .btn-publish {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--amber);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
+  background: var(--frame-2);
+  color: var(--amber);
+  border: 1px solid var(--amber);
+  border-radius: 3px;
   padding: 10px 16px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 13px;
   cursor: pointer;
@@ -239,26 +274,29 @@
 }
 
 .btn-publish:hover:not(:disabled) {
-  background: #b87700;
+  background: var(--amber);
+  color: #241505;
 }
 
 .btn-publish:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: default;
 }
 
 .publish-status {
   font-size: 11.5px;
   font-weight: 700;
-  color: var(--danger);
-  background: var(--danger-soft);
+  color: #f0a89e;
+  background: #2a1414;
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 2px;
+  border: 1px solid #5c2020;
 }
 
 .publish-status.is-published {
-  color: var(--teal);
-  background: var(--teal-soft);
+  color: #8fd6ac;
+  background: #10261a;
+  border-color: #2a5c3c;
 }
 
 .btn-icon {
@@ -275,11 +313,10 @@
 
 /* ===== Schedule table ===== */
 .table-container {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--frame-line);
+  border-radius: 3px;
   overflow: hidden;
-  box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
 }
 
 .table-scroll {
@@ -299,28 +336,28 @@
 
 /* חדש - רוחב קבוע לעמודות הצד (לא ימי שבוע) */
 .col-side-label {
-  width: 56px;
+  width: var(--col-width-shift-name);
 }
 
 .col-role-label {
-  width: 48px;
+  width: var(--col-width-role);
 }
 
 /* תוקן - רוחב נפרד לכל תת-עמודה בפועל (מוגדר עכשיו דרך colgroup/col
    בפועל, לא רק על ה-th הממוזג). כך "הגישו" יכול להיות צר יותר מתא
    השיבוץ עצמו, במקום שיתחלקו 50/50 אוטומטית. */
 .col-bank {
-  width: 60px;
+  width: var(--col-width-bank);
 }
 
 .col-assign {
-  width: 130px;
+  width: var(--col-width-assign);
 }
 
 .matrix-table thead th {
   background: var(--ink);
   color: #fff;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 12.5px;
   padding: 9px 6px;
@@ -353,7 +390,7 @@
 }
 
 .day-header-cell .day-blocked-reason {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 9.5px;
   color: #fecaca;
@@ -370,7 +407,7 @@
 }
 
 .day-header-cell .day-holiday-label {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 9.5px;
   color: #fde8c4;
@@ -382,7 +419,7 @@
 .matrix-table td {
   border-top: 1px solid var(--line);
   border-right: 1px solid var(--line);
-  padding: 4px;
+  padding: var(--cell-padding);
   text-align: center;
   vertical-align: top;
   overflow: hidden;
@@ -393,12 +430,12 @@
 }
 
 .shift-label-vertical {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 12.5px;
   background: #ffffff !important;
   white-space: nowrap;
-  width: 56px;
+  width: var(--col-width-shift-name) !important;
   vertical-align: middle !important;
 }
 
@@ -414,20 +451,20 @@
   color: var(--ink-soft);
   background: #ffffff !important;
   white-space: nowrap;
-  width: 48px;
+  width: var(--col-width-role) !important;
   vertical-align: middle !important;
 }
 
 tr.shift-morning td {
-  background: #cfe6f7;
+  background: #dfeaf5;
 }
 
 tr.shift-afternoon td {
-  background: #d7f0e0;
+  background: #e1ecdf;
 }
 
 tr.shift-night td {
-  background: #fbdfc9;
+  background: var(--violet-soft);
 }
 
 .shift-label-vertical,
@@ -443,19 +480,21 @@ tr.shift-night td {
   vertical-align: top !important;
   background-color: rgba(255, 255, 255, 0.45);
   overflow: hidden;
+  width: var(--col-width-bank) !important;
 }
 
 .assign-cell {
   border-left: 1px solid;
   vertical-align: top !important;
   overflow: hidden;
+  width: var(--col-width-assign) !important;
 }
 .btn-edit-mini{
   background: none;
   border: none;
 }
 .side-mini-title {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 9px;
   font-weight: 700;
   color: var(--ink-soft);
@@ -469,12 +508,12 @@ tr.shift-night td {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 20px;
+  min-height: var(--candidate-line-min-height);
   border: none;
   border-bottom: 1px solid rgba(28, 36, 48, 0.08);
   background: transparent;
   color: var(--ink);
-  border-radius: 3px;
+  border-radius: 2px;
   padding: 2px 3px;
   font-size: 10.5px;
   font-weight: 500;
@@ -498,7 +537,7 @@ tr.shift-night td {
   background: var(--teal);
   color: #fff;
   font-weight: 700;
-  border-radius: 4px;
+  border-radius: 2px;
 }
 
 .candidate-line.is-assigned:hover {
@@ -521,10 +560,10 @@ tr.shift-night td {
 
 .assigned-display-box {
   position: relative;
-  border-radius: 6px;
+  border-radius: 3px;
   padding: 4px 3px;
   width: 100%;
-  min-height: 32px;
+  min-height: var(--assigned-box-min-height);
   box-sizing: border-box;
 }
 
@@ -554,13 +593,13 @@ tr.shift-night td {
    ליום הזה (לרוב כי הבקשה אושרה אחרי שהוא כבר שובץ). צבע נפרד
    מהאדום/כתום של מרווח מנוחה כדי לא לערבב בין שני סוגי בעיות שונים. */
 .assigned-display-box.leave-conflict {
-  border-color: #7c3aed;
-  background: #f3e8ff;
-  box-shadow: inset 0 0 0 1px #7c3aed;
+  border-color: var(--violet);
+  background: var(--violet-soft);
+  box-shadow: inset 0 0 0 1px var(--violet);
 }
 
 .assigned-display-box.leave-conflict .assigned-name-text {
-  color: #5b21b6;
+  color: #4a3785;
 }
 
 .assigned-name-text {
@@ -579,7 +618,7 @@ tr.shift-night td {
 .btn-remove-mini {
   position: absolute;
   top: -7px;
-  right: -7px;
+  right: 0px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -620,7 +659,7 @@ tr.shift-night td {
   border: 1.5px dashed var(--line);
   background: transparent;
   color: var(--ink-soft);
-  border-radius: 6px;
+  border-radius: 2px;
   padding: 4px 0;
   font-size: 13px;
   font-weight: 700;
@@ -646,10 +685,10 @@ tr.shift-night td {
 
 .hatched-cell {
   background: repeating-linear-gradient(45deg,
-      #e3e7ee,
-      #e3e7ee 4px,
-      #f4f6f9 4px,
-      #f4f6f9 8px) !important;
+      #e6e1d2,
+      #e6e1d2 4px,
+      #f4f2ec 4px,
+      #f4f2ec 8px) !important;
 }
 
 .empty-shift-cell {
@@ -685,7 +724,7 @@ tr.shift-night td {
 }
 
 .stats-header h2 {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 15px;
   font-weight: 700;
   margin: 0;
@@ -695,7 +734,7 @@ tr.shift-night td {
   border: 1px solid var(--danger);
   background: #fff;
   color: var(--danger);
-  border-radius: 7px;
+  border-radius: 2px;
   padding: 5px 10px;
   font-size: 11.5px;
   font-weight: 600;
@@ -712,7 +751,7 @@ tr.shift-night td {
   border-collapse: collapse;
   background: #fff;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 3px;
   overflow: hidden;
   font-size: 14px;
 }
@@ -720,7 +759,7 @@ tr.shift-night td {
 .stats-table th {
   background: var(--ink);
   color: #fff;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 13px;
   padding: 12px 14px;
@@ -825,18 +864,18 @@ tr.shift-night td {
   left: 50%;
   transform: translate(-50%, -50%);
   background: var(--card);
-  border-radius: 14px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
   padding: 24px;
   width: min(420px, 92vw);
   max-height: 80vh;
   display: flex;
   flex-direction: column;
   z-index: 50;
-  box-shadow: 0 30px 60px -20px rgba(28, 36, 48, 0.4);
 }
 
 .modal-title {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 17px;
   font-weight: 700;
   text-align: center;
@@ -853,7 +892,7 @@ tr.shift-night td {
 }
 
 .section-label {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 12.5px;
   font-weight: 700;
   padding-bottom: 6px;
@@ -877,7 +916,7 @@ tr.shift-night td {
 
 .name-chip {
   border: none;
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 7px 14px;
   font-weight: 600;
   font-size: 13px;
@@ -920,9 +959,9 @@ tr.shift-night td {
   background: var(--ink);
   color: #fff;
   border: none;
-  border-radius: 9px;
+  border-radius: 3px;
   padding: 11px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   cursor: pointer;
 }
@@ -963,7 +1002,7 @@ tr.shift-night td {
 }
 
 .edit-row-label {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 12px;
   color: var(--teal);
@@ -981,7 +1020,7 @@ tr.shift-night td {
 .toggle-icon {
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: 2px;
   border: none;
   background: transparent;
   font-size: 14px;
@@ -1012,7 +1051,7 @@ tr.shift-night td {
   width: 100%;
   box-sizing: border-box;
   border: 1.5px solid var(--line);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 8px 10px;
   font-family: 'Assistant', sans-serif;
   font-size: 13px;
@@ -1028,9 +1067,9 @@ tr.shift-night td {
 .btn-save-edit {
   flex: 1;
   border: none;
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 10px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-weight: 700;
   font-size: 13.5px;
   cursor: pointer;
@@ -1064,7 +1103,7 @@ tr.shift-night td {
 /* ===== Mobile ===== */
 @media (max-width: 700px) {
   .schedule-page {
-    padding: 16px 12px 40px;
+    padding: 14px 10px 32px;
   }
 
   .page-header {
@@ -1088,28 +1127,28 @@ tr.shift-night td {
 }
 
 .shift-block-0 {
-  background: #eaf4ff;
+  background: #dfeaf5;
 }
 
 .shift-block-1 {
-  background: #eafaf0;
+  background: #e1ecdf;
 }
 
 .shift-block-2 {
-  background: #f5f0ff;
+  background: var(--violet-soft);
 }
 
 .extra-row-label {
-  background: #fafafa;
+  background: #fafaf6;
   font-weight: 600;
 }
 
 .extra-row-input {
   width: 100%;
-  border: 1px solid #e5e7eb;
-  border-radius: 4px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
   padding: 4px 6px;
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Assistant', sans-serif;
   font-size: 12.5px;
   text-align: center;
   box-sizing: border-box;

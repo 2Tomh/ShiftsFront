@@ -5,7 +5,24 @@ import { ShiftService } from '../../../services/shift.service';
 import { VacationService } from '../../../services/vacation.service';
 import { AuthService } from '../../../services/auth.service';
 import { HolidayService } from '../../../services/holiday.service';
+import { BoardConfigurationService } from '../../../services/board-configuration.service';
 import { Holiday } from '../../../Models/holiday.model';
+
+// חדש - כל שבוע שעובד יכול להגיש עבורו זמינות מנוהל בנפרד: לכל
+// שבוע יש את התאריכים שלו, את המשמרות שסומנו בו, הערות משלו, ימים
+// חסומים (חופשה מאושרת) משלו וכו'. הדדליין (locked/deadlineLabel)
+// נשאר משותף לכולם - זה עדיין "מועד ההגשה השבועי" הגלובלי, לא
+// דדליין נפרד לכל שבוע.
+interface WeekEntry {
+  offset: number; // כמה שבועות קדימה מהשבוע הנוכחי (1 = השבוע הבא)
+  dates: Date[];
+  preferredShifts: { day: string, shift: string }[];
+  notes: string;
+  blockedDays: Set<string>;
+  vacationBanner: string;
+  isSubmitting: boolean;
+  holidaysByDate: Map<string, Holiday>;
+}
 
 @Component({
   selector: 'app-employee-registration',
@@ -14,68 +31,100 @@ import { Holiday } from '../../../Models/holiday.model';
 })
 export class EmployeeRegistrationComponent implements OnInit {
   employeeName: string = '';
-  notes: string = '';
   dayNames = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-
-  private readonly weekOffset: number = 1;
-
-  preferredShifts: { day: string, shift: string }[] = [];
 
   shiftLabels = ['בוקר', 'צהריים', 'לילה'];
 
-  blockedDays = new Set<string>();
-  vacationBanner: string = '';
-
-  isSubmitting = false;
+  // חדש - רשימת השבועות הפתוחים להגשה (לפי config.submissionWeeksCount
+  // שהמנהל קבע בהגדרות לוח). ברירת מחדל שבוע אחד, בדיוק כמו ההתנהגות
+  // המקורית, עד שהתצורה נטענת בפועל.
+  weeks: WeekEntry[] = [];
+  isLoadingConfig = true;
 
   isLocked = false;
   deadlineLabel: string = '';
-
-  private holidaysByDate: Map<string, Holiday> = new Map();
 
   constructor(
     private shiftService: ShiftService,
     private vacationService: VacationService,
     private authService: AuthService,
-    private holidayService: HolidayService
+    private holidayService: HolidayService,
+    private boardConfigService: BoardConfigurationService
   ) { }
 
   ngOnInit(): void {
     this.employeeName = this.authService.getEmployeeName() || this.authService.getUsername() || '';
     this.computeDeadline();
-    this.loadHolidays();
-    if (this.employeeName) {
-      this.checkVacationConflicts();
-      this.loadExistingAvailability();
-    }
+    this.loadWeeksConfigThenInit();
   }
 
-  // שבוע היעד (שאליו שייכת ההגשה בפועל) - נשאר "השבוע הבא".
-  private getWeekSunday(): Date {
+  private loadWeeksConfigThenInit(): void {
+    this.isLoadingConfig = true;
+    this.boardConfigService.getConfiguration().subscribe({
+      next: (config: any) => {
+        const count = (config?.submissionWeeksCount && config.submissionWeeksCount >= 1)
+          ? config.submissionWeeksCount
+          : 1;
+        this.buildWeeks(count);
+        this.isLoadingConfig = false;
+      },
+      error: () => {
+        // אם התצורה לא נטענה מסיבה כלשהי - נופלים בחזרה להתנהגות
+        // המקורית (שבוע אחד), כדי לא לשבור את ההגשה לגמרי.
+        this.buildWeeks(1);
+        this.isLoadingConfig = false;
+      }
+    });
+  }
+
+  private buildWeeks(count: number): void {
+    this.weeks = [];
+    for (let offset = 1; offset <= count; offset++) {
+      const dates = this.computeWeekDates(offset);
+      this.weeks.push({
+        offset,
+        dates,
+        preferredShifts: [],
+        notes: '',
+        blockedDays: new Set<string>(),
+        vacationBanner: '',
+        isSubmitting: false,
+        holidaysByDate: new Map<string, Holiday>()
+      });
+    }
+
+    this.weeks.forEach(week => {
+      this.loadHolidaysForWeek(week);
+      if (this.employeeName) {
+        this.checkVacationConflictsForWeek(week);
+        this.loadExistingAvailabilityForWeek(week);
+      }
+    });
+  }
+
+  // שבוע היעד (שאליו שייכת ההגשה בפועל), לפי offset (1 = השבוע הבא,
+  // 2 = השבוע שאחריו וכו').
+  private computeWeekDates(offset: number): Date[] {
     const today = new Date();
     const sunday = new Date(today);
-    sunday.setDate(today.getDate() - today.getDay() + (this.weekOffset * 7));
+    sunday.setDate(today.getDate() - today.getDay() + (offset * 7));
     sunday.setHours(0, 0, 0, 0);
-    return sunday;
+    return this.dayNames.map((_, i) => {
+      const d = new Date(sunday);
+      d.setDate(sunday.getDate() + i);
+      return d;
+    });
   }
 
   // חדש - יום ראשון של השבוע *הנוכחי* (לא שבוע היעד) - משמש רק
-  // לחישוב הדדליין (יום שלישי שלו).
+  // לחישוב הדדליין (יום שלישי שלו). זה נשאר גלובלי (לא תלוי שבוע
+  // יעד ספציפי) - ההגשה לכל השבועות הפתוחים ננעלת יחד.
   private getCurrentWeekSunday(): Date {
     const today = new Date();
     const sunday = new Date(today);
     sunday.setDate(today.getDate() - today.getDay());
     sunday.setHours(0, 0, 0, 0);
     return sunday;
-  }
-
-  get weekDates(): Date[] {
-    const sunday = this.getWeekSunday();
-    return this.dayNames.map((_, i) => {
-      const d = new Date(sunday);
-      d.setDate(sunday.getDate() + i);
-      return d;
-    });
   }
 
   formatDateLabel(date: Date): string {
@@ -89,8 +138,8 @@ export class EmployeeRegistrationComponent implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
-  private loadHolidays(): void {
-    const dates = this.weekDates;
+  private loadHolidaysForWeek(week: WeekEntry): void {
+    const dates = week.dates;
     const startYear = dates[0].getFullYear();
     const endYear = dates[6].getFullYear();
 
@@ -111,26 +160,24 @@ export class EmployeeRegistrationComponent implements OnInit {
 
     holidaysStartYear$.subscribe(holidaysA => {
       holidaysEndYear$.subscribe(holidaysB => {
-        this.holidaysByDate = new Map();
-        [...holidaysA, ...holidaysB].forEach(h => this.holidaysByDate.set(h.date, h));
+        week.holidaysByDate = new Map();
+        [...holidaysA, ...holidaysB].forEach(h => week.holidaysByDate.set(h.date, h));
       });
     });
   }
 
-  getHolidayForDay(dayIndex: number): Holiday | undefined {
-    const d = this.weekDates[dayIndex];
+  getHolidayForDay(week: WeekEntry, dayIndex: number): Holiday | undefined {
+    const d = week.dates[dayIndex];
     if (!d) return undefined;
-    return this.holidaysByDate.get(this.formatDateForApi(d));
+    return week.holidaysByDate.get(this.formatDateForApi(d));
   }
 
-  isHolidayForDay(dayIndex: number): boolean {
-    return !!this.getHolidayForDay(dayIndex);
+  isHolidayForDay(week: WeekEntry, dayIndex: number): boolean {
+    return !!this.getHolidayForDay(week, dayIndex);
   }
 
-  // תוקן - קריטי: הדדליין מחושב עכשיו לפי יום שלישי של *השבוע
-  // הנוכחי* (getCurrentWeekSunday), לא לפי יום שלישי של שבוע היעד
-  // (weekDates, ששייך לשבוע הבא). ההגיון העסקי: "מגישים השבוע
-  // זמינות לשבוע הבא, עד יום שלישי של השבוע הזה עצמו".
+  // תוקן - קריטי: הדדליין מחושב לפי יום שלישי של *השבוע הנוכחי*,
+  // ומשותף לכל השבועות הפתוחים להגשה יחד (לא דדליין נפרד לכל שבוע).
   private computeDeadline(): void {
     const currentSunday = this.getCurrentWeekSunday();
     const tuesday = new Date(currentSunday);
@@ -140,80 +187,80 @@ export class EmployeeRegistrationComponent implements OnInit {
     this.isLocked = new Date() > tuesday;
   }
 
-  loadExistingAvailability(): void {
-    const weekStartParam = this.formatDateForApi(this.getWeekSunday());
+  loadExistingAvailabilityForWeek(week: WeekEntry): void {
+    const weekStartParam = this.formatDateForApi(week.dates[0]);
     this.shiftService.getAvailabilityForEmployee(this.employeeName, weekStartParam).subscribe({
       next: (result: any) => {
         if (result?.found) {
-          this.preferredShifts = (result.preferredShifts || []).map((p: any) => ({
+          week.preferredShifts = (result.preferredShifts || []).map((p: any) => ({
             day: p.day,
             shift: p.shift
           }));
-          this.notes = result.notes || '';
+          week.notes = result.notes || '';
         }
       },
       error: () => { }
     });
   }
 
-  isSelected(day: string, shift: string): boolean {
-    return this.preferredShifts.some(s => s.day === day && s.shift === shift);
+  isSelected(week: WeekEntry, day: string, shift: string): boolean {
+    return week.preferredShifts.some(s => s.day === day && s.shift === shift);
   }
 
-  isDayBlocked(day: string): boolean {
-    return this.blockedDays.has(day);
+  isDayBlocked(week: WeekEntry, day: string): boolean {
+    return week.blockedDays.has(day);
   }
 
-  togglePreference(day: string, shift: string) {
-    if (this.blockedDays.has(day) || this.isLocked) return;
+  togglePreference(week: WeekEntry, day: string, shift: string): void {
+    if (week.blockedDays.has(day) || this.isLocked) return;
 
-    const index = this.preferredShifts.findIndex(s => s.day === day && s.shift === shift);
+    const index = week.preferredShifts.findIndex(s => s.day === day && s.shift === shift);
     if (index > -1) {
-      this.preferredShifts.splice(index, 1);
+      week.preferredShifts.splice(index, 1);
     } else {
-      this.preferredShifts.push({ day, shift });
+      week.preferredShifts.push({ day, shift });
     }
   }
 
-  toggleAllShiftsForDay(day: string): void {
-    if (this.blockedDays.has(day) || this.isLocked) return;
+  toggleAllShiftsForDay(week: WeekEntry, day: string): void {
+    if (week.blockedDays.has(day) || this.isLocked) return;
 
-    const allSelected = this.shiftLabels.every(shift => this.isSelected(day, shift));
+    const allSelected = this.shiftLabels.every(shift => this.isSelected(week, day, shift));
 
     if (allSelected) {
-      this.preferredShifts = this.preferredShifts.filter(s => s.day !== day);
+      week.preferredShifts = week.preferredShifts.filter(s => s.day !== day);
     } else {
       this.shiftLabels.forEach(shift => {
-        if (!this.isSelected(day, shift)) {
-          this.preferredShifts.push({ day, shift });
+        if (!this.isSelected(week, day, shift)) {
+          week.preferredShifts.push({ day, shift });
         }
       });
     }
   }
 
-  toggleAllDaysForShift(shift: string): void {
+  toggleAllDaysForShift(week: WeekEntry, shift: string): void {
     if (this.isLocked) return;
 
-    const relevantDays = this.dayNames.filter(day => !this.blockedDays.has(day));
+    const relevantDays = this.dayNames.filter(day => !week.blockedDays.has(day));
     if (relevantDays.length === 0) return;
 
-    const allSelected = relevantDays.every(day => this.isSelected(day, shift));
+    const allSelected = relevantDays.every(day => this.isSelected(week, day, shift));
 
     if (allSelected) {
-      this.preferredShifts = this.preferredShifts.filter(s => s.shift !== shift);
+      week.preferredShifts = week.preferredShifts.filter(s => s.shift !== shift);
     } else {
       relevantDays.forEach(day => {
-        if (!this.isSelected(day, shift)) {
-          this.preferredShifts.push({ day, shift });
+        if (!this.isSelected(week, day, shift)) {
+          week.preferredShifts.push({ day, shift });
         }
       });
     }
   }
 
-  checkVacationConflicts(): void {
+  checkVacationConflictsForWeek(week: WeekEntry): void {
     const name = this.employeeName.trim();
-    this.blockedDays.clear();
-    this.vacationBanner = '';
+    week.blockedDays.clear();
+    week.vacationBanner = '';
 
     if (!name) return;
 
@@ -222,7 +269,7 @@ export class EmployeeRegistrationComponent implements OnInit {
         const approved = requests.filter(r => r.status === 'Approved');
         if (approved.length === 0) return;
 
-        const dates = this.weekDates;
+        const dates = week.dates;
         const ranges: string[] = [];
 
         approved.forEach(v => {
@@ -234,7 +281,7 @@ export class EmployeeRegistrationComponent implements OnInit {
           let overlapsThisWeek = false;
           dates.forEach((d, i) => {
             if (d >= start && d <= end) {
-              this.blockedDays.add(this.dayNames[i]);
+              week.blockedDays.add(this.dayNames[i]);
               overlapsThisWeek = true;
             }
           });
@@ -244,19 +291,19 @@ export class EmployeeRegistrationComponent implements OnInit {
           }
         });
 
-        this.preferredShifts = this.preferredShifts.filter(s => !this.blockedDays.has(s.day));
+        week.preferredShifts = week.preferredShifts.filter(s => !week.blockedDays.has(s.day));
 
-        if (this.blockedDays.size > 0) {
-          this.vacationBanner = `שימי לב: יש לך חופשה מאושרת בתאריכים ${ranges.join(', ')} - לא ניתן להגיש זמינות לימים אלו.`;
+        if (week.blockedDays.size > 0) {
+          week.vacationBanner = `שימי לב: יש לך חופשה מאושרת בתאריכים ${ranges.join(', ')} - לא ניתן להגיש זמינות לימים אלו.`;
         }
       },
       error: () => { }
     });
   }
 
-  submitAvailability() {
+  submitAvailabilityForWeek(week: WeekEntry): void {
     if (this.isLocked) {
-      alert('המועד להגשה/עריכה לשבוע זה עבר.');
+      alert('המועד להגשה/עריכה עבר.');
       return;
     }
 
@@ -265,24 +312,22 @@ export class EmployeeRegistrationComponent implements OnInit {
       return;
     }
 
-    const weekStart = this.getWeekSunday();
-
     const payload = {
       employeeName: this.employeeName.trim(),
-      weekStartDate: weekStart,
-      preferredShifts: this.preferredShifts,
-      notes: this.notes
+      weekStartDate: week.dates[0],
+      preferredShifts: week.preferredShifts,
+      notes: week.notes
     };
 
-    this.isSubmitting = true;
+    week.isSubmitting = true;
 
     this.shiftService.submitEmployeeAvailability(payload).subscribe({
       next: () => {
-        this.isSubmitting = false;
-        alert(`תודה, הזמינות נשמרה בהצלחה! ניתן להמשיך לערוך עד יום שלישי בשעה 15:00.`);
+        week.isSubmitting = false;
+        alert(`תודה, הזמינות לשבוע ${this.formatDateLabel(week.dates[0])}–${this.formatDateLabel(week.dates[6])} נשמרה בהצלחה! ניתן להמשיך לערוך עד יום שלישי בשעה 15:00.`);
       },
       error: (err: any) => {
-        this.isSubmitting = false;
+        week.isSubmitting = false;
         console.error(err);
         alert(err.error?.error || "שגיאה בשליחת הנתונים.");
       }

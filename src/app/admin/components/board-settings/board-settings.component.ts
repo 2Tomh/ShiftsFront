@@ -15,7 +15,8 @@ export class BoardSettingsComponent implements OnInit {
   config: BoardConfiguration = {
     workDays: [],
     shiftDefinitions: [],
-    extraRowNames: []
+    extraRowNames: [],
+    submissionWeeksCount: 1
   };
 
   isLoading = true;
@@ -58,6 +59,12 @@ export class BoardSettingsComponent implements OnInit {
           if (!sd.blockedDays) sd.blockedDays = [];
           if (!sd.roleBlockedDays) sd.roleBlockedDays = {};
         });
+        // חדש - הגנה דומה על submissionWeeksCount: תצורות ישנות
+        // שנוצרו לפני הוספת השדה הזה, או ערך לא תקין (0/שלילי) -
+        // ברירת מחדל 1 שבוע (ההתנהגות המקורית, לא שוברת כלום).
+        if (!this.config.submissionWeeksCount || this.config.submissionWeeksCount < 1) {
+          this.config.submissionWeeksCount = 1;
+        }
         this.newRoleInputs = this.config.shiftDefinitions.map(() => '');
         this.isLoading = false;
       },
@@ -168,6 +175,23 @@ export class BoardSettingsComponent implements OnInit {
     this.config.extraRowNames.splice(index, 1);
   }
 
+  // חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות עבורם. מוגבל
+  // בין 1 ל-8 (יותר מזה כנראה טעות הקלדה, ואין סיבה עסקית סבירה
+  // לפתוח יותר משבועיים-שלושה מראש בדרך כלל).
+  increaseSubmissionWeeks(): void {
+    const current = this.config.submissionWeeksCount || 1;
+    if (current < 8) {
+      this.config.submissionWeeksCount = current + 1;
+    }
+  }
+
+  decreaseSubmissionWeeks(): void {
+    const current = this.config.submissionWeeksCount || 1;
+    if (current > 1) {
+      this.config.submissionWeeksCount = current - 1;
+    }
+  }
+
   // ===== תאריכים ספציפיים חסומים (חג/סגירה) =====
 
   loadBlockedDates(): void {
@@ -230,6 +254,11 @@ export class BoardSettingsComponent implements OnInit {
     if (emptyShiftName) {
       alert('לכל משמרת חייב להיות שם');
       return;
+    }
+
+    // חדש - הגנה על ערך תקין לכמות שבועות ההגשה לפני שמירה
+    if (!this.config.submissionWeeksCount || this.config.submissionWeeksCount < 1) {
+      this.config.submissionWeeksCount = 1;
     }
 
     // חדש - לא חוסם שמירה אם השעות ריקות (כדי לא לשבור זרימת עבודה

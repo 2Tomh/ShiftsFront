@@ -23,6 +23,23 @@
       </div>
     </section>
 
+    <!-- חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות -->
+    <section class="settings-section">
+      <h2>הגשת זמינות מראש</h2>
+      <p class="section-hint">
+        כמה שבועות קדימה עובדים יכולים להגיש עבורם זמינות בו-זמנית (לדוגמה: 2 = הגשה לשבוע הבא וגם לשבוע שאחריו יחד).
+      </p>
+      <div class="weeks-count-row">
+        <button type="button" class="weeks-count-btn" (click)="decreaseSubmissionWeeks()"
+          [disabled]="config.submissionWeeksCount <= 1">－</button>
+        <span class="weeks-count-value">
+          {{ config.submissionWeeksCount }} {{ config.submissionWeeksCount === 1 ? 'שבוע' : 'שבועות' }}
+        </span>
+        <button type="button" class="weeks-count-btn" (click)="increaseSubmissionWeeks()"
+          [disabled]="config.submissionWeeksCount >= 8">＋</button>
+      </div>
+    </section>
+
     <!-- משמרות ותפקידים -->
     <section class="settings-section">
       <h2>משמרות ותפקידים</h2>
