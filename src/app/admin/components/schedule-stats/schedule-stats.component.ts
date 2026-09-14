@@ -125,7 +125,7 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
       const name = emp.name;
       const requested = emp.requestedCount || 0;
       if (name && requested > 0) {
-        // חדש - submittedAt מגיע מהשרת (SubmittedAt), שעת ההגשה
+        // submittedAt מגיע מהשרת (SubmittedAt), שעת ההגשה
         // האחרונה של העובד לשבוע הזה. מוצג כעמודה נוספת בטבלה.
         statsMap.set(name, {
           name,
@@ -155,10 +155,8 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     this.employeeStats = Array.from(statsMap.values()).sort((a, b) => b.total - a.total);
   }
 
-  // חדש - עיצוב שעת ההגשה לתצוגה ("14/09, 21:03"). מחזיר "—" אם
-  // אין תאריך (למשל אם ההגשה הוספה ע"י המנהל בלי לעבור עדיין
-  // דרך saveEditedAvailability בפועל, מצב שלא אמור לקרות בפועל
-  // כי requested>0 תמיד מגיע יחד עם הגשה אמיתית, אבל ליתר ביטחון).
+  // עיצוב שעת ההגשה לתצוגה ("14/09, 21:03"). מחזיר "—" אם
+  // אין תאריך.
   formatSubmittedAt(dateStr: string | null): string {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
@@ -278,9 +276,18 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   saveEditedAvailability(): void {
+    // תוקן - הבאג: היה נשלח כאן אובייקט Date גולמי
+    // (this.getEffectiveWeekStart()), ש-Angular הופך ל-ISO string
+    // עם אזור זמן UTC בעת סריאליזציה ל-JSON. בגלל שישראל היא
+    // UTC+2/+3, חצות יום ראשון לפי השעון המקומי הופך ל"שבת בלילה"
+    // ב-UTC - וכך ה-WeekStartDate שנשמר בפועל בשרת היה יום אחד
+    // אחורה מהשבוע שבאמת מוצג על המסך. לכן ה-GetEmployees (שמסנן
+    // לפי תאריך מדויק) לא מצא את ההגשה החדשה, וזה נראה כאילו
+    // "לא נוסף". כעת שולחים מחרוזת תאריך פשוטה ("2026-09-20", בלי
+    // שעה/אזור זמן) - בדיוק כמו בכל שאר המערכת (employee-registration).
     const payload = {
       employeeName: this.editingEmployeeName,
-      weekStartDate: this.getEffectiveWeekStart(),
+      weekStartDate: this.formatDateForApi(this.getEffectiveWeekStart()),
       preferredShifts: this.editPreferredShifts,
       notes: this.editNotes
     };
