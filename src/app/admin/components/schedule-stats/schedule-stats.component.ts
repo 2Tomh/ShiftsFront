@@ -125,7 +125,16 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
       const name = emp.name;
       const requested = emp.requestedCount || 0;
       if (name && requested > 0) {
-        statsMap.set(name, { name, total: 0, night: 0, requested, notes: emp.notes || '' });
+        // חדש - submittedAt מגיע מהשרת (SubmittedAt), שעת ההגשה
+        // האחרונה של העובד לשבוע הזה. מוצג כעמודה נוספת בטבלה.
+        statsMap.set(name, {
+          name,
+          total: 0,
+          night: 0,
+          requested,
+          notes: emp.notes || '',
+          submittedAt: emp.submittedAt || null
+        });
       }
     });
 
@@ -144,6 +153,22 @@ export class ScheduleStatsComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     this.employeeStats = Array.from(statsMap.values()).sort((a, b) => b.total - a.total);
+  }
+
+  // חדש - עיצוב שעת ההגשה לתצוגה ("14/09, 21:03"). מחזיר "—" אם
+  // אין תאריך (למשל אם ההגשה הוספה ע"י המנהל בלי לעבור עדיין
+  // דרך saveEditedAvailability בפועל, מצב שלא אמור לקרות בפועל
+  // כי requested>0 תמיד מגיע יחד עם הגשה אמיתית, אבל ליתר ביטחון).
+  formatSubmittedAt(dateStr: string | null): string {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleString('he-IL', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   // חדש - כל העובדים שעדיין אין להם הגשה לשבוע הפתוח (לא מופיעים

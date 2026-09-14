@@ -19,6 +19,7 @@
   <table class="stats-table" *ngIf="!isLoading">
     <thead>
       <tr>
+        <th>שעת הגשה</th>
         <th class="text-start">עובד</th>
         <th>הגיש</th>
         <th>קיבל</th>
@@ -29,6 +30,7 @@
     </thead>
     <tbody>
       <tr *ngFor="let stat of employeeStats">
+        <td class="submitted-at-cell">{{ formatSubmittedAt(stat.submittedAt) }}</td>
         <td class="text-start emp-name">
           <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editName(stat)">{{ stat.name }}</div>
         </td>
@@ -41,7 +43,7 @@
         </td>
       </tr>
       <tr *ngIf="employeeStats.length === 0">
-        <td colspan="6" class="empty-state">עדיין אין הגשות זמינות</td>
+        <td colspan="7" class="empty-state">עדיין אין הגשות זמינות</td>
       </tr>
     </tbody>
   </table>

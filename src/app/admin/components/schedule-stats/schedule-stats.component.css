@@ -177,6 +177,14 @@
   margin-right: 6px;
 }
 
+/* חדש - עמודת שעת ההגשה: פונט קצת קטן יותר וצבע עמום, כי זה מידע
+   משני שלא צריך למשוך תשומת לב כמו המספרים העיקריים. */
+.submitted-at-cell {
+  font-size: 12px;
+  color: #5a6472;
+  white-space: nowrap;
+}
+
 .icon-btn {
   background: #eef2f7;
   border: 1px solid #d1d5db;
