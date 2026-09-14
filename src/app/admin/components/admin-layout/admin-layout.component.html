@@ -1,29 +1,59 @@
-<div class="admin-layout">
+<div class="admin-layout" [class.sidenav-closed]="!isSidenavOpen">
   <!-- תפריט הצד -->
   <aside class="admin-sidenav">
     <div class="sidenav-header">
-      <span class="sidenav-brand">ניהול · HP נס ציונה</span>
+      <span class="sidenav-brand" *ngIf="isSidenavOpen">ניהול · HP נס ציונה</span>
+      <button class="btn-toggle-sidenav" (click)="toggleSidenav()" [title]="isSidenavOpen ? 'סגור תפריט' : 'פתח תפריט'">
+        {{ isSidenavOpen ? '‹' : '›' }}
+      </button>
     </div>
 
     <nav class="sidenav-nav">
-      <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">לוח מנהל</a>
-      <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">אישור חופשות</a>
-      <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link">אישור מחלה</a>
-      <a routerLink="/admin/weapon" routerLinkActive="active" class="nav-link">מעקב נשק</a>
-      <a routerLink="/admin/board-settings" routerLinkActive="active" class="nav-link">הגדרות לוח</a>
+      <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">לוח מנהל</span>
+      </a>
+      <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">אישור חופשות</span>
+      </a>
+      <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">אישור מחלה</span>
+      </a>
+      <a routerLink="/admin/weapon" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">מעקב נשק</span>
+      </a>
+      <a routerLink="/admin/board-settings" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">הגדרות לוח</span>
+      </a>
       <!-- מאוחד: ניהול עובדים כולל עכשיו גם ניהול משתמשים/גישה
            (עמודת "גישה למערכת" בטבלה) - אין יותר צורך בקישור נפרד -->
-      <a routerLink="/admin/employee-management" routerLinkActive="active" class="nav-link">ניהול עובדים</a>
-      <!-- חדש: סטטיסטיקות -->
-      <a routerLink="/admin/statistics" routerLinkActive="active" class="nav-link">סטטיסטיקות</a>
-      <a routerLink="/admin/manager-settings" routerLinkActive="active" class="nav-link">פרטי מנהל</a>
+      <a routerLink="/admin/employee-management" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">ניהול עובדים</span>
+      </a>
+      <a routerLink="/admin/stats" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">סטטיסטיקות</span>
+      </a>
+      <!-- חדש - דוח אישי לעובד: הגשות זמינות + משמרות בפועל + בקשות
+           חופשה/מחלה, לפי עובד וטווח תאריכים -->
+      <a routerLink="/admin/personal-report" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">דוח אישי</span>
+      </a>
+      <!-- הערה: הקישור הזה הוסר זמנית — אין route בשם 'manager-settings'
+           ב-admin-routing.module.ts, אז לחיצה עליו תזרוק את אותה שגיאה.
+           יש להוסיף route + קומפוננטה תואמים, ואז להחזיר את הקישור. -->
+      <!--
+      <a routerLink="/admin/manager-settings" routerLinkActive="active" class="nav-link">
+        <span class="nav-text">פרטי מנהל</span>
+      </a>
+      -->
     </nav>
 
     <div class="sidenav-footer">
-      <div class="sidenav-user" *ngIf="username">
+      <div class="sidenav-user" *ngIf="username && isSidenavOpen">
         <span class="user-name">{{ username }}</span>
       </div>
-      <button class="btn-logout" (click)="logout()">התנתק</button>
+      <button class="btn-logout" (click)="logout()">
+        <span class="nav-text">התנתק</span>
+      </button>
     </div>
   </aside>
 

@@ -1,0 +1,302 @@
+.stats-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: 'Assistant', sans-serif;
+  direction: rtl;
+}
+
+.stats-page-header h1 {
+  font-family: 'Heebo', sans-serif;
+  font-size: 22px;
+  margin: 0 0 20px;
+}
+
+.filters-panel {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.field-row {
+  margin-bottom: 14px;
+}
+
+.field-row label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #5a6472;
+}
+
+.field-row input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13.5px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #1c2430;
+  color-scheme: light;
+}
+
+/* ===== בורר עובד מותאם אישית ===== */
+.employee-picker-field {
+  position: relative;
+}
+
+.employee-picker-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  color: #1c2430;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 9px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13.5px;
+  cursor: pointer;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.employee-picker-trigger:hover {
+  border-color: #146356;
+}
+
+.picker-caret {
+  color: #94a3b8;
+  font-size: 10px;
+  margin-right: 8px;
+}
+
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: transparent;
+}
+
+.employee-picker-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  box-shadow: 0 16px 32px -12px rgba(28, 36, 48, 0.35);
+  z-index: 101;
+  padding: 10px;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.employee-search-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+  background: #ffffff;
+  color: #1c2430;
+}
+
+.employee-picker-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.employee-picker-item {
+  text-align: right;
+  background: #f8fafc;
+  color: #1c2430;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 8px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.employee-picker-item:hover {
+  background: #eef2f7;
+}
+
+.employee-picker-item.is-selected {
+  background: #146356;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.empty-state-small {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 12.5px;
+  padding: 10px 0 4px;
+  margin: 0;
+}
+
+.field-row-inline {
+  display: flex;
+  gap: 12px;
+}
+
+.field-row-inline .field-row {
+  flex: 1;
+}
+
+.days-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.day-toggle {
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-family: 'Heebo', sans-serif;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.day-toggle.is-selected {
+  background: #146356;
+  border-color: #146356;
+  color: #fff;
+}
+
+.btn-search {
+  width: 100%;
+  background: #146356;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 11px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+/* ===== תצוגת לוח שבועי ===== */
+.employee-title {
+  font-family: 'Heebo', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 16px;
+  color: #1c2430;
+}
+
+.calendar-week {
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.week-label {
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #146356;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.day-column {
+  background: #f8fafc;
+  border: 1px solid #eef1f6;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.day-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #dde3ec;
+}
+
+.day-name {
+  font-family: 'Heebo', sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1c2430;
+}
+
+.day-date {
+  font-size: 10.5px;
+  color: #94a3b8;
+}
+
+/* תוקן - שורה אחת מאוחדת לכל יום ("בוקר, צהריים") במקום כמה בועות
+   נפרדות עם מלל מיותר */
+.day-summary {
+  font-size: 12px;
+  font-weight: 600;
+  color: #146356;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-summary.is-empty {
+  color: #c3cbd6;
+  font-weight: 400;
+}
+
+.empty-state {
+  text-align: center;
+  color: #94a3b8;
+  padding: 30px;
+  background: #fff;
+  border: 1px solid #dde3ec;
+  border-radius: 12px;
+}
+
+/* מסכים צרים - גלילה אופקית בתוך כל שבוע, כדי שה-7 עמודות לא
+   יתכווצו לבלתי-קריאות במובייל */
+@media (max-width: 768px) {
+  .week-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(110px, 1fr);
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+}

@@ -24,7 +24,7 @@
       <thead>
         <tr>
           <th>שם מלא</th>
-          <th>כתובת מייל</th>
+          <!-- <th>כתובת מייל</th> -->
           <th>תאריך העסקה</th>
           <th>חמוש</th>
           <th *ngFor="let col of config.customColumns">
@@ -40,7 +40,7 @@
       <tbody>
         <tr *ngFor="let row of rows">
           <td class="col-name"><input type="text" [(ngModel)]="row.fullName" placeholder="שם מלא"></td>
-          <td class="col-email"><input type="email" [(ngModel)]="row.email" placeholder="email@example.com"></td>
+          <!-- <td class="col-email"><input type="email" [(ngModel)]="row.email" placeholder="email@example.com"></td> -->
           <td class="col-date"><input type="date" [(ngModel)]="row.hireDate"></td>
           <td>
             <select class="role-select" [(ngModel)]="row.armedStatus">

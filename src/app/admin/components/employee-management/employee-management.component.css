@@ -1,38 +1,50 @@
 :host {
+  --ink: #16302c;
+  --ink-soft: #7a8a92;
+  --paper: #f4f6f9;
+  --card: #ffffff;
+  --line: #eef1f3;
+  --teal: #0f6b5c;
+  --teal-soft: #dff1ea;
+  --amber: #e8a43a;
+  --amber-soft: #fdf1dc;
+  --danger: #c1443a;
+  --danger-soft: #fce3e1;
+
   display: block;
   font-family: 'Assistant', sans-serif;
-  color: #1c2430;
+  color: var(--ink);
   direction: rtl;
-  box-sizing: border-box;
+  background: var(--paper);
+  min-height: 100vh;
 }
 
 .admin-container {
-  background: #ffffff;
-  border: 1px solid #dde3ec;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
   max-width: 100%;
+  margin: 0 auto;
+  padding: 22px 20px 48px;
   box-sizing: border-box;
-}
-
-.admin-container h3 {
-  font-family: 'Heebo', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #1c2430;
-  margin: 0;
 }
 
 .admin-header-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #dde3ec;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 18px 22px;
+  box-shadow: 0 20px 50px -30px rgba(15, 40, 50, 0.25);
+  margin-bottom: 18px;
+}
+
+.admin-header-row h3 {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  margin: 0;
+  color: var(--ink);
 }
 
 .header-buttons {
@@ -41,280 +53,284 @@
   flex-wrap: wrap;
 }
 
-.btn-add-employee {
-  background: #146356;
-  color: #ffffff;
-  border: none;
-  border-radius: 6px;
-  padding: 9px 18px;
-  font-family: 'Heebo', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-  white-space: nowrap;
-}
-
-.btn-add-employee:hover {
-  background: #0f4c42;
-}
-
 .btn-secondary {
-  background: #fff;
-  color: #146356;
-  border: 1.5px solid #146356;
-  border-radius: 6px;
-  padding: 8px 16px;
+  border: none;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 9px 15px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12.5px;
   cursor: pointer;
-  transition: background 0.15s ease;
-  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .btn-secondary:hover {
-  background: #d9efe9;
-}
-
-/* חדש - כפתור ניקוי שורות ריקות (בכתום/ענבר, לאבחנה ויזואלית
-   מפעולות "רגילות") */
-.btn-cleanup {
-  color: #b45309;
-  border-color: #f0c674;
+  background: var(--teal-soft);
+  color: var(--teal);
 }
 
 .btn-cleanup:hover {
-  background: #fff4e0;
+  background: var(--amber-soft);
+  color: #96660c;
 }
 
-/* חדש - כפתור שחזור עובדים חסרים (בכחול, פעולת "תיקון") */
-.btn-repair {
-  color: #1d4ed8;
-  border-color: #93c5fd;
+.btn-add-employee {
+  border: none;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 12px;
+  padding: 9px 16px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s ease;
 }
 
-.btn-repair:hover:not(:disabled) {
-  background: #eff6ff;
-}
-
-.btn-repair:disabled {
-  opacity: 0.6;
-  cursor: default;
+.btn-add-employee:hover {
+  background: #0c5548;
 }
 
 .add-column-row {
   display: flex;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 20px 50px -30px rgba(15, 40, 50, 0.2);
 }
 
 .add-column-row input {
   flex: 1;
-  border: 1.5px solid #dde3ec;
-  border-radius: 6px;
-  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 9px 12px;
   font-family: 'Assistant', sans-serif;
   font-size: 13.5px;
+  background: var(--paper);
+}
+
+.add-column-row input:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: var(--card);
 }
 
 .add-column-row button {
-  background: #146356;
-  color: #fff;
   border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-family: 'Heebo', sans-serif;
   font-weight: 700;
+  font-size: 13px;
   cursor: pointer;
 }
 
-/* ===== טבלה - עם גלילה אופקית ברורה ===== */
+.add-column-row button:hover {
+  background: #0c5548;
+}
+
+.loading-hint {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 40px;
+}
+
 .table-scroll {
-  overflow-x: auto;
-  overflow-y: hidden;
-  /* חדש - פס גלילה אופקי תמיד גלוי ומודגש, כדי שברור שיש עוד תוכן
-     בצד ולא נראה כאילו הטבלה "נחתכת" בשקט */
-  padding-bottom: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: #146356 #eef1f6;
-}
-
-.table-scroll::-webkit-scrollbar {
-  height: 10px;
-}
-
-.table-scroll::-webkit-scrollbar-track {
-  background: #eef1f6;
-  border-radius: 6px;
-}
-
-.table-scroll::-webkit-scrollbar-thumb {
-  background: #146356;
-  border-radius: 6px;
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px -30px rgba(15, 40, 50, 0.25);
+  width: 100%;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13.5px;
+  font-size: 13px;
+  min-width: 1200px;
+  direction: rtl;
   text-align: right;
 }
 
-.admin-table th {
-  background: #1e293b;
-  color: #ffffff;
+.admin-table thead th {
+  background: var(--ink);
+  color: #fff;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12.5px;
   padding: 12px 10px;
+  text-align: right;
   white-space: nowrap;
-}
-
-.admin-table th:first-child {
-  border-top-right-radius: 8px;
-}
-
-.admin-table th:last-child {
-  border-top-left-radius: 8px;
-}
-
-.admin-table td {
-  padding: 10px 10px;
-  border-bottom: 1px solid #dde3ec;
-  vertical-align: middle;
-  color: #1c2430;
-}
-
-.admin-table tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-.admin-table tbody tr:hover {
-  background-color: #f8fafc;
-}
-
-.admin-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* חדש - שדות מצומצמים משמעותית ברוחב, כדי שכל השורה לא תגלוש
-   הרחק מעבר למסך. כל שדה מקבל רוחב שמתאים לתוכן שלו בפועל, לא
-   ברירת מחדל אחידה של 110px לכולם. */
-.admin-table input[type="text"],
-.admin-table input[type="email"],
-.admin-table input[type="date"] {
-  border: 1.5px solid #dde3ec;
-  border-radius: 6px;
-  padding: 6px 7px;
-  font-family: 'Assistant', sans-serif;
-  font-size: 12px;
-  box-sizing: border-box;
-}
-
-.col-name input { width: 100px; }
-.col-email input { width: 130px; }
-.col-date input { width: 120px; }
-.col-username input { width: 90px; }
-.col-password input { width: 100px; }
-
-.admin-table input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
-  accent-color: #146356;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-.armed-cell {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  font-size: 12px;
 }
 
 .btn-remove-col {
-  background: transparent;
   border: none;
-  color: #fecaca;
-  font-size: 13px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  line-height: 1;
   cursor: pointer;
-  margin-right: 4px;
+  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
 }
 
 .btn-remove-col:hover {
-  color: #fff;
+  background: var(--danger);
+}
+
+.admin-table tbody td {
+  padding: 10px 8px;
+  border-top: 1px solid var(--line);
+  text-align: right;
+  vertical-align: middle;
+}
+
+/* .admin-table tbody tr:hover {
+  background: var(--paper);
+} */
+
+.admin-table input[type="text"],
+.admin-table input[type="email"],
+.admin-table input[type="date"] {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid transparent;
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.admin-table input[type="text"]::placeholder,
+.admin-table input[type="email"]::placeholder {
+  color: #b3bec3;
+}
+
+.admin-table input[type="text"]:focus,
+.admin-table input[type="email"]:focus,
+.admin-table input[type="date"]:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: #fff;
 }
 
 .role-select {
-  border: 1.5px solid #dde3ec;
-  border-radius: 6px;
-  padding: 6px 6px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid transparent;
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 8px 10px;
   font-family: 'Assistant', sans-serif;
-  font-size: 12px;
-  background: #fff;
-  width: 72px;
+  font-size: 13px;
+  color: var(--ink);
   cursor: pointer;
 }
 
 .role-select:focus {
   outline: none;
-  border-color: #146356;
+  border-color: var(--teal);
+  background: #fff;
 }
 
-/* ===== כפתורי פעולה - נערמים אנכית, לא נשברים לרוחב ===== */
+.col-name input,
+.col-email input {
+  min-width: 140px;
+}
+
+.col-username input,
+.col-password input {
+  min-width: 110px;
+}
+
+/* סידור כפתורי הפעולות אחד מתחת לשני כדי שלא ימתחו את השורה וישברו את הטבלה */
 .actions-cell {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  min-width: 78px;
+  gap: 4px;
+  align-items: stretch;
+  width: 110px;
+  min-width: 110px;
 }
 
 .actions-cell button {
-  background: #146356;
-  color: #ffffff;
   border: none;
-  border-radius: 6px;
-  padding: 5px 8px;
+  border-radius: 8px;
+  padding: 6px 8px;
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
   font-size: 11.5px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-  white-space: nowrap;
-  width: 100%;
-}
-
-.actions-cell button:hover {
-  background: #0f4c42;
-}
-
-.actions-cell button:active {
-  transform: scale(0.97);
-}
-
-.btn-remove,
-.btn-remove-small {
-  background: #fef2f2 !important;
-  color: #b91c1c !important;
-  border: 1px solid #fecaca !important;
-}
-
-.btn-remove:hover,
-.btn-remove-small:hover {
-  background: #fee2e2 !important;
-}
-
-.empty-state,
-.loading-hint {
   text-align: center;
-  color: #94a3b8;
-  padding: 24px;
-  font-size: 13.5px;
+  width: 100%;
+  box-sizing: border-box;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
-@media (max-width: 900px) {
+.actions-cell button:first-child {
+  background: var(--teal);
+  color: #fff;
+}
+
+.actions-cell button:first-child:hover {
+  background: #0c5548;
+}
+
+.btn-remove-small {
+  background: var(--amber-soft);
+  color: #96660c;
+}
+
+.btn-remove-small:hover {
+  background: var(--amber);
+  color: #fff;
+}
+
+.btn-remove {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.btn-remove:hover {
+  background: var(--danger);
+  color: #fff;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 34px 0;
+  font-style: italic;
+}
+
+@media (max-width: 700px) {
   .admin-container {
-    padding: 16px;
+    padding: 14px 10px 32px;
+  }
+
+  .admin-header-row {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .header-buttons {
+    justify-content: center;
   }
 }

@@ -8,10 +8,16 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./admin-layout.component.css']
 })
 export class AdminLayoutComponent {
+  isSidenavOpen = true;
+
   constructor(private authService: AuthService, private router: Router) { }
 
   get username(): string | null {
     return this.authService.getUsername();
+  }
+
+  toggleSidenav(): void {
+    this.isSidenavOpen = !this.isSidenavOpen;
   }
 
   logout(): void {

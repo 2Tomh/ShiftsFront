@@ -8,6 +8,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Assistant', sans-serif;
 }
 
 .admin-sidenav {
@@ -24,14 +25,60 @@
   height: 100vh;
   box-sizing: border-box;
   z-index: 10;
+  transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
+}
+
+/* מצב סגור */
+.admin-layout.sidenav-closed .admin-sidenav {
+  width: 76px;
+  min-width: 76px;
+  padding: 20px 12px;
+}
+
+.admin-layout.sidenav-closed .admin-sidenav .nav-text,
+.admin-layout.sidenav-closed .admin-sidenav .sidenav-brand,
+.admin-layout.sidenav-closed .admin-sidenav .user-name {
+  display: none;
 }
 
 .sidenav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Heebo', sans-serif;
   font-size: 1.1rem;
   font-weight: bold;
   padding-bottom: 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   margin-bottom: 20px;
+  gap: 8px;
+}
+
+.sidenav-brand {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-toggle-sidenav {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+  margin-right: auto;
+}
+
+.btn-toggle-sidenav:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .sidenav-nav {
@@ -40,6 +87,7 @@
   gap: 8px;
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .sidenav-nav .nav-link {
@@ -48,7 +96,12 @@
   padding: 10px 14px;
   border-radius: 6px;
   transition: all 0.2s ease;
+  font-family: 'Assistant', sans-serif;
+  font-weight: 600;
   font-size: 0.95rem;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 
 .sidenav-nav .nav-link:hover,
@@ -66,8 +119,12 @@
 }
 
 .user-name {
+  font-family: 'Assistant', sans-serif;
   font-size: 0.9rem;
   color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .btn-logout {
@@ -77,10 +134,13 @@
   padding: 8px 12px;
   border-radius: 6px;
   cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
   font-size: 0.9rem;
   transition: background-color 0.2s;
   width: 100%;
   text-align: center;
+  white-space: nowrap;
 }
 
 .btn-logout:hover {

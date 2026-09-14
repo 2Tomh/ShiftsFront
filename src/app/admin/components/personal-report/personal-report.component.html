@@ -1,0 +1,99 @@
+<div class="stats-page">
+  <div class="stats-page-header">
+    <h1>דוח אישי לעובד</h1>
+  </div>
+
+  <section class="filters-panel">
+    <div class="field-row employee-picker-field">
+      <label>עובד</label>
+
+      <button type="button" class="employee-picker-trigger" (click)="toggleEmployeePicker()">
+        <span>{{ selectedEmployee || 'בחר עובד...' }}</span>
+        <span class="picker-caret">{{ isEmployeePickerOpen ? '▲' : '▼' }}</span>
+      </button>
+
+      <div class="picker-backdrop" *ngIf="isEmployeePickerOpen" (click)="closeEmployeePicker()"></div>
+
+      <div class="employee-picker-panel" *ngIf="isEmployeePickerOpen">
+        <input
+          type="text"
+          class="employee-search-input"
+          placeholder="חיפוש..."
+          [(ngModel)]="employeeSearchQuery"
+          autofocus>
+
+        <div class="employee-picker-list">
+          <button
+            type="button"
+            class="employee-picker-item"
+            *ngFor="let name of filteredEmployeeNames"
+            [class.is-selected]="name === selectedEmployee"
+            (click)="selectEmployee(name)">
+            {{ name }}
+          </button>
+          <p class="empty-state-small" *ngIf="filteredEmployeeNames.length === 0">
+            לא נמצאו עובדים תואמים.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-row-inline">
+      <div class="field-row">
+        <label>מתאריך</label>
+        <input type="date" [(ngModel)]="startDate">
+      </div>
+      <div class="field-row">
+        <label>עד תאריך</label>
+        <input type="date" [(ngModel)]="endDate">
+      </div>
+    </div>
+
+    <div class="field-row">
+      <label>ימים בשבוע</label>
+      <div class="days-row">
+        <button
+          *ngFor="let day of allDayNames"
+          class="day-toggle"
+          [class.is-selected]="isDaySelected(day)"
+          (click)="toggleDay(day)">
+          {{ day }}
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-search" [disabled]="isLoading" (click)="search()">
+      {{ isLoading ? 'טוען...' : '🔍 הפק דוח' }}
+    </button>
+  </section>
+
+  <section class="results-panel" *ngIf="hasSearched">
+
+    <ng-container *ngIf="results.length > 0; else emptyTpl">
+      <h2 class="employee-title">{{ selectedEmployee }}</h2>
+
+      <div class="calendar-week" *ngFor="let week of calendarWeeks">
+        <div class="week-label">{{ week.weekLabel }}</div>
+
+        <div class="week-grid">
+          <div class="day-column" *ngFor="let day of week.days">
+            <div class="day-header">
+              <span class="day-name">{{ day.dayName }}</span>
+              <span class="day-date">{{ day.dateLabel }}</span>
+            </div>
+            <div class="day-summary" [class.is-empty]="day.summary === '—'">
+              {{ day.summary }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-template #emptyTpl>
+      <div class="empty-state" *ngIf="!isLoading">
+        לא נמצאו הגשות עבור {{ selectedEmployee }} בטווח וסינון שנבחרו.
+      </div>
+    </ng-template>
+
+  </section>
+</div>
