@@ -19,6 +19,9 @@ export interface BoardConfiguration {
   workDays: string[];
   shiftDefinitions: ShiftDefinition[];
   extraRowNames: string[];
+  // חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות בו-זמנית
+  // (1 = ברירת מחדל, התנהגות מקורית). נקבע ע"י המנהל בהגדרות לוח.
+  submissionWeeksCount?: number;
 }
 
 export interface ExtraRowEntry {
