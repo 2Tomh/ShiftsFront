@@ -41,6 +41,11 @@ export class EmployeeRegistrationComponent implements OnInit {
   weeks: WeekEntry[] = [];
   isLoadingConfig = true;
 
+  // תוקן - במקום להציג את כל השבועות אחד מתחת לשני, מציגים שבוע
+  // אחד בכל פעם ומנווטים בין ה"כרטיסים" עם חצים (בדיוק כמו ניווט
+  // השבועות בלוח המנהל).
+  selectedWeekIndex = 0;
+
   isLocked = false;
   deadlineLabel: string = '';
 
@@ -79,6 +84,7 @@ export class EmployeeRegistrationComponent implements OnInit {
 
   private buildWeeks(count: number): void {
     this.weeks = [];
+    this.selectedWeekIndex = 0;
     for (let offset = 1; offset <= count; offset++) {
       const dates = this.computeWeekDates(offset);
       this.weeks.push({
@@ -100,6 +106,24 @@ export class EmployeeRegistrationComponent implements OnInit {
         this.loadExistingAvailabilityForWeek(week);
       }
     });
+  }
+
+  // חדש - השבוע המוצג כרגע (getter נוח לשימוש ב-HTML במקום
+  // weeks[selectedWeekIndex] בכל מקום).
+  get currentWeek(): WeekEntry | null {
+    return this.weeks[this.selectedWeekIndex] || null;
+  }
+
+  goToPreviousWeek(): void {
+    if (this.selectedWeekIndex > 0) {
+      this.selectedWeekIndex--;
+    }
+  }
+
+  goToNextWeek(): void {
+    if (this.selectedWeekIndex < this.weeks.length - 1) {
+      this.selectedWeekIndex++;
+    }
   }
 
   // שבוע היעד (שאליו שייכת ההגשה בפועל), לפי offset (1 = השבוע הבא,

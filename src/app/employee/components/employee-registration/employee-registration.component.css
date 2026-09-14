@@ -356,6 +356,52 @@
   line-height: 1.4;
 }
 
+/* חדש - ניווט בין שבועות (חצים) במקום להציג את כל השבועות אחד
+   מתחת לשני. אותה שפה עיצובית כמו week-nav בלוח המנהל. */
+.week-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.week-switcher-btn {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: var(--paper);
+  color: var(--navy);
+  border-radius: 7px;
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.week-switcher-btn:hover:not(:disabled) {
+  background: var(--navy);
+  color: #fff;
+}
+
+.week-switcher-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.week-switcher-label {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--navy-dark);
+}
+
 /* ===== Mobile tightening ===== */
 @media (max-width: 420px) {
   .shifts-row {

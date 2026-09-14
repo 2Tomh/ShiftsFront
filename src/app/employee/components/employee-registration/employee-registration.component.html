@@ -21,15 +21,23 @@
 
     <div *ngIf="isLoadingConfig" class="loading-hint">טוען...</div>
 
-    <!-- חדש - שבוע אחד או יותר, לפי מה שהמנהל קבע בהגדרות לוח
-         (submissionWeeksCount). כל שבוע הוא בלוק עצמאי לגמרי - כל
-         אחד עם המשמרות/הערות/כפתור שליחה שלו. -->
-    <ng-container *ngFor="let week of weeks; let wi = index">
+    <!-- תוקן - במקום להציג את כל השבועות זה מתחת לזה, מוצג שבוע
+         אחד בכל פעם (currentWeek), עם חיצי ניווט בין השבועות. -->
+    <ng-container *ngIf="!isLoadingConfig && currentWeek as week">
+
+      <!-- חדש - ניווט בין שבועות, מוצג רק אם יש יותר משבוע אחד פתוח
+           להגשה (כשיש שבוע יחיד, אין מה לנווט אליו). -->
+      <div class="week-switcher" *ngIf="weeks.length > 1">
+        <button type="button" class="week-switcher-btn" (click)="goToPreviousWeek()"
+          [disabled]="selectedWeekIndex === 0" title="שבוע קודם">‹</button>
+        <span class="week-switcher-label">שבוע {{ selectedWeekIndex + 1 }} מתוך {{ weeks.length }}</span>
+        <button type="button" class="week-switcher-btn" (click)="goToNextWeek()"
+          [disabled]="selectedWeekIndex === weeks.length - 1" title="שבוע הבא">›</button>
+      </div>
 
       <section class="panel">
         <div class="panel-heading">
-          <h1 *ngIf="weeks.length === 1">הגשת זמינות</h1>
-          <h1 *ngIf="weeks.length > 1">הגשת זמינות - שבוע {{ wi + 1 }}</h1>
+          <h1>הגשת זמינות</h1>
           <p class="panel-date">{{ formatDateLabel(week.dates[0]) }} – {{ formatDateLabel(week.dates[6]) }}</p>
         </div>
 
