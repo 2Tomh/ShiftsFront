@@ -23,6 +23,16 @@
         placeholder="סיסמה">
     </div>
 
+    <div class="field-row remember-me-row">
+      <label for="rememberMe" class="remember-me-label">
+        <input
+          id="rememberMe"
+          type="checkbox"
+          [(ngModel)]="rememberMe">
+        זכור אותי
+      </label>
+    </div>
+
     <div class="error-message" *ngIf="errorMessage">{{ errorMessage }}</div>
 
     <button class="btn-login" [disabled]="isSubmitting" (click)="submit()">

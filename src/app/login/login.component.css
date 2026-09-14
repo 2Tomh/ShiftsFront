@@ -104,3 +104,17 @@
   opacity: 0.6;
   cursor: default;
 }
+
+.remember-me-row {
+  display: flex;
+  align-items: center;
+}
+
+.remember-me-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: normal;
+}
