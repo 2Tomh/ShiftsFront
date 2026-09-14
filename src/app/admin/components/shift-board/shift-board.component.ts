@@ -121,7 +121,7 @@ export class ShiftBoardComponent implements OnInit {
       employees: this.shiftService.getEmployees(weekStartParam),
       shifts: this.shiftService.getShifts(weekStartParam),
       config: this.boardConfigService.getConfiguration(),
-      extraRows: this.boardConfigService.getExtraRows(),
+      extraRows: this.boardConfigService.getExtraRows(weekStartParam),
       vacations: this.vacationService.getAll('Approved'),
       sickLeaves: this.sickLeaveService.getAll('Approved'),
       blockedDates: this.blockedDateService.getAll(),
@@ -830,7 +830,8 @@ export class ShiftBoardComponent implements OnInit {
 
   updateExtraRowText(rowName: string, dayIndex: number, text: string): void {
     const dayEng = this.dayMap[this.daysOfWeek[dayIndex]];
-    const entry: ExtraRowEntry = { rowName, day: dayEng, text };
+    const weekStartDate = this.formatDateForApi(this.selectedWeekStart);
+    const entry: ExtraRowEntry = { rowName, day: dayEng, text, weekStartDate };
 
     this.boardConfigService.updateExtraRow(entry).subscribe({
       next: () => {

@@ -29,4 +29,7 @@ export interface ExtraRowEntry {
   rowName: string;
   day: string;
   text: string;
+  // חדש - "yyyy-MM-dd", לאיזה שבוע הטקסט הזה שייך. בלעדיו כל
+  // השבועות חלקו בטעות את אותה רשומה לפי (rowName, day) בלבד.
+  weekStartDate: string;
 }
