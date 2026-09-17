@@ -41,6 +41,18 @@
       <span class="rest-legend-swatch rest-legend-purple"></span>
       עובד/ת עם חופשה/מילואים מאושרים באותו יום
     </span>
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-morning"></span>
+      משמרת בוקר
+    </span>
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-afternoon"></span>
+      משמרת צהריים
+    </span>
+    <span class="rest-legend-item">
+      <span class="rest-legend-swatch rest-legend-night"></span>
+      משמרת לילה
+    </span>
   </div>
 
   <div class="main-layout">
@@ -71,6 +83,16 @@
                   <span class="day-blocked-reason" *ngIf="isFullDayBlocked(di)">🚫 {{ getBlockedDateReason(di) }}</span>
                 </div>
               </th>
+            </tr>
+            <!-- NEW: sub-header row — makes it unmistakable which half of
+                 each day is the candidate pool and which is the real roster -->
+            <tr>
+              <th class="col-side-label"></th>
+              <th class="col-role-label"></th>
+              <ng-container *ngFor="let day of daysOfWeek">
+                <th class="sub-header-bank">מועמדים</th>
+                <th class="sub-header-assign">משובץ בפועל</th>
+              </ng-container>
             </tr>
           </thead>
           <tbody>

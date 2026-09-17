@@ -1,4 +1,22 @@
 <div class="admin-layout" [class.sidenav-closed]="!isSidenavOpen">
+
+  <!-- חדש - כפתור המבורגר צף: מוצג רק במסכים צרים (עד 768px), כשה
+       תפריט סגור ומוסתר לגמרי מחוץ למסך. בלעדיו, ברגע שהתפריט
+       off-canvas אין שום דרך לפתוח אותו מחדש במובייל. -->
+  <button
+    type="button"
+    class="btn-mobile-toggle"
+    *ngIf="!isSidenavOpen"
+    (click)="toggleSidenav()"
+    title="פתח תפריט">
+    ☰
+  </button>
+
+  <!-- חדש - שכבת רקע שקופה-חצי: מוצגת רק במסכים צרים כשהתפריט
+       פתוח, כדי לאפשר סגירה בלחיצה מחוץ לתפריט (התנהגות סטנדרטית
+       ל-off-canvas menu, וגם מונעת אינטראקציה בטעות עם התוכן שמתחת). -->
+  <div class="sidenav-backdrop" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
+
   <!-- תפריט הצד -->
   <aside class="admin-sidenav">
     <div class="sidenav-header">
@@ -32,7 +50,7 @@
       <a routerLink="/admin/stats" routerLinkActive="active" class="nav-link">
         <span class="nav-text">סטטיסטיקות</span>
       </a>
-      <!-- חדש - דוח אישי לעובד: הגשות זמינות + משמרות בפועל + בקשות
+      <!-- דוח אישי לעובד: הגשות זמינות + משמרות בפועל + בקשות
            חופשה/מחלה, לפי עובד וטווח תאריכים -->
       <a routerLink="/admin/personal-report" routerLinkActive="active" class="nav-link">
         <span class="nav-text">דוח אישי</span>

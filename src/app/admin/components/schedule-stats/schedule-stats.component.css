@@ -127,6 +127,24 @@
   cursor: pointer;
 }
 
+/* ===== מקרא צבעי "קיבל" (סה"כ משמרות) ===== */
+.total-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6472;
+}
+
+.total-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .stats-table {
   width: 100%;
   border-collapse: collapse;
@@ -214,6 +232,48 @@
   background: #fee2e2;
 }
 
+/* ===== תג "קיבל" (סה"כ משמרות שהעובד שובץ אליהן השבוע):
+   5 = תקן מלא (ירוק), 4 = קרוב לתקן (כחול), 3 ומטה או 6 ומעלה =
+   דגל אדום (תת-איוש או עומס יתר). ===== */
+.num-total {
+  padding: 8px 14px !important;
+}
+
+.total-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  background: #eef2f7;
+  color: #475569;
+}
+
+.total-pill.total-green {
+  background: #dcf6e8;
+  color: #147a4a;
+}
+
+.total-pill.total-blue {
+  background: #dceafd;
+  color: #1a5fa8;
+}
+
+.total-pill.total-red {
+  background: #fde3e1;
+  color: #b91c1c;
+}
+
+.num-night {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
 .empty-state {
   text-align: center;
   color: #94a3b8;
@@ -224,13 +284,6 @@
   text-align: center;
   color: #94a3b8;
   padding: 40px;
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(28, 36, 48, 0.45);
-  z-index: 1000;
 }
 
 .assignment-modal {

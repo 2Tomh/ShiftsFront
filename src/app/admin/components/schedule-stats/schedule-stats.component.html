@@ -14,6 +14,13 @@
     </div>
   </div>
 
+  <div class="total-legend">
+    <span class="total-legend-item"><span class="total-pill total-green">5</span> תקן מלא</span>
+    <span class="total-legend-item"><span class="total-pill total-blue">4</span> קרוב לתקן</span>
+    <span class="total-legend-item"><span class="total-pill total-red">3-</span> תת-איוש</span>
+    <span class="total-legend-item"><span class="total-pill total-red">6+</span> עומס יתר</span>
+  </div>
+
   <div *ngIf="isLoading" class="loading-hint">טוען...</div>
 
   <table class="stats-table" *ngIf="!isLoading">
@@ -35,7 +42,14 @@
           <div class="emp-name-text" title="לחץ לעריכת שם" (click)="editName(stat)">{{ stat.name }}</div>
         </td>
         <td class="num-requested">{{ stat.requested }}</td>
-        <td class="num-total">{{ stat.total }}</td>
+        <td class="num-total">
+          <span class="total-pill"
+            [class.total-green]="stat.total === 5"
+            [class.total-blue]="stat.total === 4"
+            [class.total-red]="stat.total <= 3 || stat.total >= 6">
+            {{ stat.total }}
+          </span>
+        </td>
         <td class="num-night">{{ stat.night }}</td>
         <td class="text-start notes-cell">{{ stat.notes || '—' }}</td>
         <td class="actions-cell">
