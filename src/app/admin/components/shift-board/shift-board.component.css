@@ -575,7 +575,7 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   width: 100%;
   min-height: var(--candidate-line-min-height);
   border: 1px solid transparent;
-  background: #ffffff;
+  background: none;
   color: var(--slate);
   border-radius: 8px;
   padding: 2px 3px;
@@ -605,9 +605,7 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   font-weight: 700;
 }
 
-.candidate-line.is-assigned::before {
-  content: "✓ ";
-}
+
 
 .candidate-line.is-assigned:hover {
   background: var(--danger-soft);
@@ -652,7 +650,6 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
 }
 
 .assigned-display-box .assigned-name-text::before {
-  content: "✓ ";
   opacity: 0.85;
   font-weight: 700;
 }
@@ -667,9 +664,7 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   color: #fff;
 }
 
-.assigned-display-box.rest-warning .assigned-name-text::before {
-  content: "⏱ ";
-}
+
 
 /* אדום: פחות מ-8 שעות הפרש ממשמרת סמוכה (חריגה) */
 .assigned-display-box.rest-violation {
