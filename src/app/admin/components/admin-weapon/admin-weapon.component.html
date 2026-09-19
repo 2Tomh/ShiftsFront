@@ -89,6 +89,69 @@
     </tbody>
   </table>
 
+  <!-- ===== תצוגת כרטיסים למובייל - כרטיס אחד לכל עובד, במקום
+       טבלה רחבה שגוללת אופקית. מוסתרת בדסקטופ/טאבלט, מוצגת רק
+       מתחת ל-600px (ראו CSS). אותם ngModel-ים ואותן פונקציות
+       בדיוק - רק תבנית תצוגה שונה. ===== -->
+  <div class="mobile-employee-list" *ngIf="employeesList.length > 0">
+    <div class="mobile-employee-card" *ngFor="let item of employeesList">
+      <div class="mobile-employee-name">{{ item.employeeName || item.employeeId }}</div>
+
+      <div class="mobile-field-row">
+        <span class="mobile-field-label">הצהרת בריאות (נשלח)</span>
+        <input type="checkbox" [(ngModel)]="item.healthDeclarationSent" />
+      </div>
+
+      <div class="mobile-field-row">
+        <span class="mobile-field-label">הגשת בקשה לבט"פ</span>
+        <input type="checkbox" [(ngModel)]="item.btfRequestSubmitted" />
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">תור לבט"פ (תאריך)</span>
+        <div class="date-group">
+          <input type="checkbox" [checked]="!!item.btfAppointmentDate" (change)="toggleBtfDate(item, $event)" />
+          <input type="datetime-local" [(ngModel)]="item.btfAppointmentDate" [disabled]="!item.btfAppointmentDate" />
+        </div>
+      </div>
+
+      <div class="mobile-field-row">
+        <span class="mobile-field-label">תור לפסיכולוג</span>
+        <input type="checkbox" [(ngModel)]="item.psychologistAppointment" />
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">תאריך רענון</span>
+        <div class="refresh-date-cell"
+             [class.refresh-red]="refreshStatus(item) === 'red'"
+             [class.refresh-orange]="refreshStatus(item) === 'orange'">
+          <input type="date" [(ngModel)]="item.refreshDate" />
+          <span class="days-left-badge" *ngIf="daysUntilRefresh(item) !== null">
+            {{ daysUntilRefresh(item)! >= 0 ? (daysUntilRefresh(item) + ' ימים') : 'פג תוקף' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">תאריך רישיון נשק</span>
+        <input type="date" [(ngModel)]="item.licenseDate" />
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap" *ngFor="let col of config.customColumns">
+        <span class="mobile-field-label">
+          {{ col }}
+          <button class="btn-remove-col" title="הסר עמודה" (click)="removeColumn(col)">×</button>
+        </span>
+        <input type="text" [(ngModel)]="item.customFieldValues[col]">
+      </div>
+
+      <div class="mobile-employee-actions">
+        <button (click)="saveChanges(item)">שמור</button>
+        <button class="btn-remove" [disabled]="isRemoving" (click)="removeEmployee(item)">הסר</button>
+      </div>
+    </div>
+  </div>
+
   <div class="empty-state" *ngIf="employeesList.length === 0">
     אין עדיין עובדים במעקב. לחצו על "+ הוסף עובד" כדי להתחיל.
   </div>

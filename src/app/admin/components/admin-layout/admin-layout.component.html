@@ -1,8 +1,7 @@
 <div class="admin-layout" [class.sidenav-closed]="!isSidenavOpen">
 
-  <!-- חדש - כפתור המבורגר צף: מוצג רק במסכים צרים (עד 768px), כשה
-       תפריט סגור ומוסתר לגמרי מחוץ למסך. בלעדיו, ברגע שהתפריט
-       off-canvas אין שום דרך לפתוח אותו מחדש במובייל. -->
+  <!-- כפתור המבורגר צף: מוצג רק במסכים צרים, כשהתפריט סגור
+       ומוסתר לגמרי מחוץ למסך. -->
   <button
     type="button"
     class="btn-mobile-toggle"
@@ -12,9 +11,8 @@
     ☰
   </button>
 
-  <!-- חדש - שכבת רקע שקופה-חצי: מוצגת רק במסכים צרים כשהתפריט
-       פתוח, כדי לאפשר סגירה בלחיצה מחוץ לתפריט (התנהגות סטנדרטית
-       ל-off-canvas menu, וגם מונעת אינטראקציה בטעות עם התוכן שמתחת). -->
+  <!-- שכבת רקע שקופה-חצי: מוצגת רק במסכים צרים כשהתפריט פתוח,
+       כדי לאפשר סגירה בלחיצה מחוץ לתפריט. -->
   <div class="sidenav-backdrop" *ngIf="isSidenavOpen" (click)="toggleSidenav()"></div>
 
   <!-- תפריט הצד -->
@@ -26,40 +24,45 @@
       </button>
     </div>
 
+    <!-- חדש - (click)="onNavLinkClick()" על כל קישור: במובייל, בחירת
+         לשונית סוגרת אוטומטית את התפריט (שפתוח כמגירה מעל התוכן),
+         כדי שמיד רואים את העמוד החדש שנטען במקום שהתפריט יישאר
+         פתוח מעליו. בדסקטופ זה לא משנה כלום (הפונקציה בודקת רוחב
+         מסך בעצמה ולא עושה שום דבר שם). -->
     <nav class="sidenav-nav">
-      <a routerLink="/admin/board" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/board" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">לוח מנהל</span>
       </a>
-      <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/vacations" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">אישור חופשות</span>
       </a>
-      <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/sick-leaves" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">אישור מחלה</span>
       </a>
-      <a routerLink="/admin/weapon" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/weapon" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">מעקב נשק</span>
       </a>
-      <a routerLink="/admin/board-settings" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/board-settings" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">הגדרות לוח</span>
       </a>
       <!-- מאוחד: ניהול עובדים כולל עכשיו גם ניהול משתמשים/גישה
            (עמודת "גישה למערכת" בטבלה) - אין יותר צורך בקישור נפרד -->
-      <a routerLink="/admin/employee-management" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/employee-management" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">ניהול עובדים</span>
       </a>
-      <a routerLink="/admin/stats" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/stats" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">סטטיסטיקות</span>
       </a>
       <!-- דוח אישי לעובד: הגשות זמינות + משמרות בפועל + בקשות
            חופשה/מחלה, לפי עובד וטווח תאריכים -->
-      <a routerLink="/admin/personal-report" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/personal-report" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">דוח אישי</span>
       </a>
       <!-- הערה: הקישור הזה הוסר זמנית — אין route בשם 'manager-settings'
            ב-admin-routing.module.ts, אז לחיצה עליו תזרוק את אותה שגיאה.
            יש להוסיף route + קומפוננטה תואמים, ואז להחזיר את הקישור. -->
       <!--
-      <a routerLink="/admin/manager-settings" routerLinkActive="active" class="nav-link">
+      <a routerLink="/admin/manager-settings" routerLinkActive="active" class="nav-link" (click)="onNavLinkClick()">
         <span class="nav-text">פרטי מנהל</span>
       </a>
       -->

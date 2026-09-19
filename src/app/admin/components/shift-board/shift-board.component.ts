@@ -58,6 +58,10 @@ export class ShiftBoardComponent implements OnInit {
 
   selectedWeekStart: Date = this.getNextWeekSunday();
 
+  // חדש - תצוגת מובייל: איזה יום מוצג כרגע (0 = הימני ביותר ב-daysOfWeek).
+  // מאותחל ליום של היום אם הוא בתוך השבוע המוצג, אחרת ליום הראשון.
+  mobileSelectedDayIndex = 0;
+
   private restSeverityMap: Map<string, RestSeverity> = new Map();
 
   private approvedLeaves: { employeeName: string; start: Date; end: Date }[] = [];
@@ -187,6 +191,33 @@ export class ShiftBoardComponent implements OnInit {
       blockedDays: sd.blockedDays || [],
       roleBlockedDays: sd.roleBlockedDays || {}
     }));
+
+    this.mobileSelectedDayIndex = this.getTodayIndexInWeek();
+  }
+
+  // חדש - מוצא את האינדקס של "היום" בתוך daysOfWeek הנוכחי, כדי
+  // שתצוגת המובייל תיפתח ישר על היום הרלוונטי במקום תמיד על ראשון.
+  // אם היום לא נמצא בשבוע המוצג (למשל צופים בשבוע אחר), נשאר על 0.
+  private getTodayIndexInWeek(): number {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = 0; i < this.daysOfWeek.length; i++) {
+      const d = this.getDateForDayIndex(i);
+      if (d.getTime() === today.getTime()) return i;
+    }
+    return 0;
+  }
+
+  prevMobileDay(): void {
+    if (this.mobileSelectedDayIndex > 0) {
+      this.mobileSelectedDayIndex--;
+    }
+  }
+
+  nextMobileDay(): void {
+    if (this.mobileSelectedDayIndex < this.daysOfWeek.length - 1) {
+      this.mobileSelectedDayIndex++;
+    }
   }
 
   private loadShiftsOnly(): void {
@@ -203,7 +234,10 @@ export class ShiftBoardComponent implements OnInit {
   // בתבנית הגלובלית ב"הגדרות לוח", ולא בשום שבוע אחר.
   addExtraRowForWeek(): void {
     const name = this.newExtraRowNameForWeek.trim();
-    if (!name) return;
+    if (!name) {
+      alert('יש להקליד שם לשורה החדשה לפני לחיצה על "הוסף"');
+      return;
+    }
 
     if (this.extraRowNames.includes(name)) {
       alert('שורה בשם הזה כבר קיימת בשבוע הזה');

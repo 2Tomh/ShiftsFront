@@ -12,6 +12,7 @@
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 16px 32px -26px rgba(28, 36, 48, 0.3);
+  box-sizing: border-box;
 }
 
 .admin-header-row {
@@ -57,6 +58,7 @@
   border-radius: 6px;
   padding: 8px 10px;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
 .btn-apply {
@@ -79,6 +81,7 @@
   display: flex;
   gap: 6px;
   margin-right: auto;
+  flex-wrap: wrap;
 }
 
 .btn-quick {
@@ -243,6 +246,7 @@
 /* ===== טבלאות ===== */
 .table-scroll {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .admin-table {
@@ -288,8 +292,63 @@
   font-size: 13px;
 }
 
+/* ===== רספונסיביות לטאבלט ===== */
 @media (max-width: 900px) {
   .armed-cards {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ===== רספונסיביות לטלפון ===== */
+@media (max-width: 600px) {
+  .admin-container {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .admin-container h3 {
+    font-size: 17px;
+  }
+
+  .range-picker {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+  }
+
+  .range-field input {
+    width: 100%;
+  }
+
+  .btn-apply {
+    width: 100%;
+  }
+
+  .quick-ranges {
+    margin-right: 0;
+    flex-direction: column;
+  }
+
+  .btn-quick {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .type-totals {
+    justify-content: center;
+  }
+
+  .type-total-card {
+    flex: 1;
+    min-width: 90px;
+  }
+
+  /* טבלת "פילוח לפי עובד" נשארת בגלילה אופקית (כבר מוגדר למעלה),
+     עם רוחב מינימלי כדי שלא תידחס לבלתי-קריאה כשיש הרבה עמודות
+     סוגי משמרת */
+  .admin-table {
+    min-width: 480px;
   }
 }

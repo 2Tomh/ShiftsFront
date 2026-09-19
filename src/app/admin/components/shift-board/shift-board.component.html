@@ -56,6 +56,139 @@
   </div>
 
   <div class="main-layout">
+
+    <!-- ===== תצוגת מובייל: אותה טבלה בדיוק כמו בדסקטופ, רק חתוכה
+         ליום אחד בכל פעם (עם ניווט ‹ יום ›) במקום כל השבוע יחד.
+         אותם מחלקות CSS (bank-cell, assign-cell, assigned-display-box
+         וכו') ואותן פונקציות בדיוק - רק ממוענות תמיד ל-mobileSelectedDayIndex
+         במקום ללולאה על כל הימים. מוסתרת בדסקטופ, מוצגת רק מתחת ל-700px. ===== -->
+    <div class="mobile-day-view" *ngIf="daysOfWeek.length > 0">
+      <div class="mobile-day-nav">
+        <button type="button" class="mobile-day-nav-btn" (click)="prevMobileDay()"
+          [disabled]="mobileSelectedDayIndex === 0" title="יום קודם">›</button>
+        <div class="mobile-day-label">
+          <span class="mobile-day-name">{{ daysOfWeek[mobileSelectedDayIndex] }}</span>
+          <span class="mobile-day-date">{{ getDateLabelForDay(daysOfWeek[mobileSelectedDayIndex]) }}</span>
+        </div>
+        <button type="button" class="mobile-day-nav-btn" (click)="nextMobileDay()"
+          [disabled]="mobileSelectedDayIndex === daysOfWeek.length - 1" title="יום הבא">‹</button>
+      </div>
+
+      <div class="mobile-day-flag mobile-day-flag-blocked" *ngIf="isFullDayBlocked(mobileSelectedDayIndex)">
+        🚫 {{ getBlockedDateReason(mobileSelectedDayIndex) }}
+      </div>
+      <div class="mobile-day-flag mobile-day-flag-holiday" *ngIf="isHolidayForDayIndex(mobileSelectedDayIndex)">
+        🕎 {{ getHolidayForDayIndex(mobileSelectedDayIndex)?.titleHebrew }}
+      </div>
+
+      <div class="mobile-table-container">
+        <div class="mobile-table-scroll">
+        <table class="schedule-table mobile-day-table">
+          <thead>
+            <tr>
+              <th class="col-side-label">משמרת</th>
+              <th class="col-role-label">תפקיד</th>
+              <th class="sub-header-bank">הגישו</th>
+              <th class="sub-header-assign">משובץ בפועל</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <ng-container *ngFor="let block of shiftBlocks; let blockIndex = index">
+              <ng-container *ngFor="let role of block.roles; let firstRole = first">
+                <tr [ngClass]="'shift-block-' + blockIndex">
+                  <td *ngIf="firstRole" [attr.rowspan]="block.roles.length" class="shift-label-vertical">
+                    <span class="shift-icon">{{ block.icon }}</span>
+                    {{ block.label }}
+                  </td>
+                  <td class="role-sidebar">{{ role }}</td>
+
+                  <td class="bank-cell" [attr.rowspan]="block.roles.length"
+                    *ngIf="firstRole && !isCellBlocked(mobileSelectedDayIndex, block)">
+                    <button *ngFor="let c of getCandidatesForCell(mobileSelectedDayIndex, block.type)" class="candidate-line"
+                      [class.is-assigned]="isCandidateAssignedToAny(mobileSelectedDayIndex, block.type, c.fullName, block.roles)"
+                      (click)="assignFromSharedBank(mobileSelectedDayIndex, block.type, c, block.roles)" [title]="c.fullName">
+                      {{ c.fullName }}
+                    </button>
+                    <span class="no-candidates" *ngIf="getCandidatesForCell(mobileSelectedDayIndex, block.type).length === 0">—</span>
+                  </td>
+                  <td class="bank-cell hatched-cell blocked-cell" [attr.rowspan]="block.roles.length"
+                    *ngIf="firstRole && isCellBlocked(mobileSelectedDayIndex, block)">
+                    <span class="blocked-label">{{ getCellBlockedLabel(mobileSelectedDayIndex, block) }}</span>
+                  </td>
+
+                  <td class="assign-cell" [class.is-selecting]="isSelectingRole(mobileSelectedDayIndex, block.type, role)"
+                    *ngIf="!isCellBlocked(mobileSelectedDayIndex, block) && !isRoleBlockedForDay(mobileSelectedDayIndex, block, role)">
+
+                    <ng-container *ngIf="isEditingText(mobileSelectedDayIndex, block.type, role); else mobileNotEditing">
+                      <div class="assigned-display-box text-edit-mode">
+                        <input type="text" class="inline-text-edit-input"
+                          style="width:100%; box-sizing:border-box; border:1px solid #999; border-radius:4px; padding:2px 4px; font-size:inherit;"
+                          [(ngModel)]="editingTextValue" (keydown)="onTextEditKeydown($event)" (blur)="saveTextEdit()"
+                          placeholder="שם / כפולה (גיא/אלכס)" #textInput>
+                      </div>
+                    </ng-container>
+
+                    <ng-template #mobileNotEditing>
+                      <div class="assigned-display-box"
+                        *ngIf="getEmployeeForRole(mobileSelectedDayIndex, block.type, role) as assignedName; else mobileEmptySlot"
+                        [class.rest-warning]="getRestSeverity(mobileSelectedDayIndex, block.type, assignedName) === 'orange'"
+                        [class.rest-violation]="getRestSeverity(mobileSelectedDayIndex, block.type, assignedName) === 'red'"
+                        [class.leave-conflict]="isEmployeeOnApprovedLeave(assignedName, mobileSelectedDayIndex)"
+                        [title]="getAssignmentTooltip(mobileSelectedDayIndex, block.type, assignedName)">
+                        <span class="assigned-name-text">{{ assignedName }}</span>
+                        <div class="assigned-actions">
+                          <button class="btn-edit-mini" (click)="startTextEdit(mobileSelectedDayIndex, block.type, role)"
+                            title="עריכה ידנית / כפולה">✏️</button>
+                          <button class="btn-remove-mini" (click)="removeEmployee(mobileSelectedDayIndex, block.type, role)"
+                            title="הסר שיבוץ">×</button>
+                        </div>
+                      </div>
+
+                      <ng-template #mobileEmptySlot>
+                        <button class="btn-add-mini" (click)="startSelectingRole(mobileSelectedDayIndex, block.type, role)"
+                          title="בחר מהבנק">+</button>
+                        <button class="btn-text-mini" (click)="startTextEdit(mobileSelectedDayIndex, block.type, role)"
+                          title="הקלדת טקסט חופשי" style="margin-inline-start:2px;">✎</button>
+                      </ng-template>
+                    </ng-template>
+                  </td>
+
+                  <td class="assign-cell hatched-cell blocked-cell"
+                    *ngIf="isCellBlocked(mobileSelectedDayIndex, block) || isRoleBlockedForDay(mobileSelectedDayIndex, block, role)"></td>
+                </tr>
+              </ng-container>
+            </ng-container>
+
+            <tr class="extra-row" *ngFor="let def of extraRowDefs">
+              <td class="shift-label-vertical extra-row-label" colspan="2">
+                {{ def.rowName }}
+                <button type="button" class="btn-remove-extra-row" title="הסר שורה זו לשבוע הנוכחי בלבד"
+                  (click)="removeExtraRowForWeek(def)" [disabled]="isProcessingExtraRow[def.rowName]">×</button>
+              </td>
+              <td class="assign-cell extra-row-cell" colspan="2">
+                <input type="text" class="extra-row-input" [value]="getExtraRowText(def.rowName, mobileSelectedDayIndex)"
+                  (change)="updateExtraRowText(def.rowName, mobileSelectedDayIndex, $any($event.target).value)" placeholder="—">
+              </td>
+            </tr>
+
+            <tr class="extra-row extra-row-add">
+              <td colspan="4">
+                <div class="add-extra-row-inline">
+                  <input type="text" [(ngModel)]="newExtraRowNameForWeek" placeholder="שם שורה חדשה לשבוע הזה">
+                  <button type="button" (click)="addExtraRowForWeek()" [disabled]="isSavingExtraRow">
+                    {{ isSavingExtraRow ? 'מוסיף...' : 'הוסף' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+
     <div class="table-container">
       <div class="table-scroll">
         <table class="schedule-table matrix-table">

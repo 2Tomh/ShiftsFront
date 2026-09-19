@@ -8,7 +8,12 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./admin-layout.component.css']
 })
 export class AdminLayoutComponent {
-  isSidenavOpen = true;
+  // תוקן - היה קבוע ל-true, אז בכל רענון (גם בטלפון) התפריט נפתח
+  // אוטומטית מעל התוכן. עכשיו תלוי ברוחב המסך בזמן הטעינה: פתוח
+  // כברירת מחדל בדסקטופ (כמו קודם), סגור כברירת מחדל במובייל.
+  // 700 כאן חייב להישאר זהה למספר ב-@media (max-width: 700px)
+  // שב-admin-layout.component.css, אחרת ייווצר פער בין השניים.
+  isSidenavOpen = window.innerWidth > 700;
 
   constructor(private authService: AuthService, private router: Router) { }
 
@@ -18,6 +23,17 @@ export class AdminLayoutComponent {
 
   toggleSidenav(): void {
     this.isSidenavOpen = !this.isSidenavOpen;
+  }
+
+  // חדש - בחירת לשונית מהתפריט (במובייל, כשהוא פתוח כ"מגירה" מעל
+  // התוכן) צריכה גם לסגור אותו אוטומטית - אחרת התפריט נשאר פתוח
+  // מעל העמוד החדש שנטען, במקום להתפנות ולתת לראות אותו. בדסקטופ
+  // (מעל 700px) זה לא רלוונטי - שם הבחירה בלשונית לא אמורה לסגור
+  // את התפריט הרגיל.
+  onNavLinkClick(): void {
+    if (window.innerWidth <= 700) {
+      this.isSidenavOpen = false;
+    }
   }
 
   logout(): void {

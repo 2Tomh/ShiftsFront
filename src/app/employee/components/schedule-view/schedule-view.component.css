@@ -21,6 +21,7 @@
   padding: 20px 16px 50px;
   max-width: 1000px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* ===== Header ===== */
@@ -71,6 +72,7 @@
 .btn-toggle-week {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   border: 1.5px solid var(--teal);
   background: var(--card);
@@ -93,6 +95,7 @@
   height: 16px;
   font-size: 13px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .btn-toggle-week:hover {
@@ -111,6 +114,9 @@
 }
 
 .btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   background: var(--ink);
   color: #fff;
@@ -131,8 +137,7 @@
   opacity: 0.6;
 }
 
-/* חדש - תווית "מציג/ה: השבוע הנוכחי (13/09 - 19/09)", גם היא
-   הייתה קיימת ב-HTML בלי שום עיצוב תואם. */
+/* תווית "מציג/ה: השבוע הנוכחי (13/09 - 19/09)". */
 .active-week-label {
   font-size: 12.5px;
   font-weight: 600;
@@ -161,6 +166,7 @@
 
 .table-scroll {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .schedule-table {
@@ -192,6 +198,10 @@
   border-left: 1px solid var(--line);
 }
 
+/* ===== עמודות "משמרת"/"תפקיד" דביקות בגלילה אופקית =====
+   כשגוללים בטלפון כדי לראות ימים נוספים, שתי העמודות האלה
+   נשארות צמודות לקצה, כדי שתמיד רואים לאיזו משמרת/תפקיד שייכת
+   השורה בלי לגלול חזרה. */
 .shift-label-vertical {
   font-family: 'Heebo', sans-serif;
   font-weight: 700;
@@ -199,12 +209,9 @@
   background: #ffffff;
   white-space: nowrap;
   width: 70px;
-}
-
-.shift-icon {
-  display: block;
-  font-size: 14px;
-  margin-bottom: 2px;
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
 }
 
 .role-sidebar {
@@ -214,6 +221,34 @@
   background: #ffffff;
   white-space: nowrap;
   width: 60px;
+  position: sticky;
+  inset-inline-start: 70px;
+  z-index: 2;
+  box-shadow: -1px 0 0 var(--line);
+}
+
+.schedule-table thead th.col-shift-type,
+.schedule-table thead th.col-role-type {
+  position: sticky;
+  z-index: 3;
+  background: var(--ink);
+}
+
+.schedule-table thead th.col-shift-type {
+  inset-inline-start: 0;
+  width: 70px;
+}
+
+.schedule-table thead th.col-role-type {
+  inset-inline-start: 70px;
+  width: 60px;
+  box-shadow: -1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+.shift-icon {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
 }
 
 tr.shift-morning td {
@@ -228,8 +263,6 @@ tr.shift-night td {
   background: #fbdfc9;
 }
 
-/* חדש - צבעים נוספים לבלוקי משמרת מעבר ל-3 הראשונים (אם יוגדרו
-   יותר מ-3 הגדרות משמרת ב"הגדרות לוח"). */
 tr.shift-color-4 td {
   background: #e8dff5;
 }
@@ -272,8 +305,6 @@ tr.shift-color-6 td {
   padding: 4px 12px;
 }
 
-/* חדש - עיצוב לשורות עצמאיות (extra rows, למשל "חפיפה"/"תגבור").
-   לא היה קיים קודם כי השורות האלה לא הוצגו בכלל ברכיב הזה. */
 tr.extra-row td {
   background: #f5f6f8;
 }
@@ -289,7 +320,12 @@ tr.extra-row td {
   color: var(--ink);
 }
 
+/* ===== רספונסיביות לטלפון ===== */
 @media (max-width: 700px) {
+  .schedule-view-page {
+    padding: 14px 10px 40px;
+  }
+
   .page-title {
     font-size: 17px;
   }
@@ -297,13 +333,83 @@ tr.extra-row td {
   .controls-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
 
   .highlight-input {
     min-width: 0;
+    width: 100%;
+    font-size: 16px;
+    padding: 11px 14px;
+  }
+
+  .btn-toggle-week,
+  .btn-refresh {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .active-week-label {
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .table-container {
+    border-radius: 10px;
+    margin: 0 -2px;
   }
 
   .schedule-table {
     font-size: 11.5px;
+  }
+
+  .schedule-table thead th {
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  .schedule-table td {
+    padding: 5px 4px;
+  }
+
+  .shift-label-vertical,
+  .schedule-table thead th.col-shift-type {
+    width: 46px;
+    font-size: 10.5px;
+  }
+
+  .role-sidebar,
+  .schedule-table thead th.col-role-type {
+    width: 44px;
+    inset-inline-start: 46px;
+    font-size: 10px;
+  }
+
+  .shift-icon {
+    font-size: 12px;
+  }
+
+  .shift-cell {
+    min-width: 78px;
+  }
+
+  .assigned-name {
+    font-size: 11px;
+  }
+
+  .assigned-name.is-me {
+    padding: 3px 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .shift-cell {
+    min-width: 68px;
+  }
+
+  .schedule-table {
+    font-size: 10.5px;
   }
 }

@@ -23,7 +23,8 @@
 
   <div *ngIf="isLoading" class="loading-hint">טוען...</div>
 
-  <table class="stats-table" *ngIf="!isLoading">
+  <div class="stats-table-scroll">
+    <table class="stats-table" *ngIf="!isLoading">
     <thead>
       <tr>
         <th>שעת הגשה</th>
@@ -62,6 +63,7 @@
       </tr>
     </tbody>
   </table>
+  </div>
 
   <!-- ===== בורר "הוסף הגשה לעובד" ===== -->
   <div class="modal-backdrop" *ngIf="showAddPicker" (click)="closeAddPicker()"></div>

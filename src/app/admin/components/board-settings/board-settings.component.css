@@ -10,6 +10,7 @@
   color: #1e293b;
   text-align: right;
   direction: rtl;
+  box-sizing: border-box;
 }
 
 .settings-shell h1 {
@@ -36,6 +37,7 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .settings-section:hover {
@@ -102,6 +104,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .weeks-count-btn {
@@ -145,6 +148,7 @@
   padding: 1.25rem;
   margin-top: 1rem;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-sizing: border-box;
 }
 
 .shift-card-header {
@@ -153,16 +157,19 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .shift-name-input {
   flex: 1;
+  min-width: 140px;
   padding: 0.6rem 0.9rem;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.95rem;
   outline: none;
   transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
 .shift-name-input:focus {
@@ -179,6 +186,7 @@
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .btn-remove-shift:hover {
@@ -298,15 +306,18 @@
   display: flex;
   gap: 0.5rem;
   margin-top: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .add-role-row input, .add-blocked-date-row input {
   flex: 1;
+  min-width: 140px;
   padding: 0.5rem 0.8rem;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   font-size: 0.9rem;
   outline: none;
+  box-sizing: border-box;
 }
 
 .add-role-row input:focus, .add-blocked-date-row input:focus {
@@ -324,6 +335,7 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s;
+  white-space: nowrap;
 }
 
 .add-role-row button:hover, .add-blocked-date-row button:hover {
@@ -367,6 +379,8 @@
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-size: 0.9rem;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .blocked-date-value {
@@ -409,4 +423,90 @@
   color: #64748b;
   text-align: center;
   padding: 1rem;
+}
+
+/* ===== רספונסיביות לטאבלט/טלפון ===== */
+@media (max-width: 900px) {
+  .settings-shell {
+    margin: 1rem auto;
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-shell {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .settings-shell h1 {
+    font-size: 1.4rem;
+  }
+
+  .settings-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .settings-section {
+    padding: 1rem;
+  }
+
+  .settings-section h2 {
+    font-size: 1.05rem;
+  }
+
+  .day-toggle, .blocked-day-toggle {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .shift-card {
+    padding: 0.9rem;
+  }
+
+  .shift-card-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .shift-name-input {
+    min-width: 0;
+  }
+
+  .btn-remove-shift {
+    width: 100%;
+    text-align: center;
+  }
+
+  .shift-time-row {
+    gap: 0.6rem;
+  }
+
+  .add-role-row,
+  .add-blocked-date-row {
+    flex-direction: column;
+  }
+
+  .add-role-row input,
+  .add-blocked-date-row input {
+    min-width: 0;
+  }
+
+  .add-role-row button,
+  .add-blocked-date-row button {
+    width: 100%;
+  }
+
+  .blocked-date-row {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .blocked-date-reason {
+    margin-right: 0;
+  }
 }

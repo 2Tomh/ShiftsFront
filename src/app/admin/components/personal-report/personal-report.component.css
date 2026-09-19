@@ -4,6 +4,7 @@
   padding: 24px 16px;
   font-family: 'Assistant', sans-serif;
   direction: rtl;
+  box-sizing: border-box;
 }
 
 .stats-page-header h1 {
@@ -18,6 +19,7 @@
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .field-row {
@@ -211,6 +213,7 @@
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
+  box-sizing: border-box;
 }
 
 .week-label {
@@ -261,8 +264,6 @@
   color: #94a3b8;
 }
 
-/* תוקן - שורה אחת מאוחדת לכל יום ("בוקר, צהריים") במקום כמה בועות
-   נפרדות עם מלל מיותר */
 .day-summary {
   font-size: 12px;
   font-weight: 600;
@@ -298,5 +299,35 @@
     grid-auto-columns: minmax(110px, 1fr);
     overflow-x: auto;
     padding-bottom: 4px;
+  }
+}
+
+/* ===== רספונסיביות לטלפון (שאר העמוד) ===== */
+@media (max-width: 600px) {
+  .stats-page {
+    padding: 14px 10px;
+  }
+
+  .stats-page-header h1 {
+    font-size: 18px;
+  }
+
+  .filters-panel {
+    padding: 14px;
+  }
+
+  /* "מתאריך"/"עד תאריך" נערמים אחד מתחת לשני במקום להידחק זה
+     לצד זה בשדה צר מדי */
+  .field-row-inline {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .employee-title {
+    font-size: 17px;
+  }
+
+  .calendar-week {
+    padding: 12px;
   }
 }

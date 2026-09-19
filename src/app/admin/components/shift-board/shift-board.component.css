@@ -65,6 +65,9 @@
   max-width: 1800px;
   margin: 0 auto;
   box-sizing: border-box;
+  /* הגנה כללית: שום אלמנט לא יוכל לגרום לעמוד כולו לגלול אופקית,
+     גם אם הוא "יברח" מהרוחב שהוקצה לו במקום כלשהו. */
+  overflow-x: hidden;
 }
 
 /* ===== Header ===== */
@@ -1193,7 +1196,163 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   padding: 28px 0;
 }
 
-/* ===== Mobile ===== */
+/* ===== Mobile day-by-day table (מוצג רק מתחת ל-700px) =====
+   אותה טבלה ואותן מחלקות CSS בדיוק כמו בדסקטופ (bank-cell,
+   assign-cell, assigned-display-box וכו') - רק חתוכה ליום אחד. */
+.mobile-day-view {
+  display: none;
+}
+
+.mobile-day-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 12px 30px -22px rgba(15, 40, 50, 0.3);
+}
+
+.mobile-day-nav-btn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 10px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-day-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.mobile-day-nav-btn:not(:disabled):hover {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+.mobile-day-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.mobile-day-name {
+  font-family: 'Heebo', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
+}
+
+.mobile-day-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.mobile-day-flag {
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.mobile-day-flag-blocked {
+  background: #fbe1de;
+  color: #8a3a34;
+}
+
+.mobile-day-flag-holiday {
+  background: #f6e6c8;
+  color: #7a5a1a;
+}
+
+.mobile-table-container {
+  background: var(--card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 30px -22px rgba(15, 40, 50, 0.3);
+}
+
+.mobile-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* חדש - קריטי: table-layout: fixed עם רוחבי עמודות קבועים
+   באחוזים, כדי שהטבלה לעולם לא תתרחב מעבר לרוחב המסך ותמשוך
+   את כל העמוד לגלול אופקית (זו הייתה הסיבה שהתפריט הכהה "נחשף"
+   בצד - העמוד כולו גלל ימינה, לא רק הטבלה). */
+.mobile-day-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.mobile-day-table .shift-label-vertical,
+.mobile-day-table th.col-side-label {
+  width: 15% !important;
+  min-width: 0;
+  padding: 6px 3px;
+  font-size: 10.5px;
+}
+
+.mobile-day-table .role-sidebar,
+.mobile-day-table th.col-role-label {
+  width: 15% !important;
+  min-width: 0;
+  padding: 6px 3px;
+  font-size: 10.5px;
+}
+
+.mobile-day-table .bank-cell,
+.mobile-day-table th.sub-header-bank {
+  width: 32% !important;
+  padding: 6px 4px;
+}
+
+.mobile-day-table .assign-cell,
+.mobile-day-table th.sub-header-assign {
+  width: 38% !important;
+  padding: 6px 4px;
+}
+
+.mobile-day-table thead th {
+  white-space: normal;
+  line-height: 1.2;
+  font-size: 10.5px;
+  padding: 8px 3px;
+}
+
+.mobile-day-table .candidate-line {
+  font-size: 11px;
+  min-height: 28px;
+  padding: 3px 2px;
+}
+
+.mobile-day-table .assigned-name-text {
+  font-size: 11.5px;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.mobile-day-table .assigned-display-box {
+  min-height: 38px;
+}
+
+.mobile-day-table .shift-icon {
+  font-size: 12px;
+}
+
+/* ===== Mobile breakpoint ===== */
 @media (max-width: 700px) {
   .schedule-page {
     padding: 14px 10px 32px;
@@ -1205,19 +1364,48 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
     gap: 10px;
   }
 
+  .header-actions {
+    justify-content: center;
+    justify-self: center;
+  }
+
   .eyebrow,
   .btn-create-week {
     justify-self: center;
   }
 
   .page-title {
-    font-size: 19px;
+    font-size: 17px;
+    white-space: normal;
+    word-break: break-word;
   }
 
-  .matrix-table {
-    font-size: 11px;
+  /* המקרא הופך לגריד קומפקטי דו-טורי במקום שורה ארוכה שנשברת
+     למספר רב של שורות ותופסת את כל המסך */
+  .rest-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+  }
+
+  .rest-legend::after {
+    grid-column: 1 / -1;
+    margin-inline-start: 0;
+    text-align: center;
+  }
+
+  /* הטבלה הרחבה (מטריצה של כל השבוע) מוסתרת לגמרי במובייל,
+     ובמקומה מוצגת אותה טבלה בדיוק אבל חתוכה ליום אחד */
+  .table-container {
+    display: none;
+  }
+
+  .mobile-day-view {
+    display: block;
   }
 }
+
+
 
 .shift-block-0 {
   background: #eaf3f7;

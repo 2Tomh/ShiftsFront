@@ -82,4 +82,68 @@
     </table>
   </div>
 
+  <!-- ===== תצוגת כרטיסים למובייל - כרטיס אחד לכל עובד, במקום
+       הטבלה הרחבה (min-width: 1200px) שהייתה גוללת אופקית לגמרי.
+       מוסתרת בדסקטופ/טאבלט, מוצגת רק מתחת ל-700px. אותם ngModel-ים
+       ואותן פונקציות בדיוק - רק תבנית תצוגה שונה. ===== -->
+  <div class="mobile-employee-list" *ngIf="!isLoading">
+    <div class="mobile-employee-card" *ngFor="let row of rows">
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">שם מלא</span>
+        <input type="text" [(ngModel)]="row.fullName" placeholder="שם מלא">
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">תאריך העסקה</span>
+        <input type="date" [(ngModel)]="row.hireDate">
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">חמוש</span>
+        <select class="role-select" [(ngModel)]="row.armedStatus">
+          <option value="NotArmed">לא חמוש</option>
+          <option value="InProgress">בתהליך</option>
+          <option value="Armed">חמוש</option>
+        </select>
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap" *ngFor="let col of config.customColumns">
+        <span class="mobile-field-label">
+          {{ col }}
+          <button class="btn-remove-col" title="הסר עמודה" (click)="removeColumn(col)">×</button>
+        </span>
+        <input type="text" [(ngModel)]="row.customFieldValues[col]">
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">שם משתמש</span>
+        <input type="text" [(ngModel)]="row.username" placeholder="לדוגמה: dana.k">
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">סיסמה</span>
+        <input type="text" [(ngModel)]="row.password"
+          [placeholder]="row.username ? 'ריק = ללא שינוי' : 'לפחות 4 תווים'">
+      </div>
+
+      <div class="mobile-field-row mobile-field-row-wrap">
+        <span class="mobile-field-label">הרשאה</span>
+        <select class="role-select" [(ngModel)]="row.systemRole">
+          <option [ngValue]="'Employee'">עובד</option>
+          <option [ngValue]="'Admin'">מנהל</option>
+        </select>
+      </div>
+
+      <div class="mobile-employee-actions">
+        <button (click)="save(row)">שמור</button>
+        <button class="btn-remove-small" *ngIf="row.username" (click)="removeAccess(row)">הסר גישה</button>
+        <button class="btn-remove" (click)="deleteProfile(row)">מחק</button>
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="rows.length === 0">
+      עדיין לא נוספו עובדים. לחצי "+ הוסף עובד" כדי להתחיל.
+    </div>
+  </div>
+
 </div>
