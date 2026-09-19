@@ -18,6 +18,9 @@ export interface BoardConfiguration {
   id?: string;
   workDays: string[];
   shiftDefinitions: ShiftDefinition[];
+  // הערה - זו התבנית הגלובלית שממנה נזרעות שורות עצמאיות לשבוע
+  // חדש כשהוא נוצר (ShiftsController.GenerateWeek). התוכן בפועל
+  // שמוצג לכל שבוע קיים מגיע מ-ExtraRowDefinition (למטה).
   extraRowNames: string[];
   // חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות בו-זמנית
   // (1 = ברירת מחדל, התנהגות מקורית). נקבע ע"י המנהל בהגדרות לוח.
@@ -31,5 +34,15 @@ export interface ExtraRowEntry {
   text: string;
   // חדש - "yyyy-MM-dd", לאיזה שבוע הטקסט הזה שייך. בלעדיו כל
   // השבועות חלקו בטעות את אותה רשומה לפי (rowName, day) בלבד.
+  weekStartDate: string;
+}
+
+// חדש - שם שורה עצמאית ספציפי לשבוע (ראו ExtraRowDefinition.cs
+// בשרת). זה מה שקובע אילו שורות עצמאיות בכלל קיימות לשבוע נתון -
+// בניגוד ל-BoardConfiguration.extraRowNames שהוא רק תבנית גלובלית
+// לזריעת שבועות חדשים.
+export interface ExtraRowDefinition {
+  id?: string;
+  rowName: string;
   weekStartDate: string;
 }

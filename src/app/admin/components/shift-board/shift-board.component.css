@@ -590,10 +590,10 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   transition: all 0.12s ease;
 }
 
-.candidate-line:hover {
+/* .candidate-line:hover {
   border-color: var(--slate-line);
   background: #fff;
-}
+} */
 
 /* candidate already placed somewhere today: a light outlined "used"
    chip with a check mark — never a solid fill, so it can't be
@@ -1234,6 +1234,7 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
 .extra-row-label {
   background: #fafbfc;
   font-weight: 600;
+  position: relative;
 }
 
 .extra-row-input {
@@ -1246,4 +1247,59 @@ tr.shift-block-2 .assign-cell { background-color: var(--shift-night-tint); }
   font-size: 12.5px;
   text-align: center;
   box-sizing: border-box;
+}
+
+/* ===== חדש - ניהול שורות עצמאיות לפי שבוע (הסרה/הוספה) ===== */
+.btn-remove-extra-row {
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-inline-start: 6px;
+  opacity: 0.6;
+}
+
+.btn-remove-extra-row:hover {
+  opacity: 1;
+}
+
+.extra-row-add .extra-row-label {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.add-extra-row-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.add-extra-row-inline input {
+  flex: 1;
+  border: 1.5px dashed var(--slate-line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'Assistant', sans-serif;
+  font-size: 12.5px;
+}
+
+.add-extra-row-inline button {
+  border: none;
+  background: var(--teal);
+  color: #fff;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: 'Heebo', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-extra-row-inline button:disabled {
+  opacity: 0.6;
+  cursor: default;
 }

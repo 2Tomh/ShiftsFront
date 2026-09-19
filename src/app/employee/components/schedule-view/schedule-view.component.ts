@@ -22,20 +22,16 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   lastUpdated: Date | null = null;
   highlightName: string = '';
 
-  // תוקן - הכל דינמי לפי BoardConfiguration (בדיוק כמו לוח הניהול),
-  // במקום רשימת roles/shiftTypes מקובעת בקוד. כך גם שורות "עצמאיות"
-  // (extra rows, כמו "חפיפה"/"תגבור") מוצגות כאן, וגם תפקיד כמו
-  // "מאבטח" מופיע בדיוק איפה שהוגדר בהגדרות - בלי צורך בשורת "כללי"
-  // נפרדת ומקובעת שהייתה קיימת רק ב-5 הימים הראשונים.
   daysOfWeek: string[] = [];
   shiftBlocks: DynamicShiftBlock[] = [];
+
+  // תוקן - לא נגזר יותר מ-config.extraRowNames הגלובלי (משותף לכל
+  // השבועות בכל ההיסטוריה). נטען עכשיו דרך endpoint ספציפי-לשבוע
+  // (getExtraRowNames), כדי שמחיקת שורה לשבוע אחד לא תשפיע על
+  // שבועות אחרים - כולל השבוע שכבר מוצג כאן.
   extraRowNames: string[] = [];
   extraRowEntries: ExtraRowEntry[] = [];
 
-  // תוקן - צבע נקבע לפי שם המשמרת בפועל ("בוקר"/"צהריים"/"לילה"),
-  // ולא לפי הסדר שהיא מופיעה בתצורה. קודם ההתאמה הייתה לפי אינדקס
-  // בלבד (בלוק ראשון = shift-morning וכו'), וזה שבר את הצבעים אם
-  // סדר ההגדרות בהגדרות הלוח לא היה בדיוק בוקר->צהריים->לילה.
   private readonly extraBlockCssClasses = ['shift-color-4', 'shift-color-5', 'shift-color-6'];
 
   private getCssClassForBlock(label: string, fallbackIndex: number): string {
@@ -51,6 +47,13 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   };
 
   private refreshInterval: any;
+
+  // השבוע הנוכחי (המפורסם כברירת מחדל) ושבוע אחריו, כדי שיהיה
+  // אפשר להציג את שניהם דרך כפתור טוגל, בלי לאבד את הלוח הנוכחי
+  // כברירת מחדל בכניסה לעמוד.
+  viewingNextWeek = false;
+  currentWeekStart: Date = this.snapToSunday(new Date());
+  nextWeekStart: Date = this.addDays(this.currentWeekStart, 7);
 
   constructor(
     private shiftService: ShiftService,
@@ -68,8 +71,52 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
     }
   }
 
+  private snapToSunday(date: Date): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() - d.getDay());
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private addDays(date: Date, days: number): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  private formatDateForApi(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private formatDateForDisplay(date: Date): string {
+    const d = String(date.getDate()).padStart(2, '0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    return `${d}/${m}`;
+  }
+
+  get activeWeekStart(): Date {
+    return this.viewingNextWeek ? this.nextWeekStart : this.currentWeekStart;
+  }
+
+  get activeWeekRangeLabel(): string {
+    const start = this.activeWeekStart;
+    const end = this.addDays(start, 6);
+    return `${this.formatDateForDisplay(start)} - ${this.formatDateForDisplay(end)}`;
+  }
+
+  // טוגל בין הלוח הנוכחי ללוח השבוע הבא. לא מוחק כלום, רק מחליף
+  // איזה שבוע מוצג כרגע וטוען הכל מחדש מהשרת לפי השבוע החדש.
+  toggleWeek(): void {
+    this.viewingNextWeek = !this.viewingNextWeek;
+    this.loadAll();
+  }
+
   loadAll(): void {
     this.isLoading = true;
+    const weekStartParam = this.formatDateForApi(this.activeWeekStart);
 
     this.boardConfigService.getConfiguration().subscribe({
       next: (config) => {
@@ -82,7 +129,17 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.boardConfigService.getExtraRows().subscribe({
+    // תוקן - שמות השורות העצמאיות נטענים עכשיו ספציפית לשבוע
+    // המוצג כרגע (activeWeekStart), לא כרשימה גלובלית.
+    this.boardConfigService.getExtraRowNames(weekStartParam).subscribe({
+      next: (defs) => this.extraRowNames = (defs || []).map(d => d.rowName),
+      error: (err) => console.error('שגיאה בטעינת שמות שורות עצמאיות:', err)
+    });
+
+    // תוקן - היה חסר weekStartParam לגמרי כאן, כך שהתוכן שהוקלד
+    // בפועל בשורות העצמאיות (לא רק השמות שלהן) חזר בלי סינון לפי
+    // שבוע - אותה בעיה בדיוק שכבר תוקנה במקומות אחרים בשיחה הזו.
+    this.boardConfigService.getExtraRows(weekStartParam).subscribe({
       next: (rows) => this.extraRowEntries = rows || [],
       error: (err) => console.error('שגיאה בטעינת שורות עצמאיות:', err)
     });
@@ -90,7 +147,6 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
 
   private applyConfiguration(config: BoardConfiguration): void {
     this.daysOfWeek = config.workDays;
-    this.extraRowNames = config.extraRowNames || [];
 
     this.shiftBlocks = config.shiftDefinitions.map((sd, i) => ({
       type: sd.name,
@@ -101,7 +157,10 @@ export class ScheduleViewComponent implements OnInit, OnDestroy {
   }
 
   loadShifts(): void {
-    this.shiftService.getPublishedShifts().subscribe({
+    this.isLoading = true;
+    const weekStartParam = this.formatDateForApi(this.activeWeekStart);
+
+    this.shiftService.getPublishedShifts(weekStartParam).subscribe({
       next: (data) => {
         this.shifts = data;
         this.isLoading = false;

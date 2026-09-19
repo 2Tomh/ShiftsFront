@@ -23,7 +23,7 @@
       </div>
     </section>
 
-    <!-- חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות -->
+    <!-- כמה שבועות מראש עובדים יכולים להגיש זמינות -->
     <section class="settings-section">
       <h2>הגשת זמינות מראש</h2>
       <p class="section-hint">
@@ -57,8 +57,8 @@
           <button class="btn-remove-shift" (click)="removeShiftDefinition(i)">הסר משמרת</button>
         </div>
 
-        <!-- חדש - שעות התחלה/סיום של המשמרת (פורמט "HH:mm"). אם
-             הסיום "לפני" ההתחלה (למשל 22:00 -> 06:00), המערכת מבינה
+        <!-- שעות התחלה/סיום של המשמרת (פורמט "HH:mm"). אם הסיום
+             "לפני" ההתחלה (למשל 22:00 -> 06:00), המערכת מבינה
              שהמשמרת חוצה חצות. -->
         <div class="shift-time-row">
           <label class="shift-time-field">
@@ -74,7 +74,7 @@
           </span>
         </div>
 
-        <!-- חדש - חסימת ימים קבועה למשמרת הזו: ימים שבהם המשמרת הזו
+        <!-- חסימת ימים קבועה למשמרת הזו: ימים שבהם המשמרת הזו
              לעולם לא תיווצר, בכל שבוע (עד שתשני שוב כאן). -->
         <div class="blocked-days-row">
           <span class="blocked-days-label">אין משמרת זו בימים:</span>
@@ -95,7 +95,7 @@
           </span>
         </div>
 
-        <!-- חדש - חסימת ימים לפי תפקיד ספציפי בתוך המשמרת (לא כל
+        <!-- חסימת ימים לפי תפקיד ספציפי בתוך המשמרת (לא כל
              המשמרת) - למשל תפקיד שקיים רק א'-ה', לא בשישי-שבת. -->
         <div class="role-blocked-section" *ngIf="shift.roles.length > 0">
           <div class="role-blocked-row" *ngFor="let role of shift.roles">
@@ -124,29 +124,12 @@
       <button class="btn-add-shift" (click)="addShiftDefinition()">+ הוסף משמרת חדשה</button>
     </section>
 
-    <!-- שורות עצמאיות -->
-    <section class="settings-section">
-      <h2>שורות עצמאיות (תיגבורים, מטווחים, חפיפות...)</h2>
-      <p class="section-hint">שורות אלו לא קשורות למשמרת ספציפית - טקסט חופשי לכל יום.</p>
+    <!-- הוסר - "שורות עצמאיות" (תיגבורים/מטווחים/חפיפות) הוסרו מכאן
+         בכוונה. הן מנוהלות עכשיו אך ורק בתוך לוח המשמרות עצמו, לכל
+         שבוע בנפרד (כפתור "+ שורה חדשה לשבוע הזה" בתחתית הטבלה),
+         כדי שהוספה/הסרה בשבוע אחד לעולם לא תשפיע על שבוע אחר. -->
 
-      <div class="extra-rows-list">
-        <span class="role-chip" *ngFor="let row of config.extraRowNames; let i = index">
-          {{ row }}
-          <button class="chip-remove" (click)="removeExtraRow(i)">×</button>
-        </span>
-      </div>
-
-      <div class="add-role-row">
-        <input
-          type="text"
-          [(ngModel)]="newExtraRowName"
-          placeholder="שם שורה חדשה (לדוגמה: תיגבורים)"
-          (keyup.enter)="addExtraRow()">
-        <button (click)="addExtraRow()">הוסף שורה</button>
-      </div>
-    </section>
-
-    <!-- חדש - תאריכים ספציפיים חסומים (חג/סגירה) -->
+    <!-- תאריכים ספציפיים חסומים (חג/סגירה) -->
     <section class="settings-section">
       <h2>ימים חסומים בתאריך (חגים, סגירת עסק וכו')</h2>
       <p class="section-hint">

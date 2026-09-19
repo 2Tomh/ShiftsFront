@@ -11,13 +11,30 @@
       class="highlight-input"
       [(ngModel)]="highlightName"
       placeholder="הקלד/י את שמך כדי להדגיש את המשמרות שלך (אופציונלי)">
+
+    <!-- חדש - טוגל בין השבוע הנוכחי לשבוע הבא. הכפתור נשאר זהה
+         בכל מקום, רק הטקסט והמצב (is-active) מתחלפים, כדי שברור
+         תמיד לאיזה שבוע לוחצים כדי לעבור. -->
+    <button
+      type="button"
+      class="btn-toggle-week"
+      [class.is-active]="viewingNextWeek"
+      (click)="toggleWeek()">
+      {{ viewingNextWeek ? '↩ חזרה לשבוע הנוכחי' : '➜ הצג סידור לשבוע הבא' }}
+    </button>
+
     <button class="btn-refresh" (click)="refreshNow()" [disabled]="isLoading">
       {{ isLoading ? 'מרענן...' : '🔄 רענן' }}
     </button>
   </div>
 
+  <p class="active-week-label">
+    מציג/ה: <strong>{{ viewingNextWeek ? 'שבוע הבא' : 'השבוע הנוכחי' }}</strong>
+    ({{ activeWeekRangeLabel }})
+  </p>
+
   <div *ngIf="!isLoading && shifts.length === 0" class="empty-hint">
-    עדיין לא פורסם לוח משמרות לשבוע הזה.
+    עדיין לא פורסם לוח משמרות ל{{ viewingNextWeek ? 'שבוע הבא' : 'שבוע הזה' }}.
   </div>
 
   <div class="table-container" *ngIf="shifts.length > 0">

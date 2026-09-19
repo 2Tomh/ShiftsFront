@@ -22,9 +22,6 @@ export class BoardSettingsComponent implements OnInit {
   isLoading = true;
   isSaving = false;
 
-  // שדות עזר להוספת שורה עצמאית חדשה
-  newExtraRowName = '';
-
   // שדה עזר להוספת תפקיד חדש לכל משמרת (אחד לכל אינדקס משמרת)
   newRoleInputs: string[] = [];
 
@@ -158,21 +155,6 @@ export class BoardSettingsComponent implements OnInit {
     } else {
       list.push(day);
     }
-  }
-
-  addExtraRow(): void {
-    const name = this.newExtraRowName.trim();
-    if (!name) return;
-    if (this.config.extraRowNames.includes(name)) {
-      alert('שורה בשם הזה כבר קיימת');
-      return;
-    }
-    this.config.extraRowNames.push(name);
-    this.newExtraRowName = '';
-  }
-
-  removeExtraRow(index: number): void {
-    this.config.extraRowNames.splice(index, 1);
   }
 
   // חדש - כמה שבועות מראש עובדים יכולים להגיש זמינות עבורם. מוגבל

@@ -22,8 +22,17 @@ export class ShiftService {
     return this.http.get<Shift[]>(`${this.apiUrl}/Shifts`, { params });
   }
 
-  getPublishedShifts(): Observable<Shift[]> {
-    return this.http.get<Shift[]>(`${this.apiUrl}/Shifts/published`);
+  // תוקן - נוסף weekStart אופציונלי, באותו דפוס בדיוק כמו getShifts
+  // מעל. בלי זה, הבקשה יצאה בלי weekStart בכלל (וגם הקומפוננטה
+  // שכבר קוראת עם הפרמטר קיבלה שגיאת קומפילציה "Expected 0
+  // arguments, but got 1") - וגם השרת (גם אחרי שתוקן שם) קיבל
+  // weekStart=null והחזיר משמרות מכל השבועות מעורבבות יחד.
+  getPublishedShifts(weekStart?: string): Observable<Shift[]> {
+    let params = new HttpParams();
+    if (weekStart) {
+      params = params.set('weekStart', weekStart);
+    }
+    return this.http.get<Shift[]>(`${this.apiUrl}/Shifts/published`, { params });
   }
 
   publishWeek(weekStart?: string): Observable<any> {

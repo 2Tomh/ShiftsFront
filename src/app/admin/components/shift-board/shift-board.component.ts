@@ -9,7 +9,7 @@ import { SickLeaveService } from '../../../services/sickleave.service';
 import { BlockedDateService } from '../../../services/blocked-date.service';
 import { HolidayService } from '../../../services/holiday.service';
 import { Shift } from '../../../Models/shift.model';
-import { BoardConfiguration, ExtraRowEntry } from '../../../Models/board-configuration.model';
+import { BoardConfiguration, ExtraRowEntry, ExtraRowDefinition } from '../../../Models/board-configuration.model';
 import { Holiday } from '../../../Models/holiday.model';
 
 interface DynamicShiftBlock {
@@ -39,8 +39,22 @@ export class ShiftBoardComponent implements OnInit {
 
   daysOfWeek: string[] = [];
   shiftBlocks: DynamicShiftBlock[] = [];
-  extraRowNames: string[] = [];
+
+  // תוקן - extraRowNames כבר לא נגזר מ-config.extraRowNames הגלובלי
+  // (שהיה משותף לכל השבועות ולכן מחיקה השפיעה על כולם). עכשיו הוא
+  // נגזר מ-extraRowDefs, שמגיעים מ-endpoint ספציפי-לשבוע.
+  extraRowDefs: ExtraRowDefinition[] = [];
+  get extraRowNames(): string[] {
+    return this.extraRowDefs.map(d => d.rowName);
+  }
   extraRowEntries: ExtraRowEntry[] = [];
+
+  // חדש - שדה עזר להוספת שורה עצמאית לשבוע הנוכחי בלבד (לא לתבנית
+  // הגלובלית - זו נערכת ב"הגדרות לוח").
+  newExtraRowNameForWeek = '';
+  isSavingExtraRow = false;
+
+  isProcessingExtraRow: { [rowName: string]: boolean } = {};
 
   selectedWeekStart: Date = this.getNextWeekSunday();
 
@@ -122,16 +136,23 @@ export class ShiftBoardComponent implements OnInit {
       shifts: this.shiftService.getShifts(weekStartParam),
       config: this.boardConfigService.getConfiguration(),
       extraRows: this.boardConfigService.getExtraRows(weekStartParam),
+      extraRowDefs: this.boardConfigService.getExtraRowNames(weekStartParam).pipe(
+        catchError(err => {
+          console.warn('שגיאה בטעינת שמות שורות עצמאיות לשבוע - ממשיכים בלי שורות עצמאיות:', err);
+          return of([] as ExtraRowDefinition[]);
+        })
+      ),
       vacations: this.vacationService.getAll('Approved'),
       sickLeaves: this.sickLeaveService.getAll('Approved'),
       blockedDates: this.blockedDateService.getAll(),
       holidaysStartYear: holidaysStartYear$,
       holidaysEndYear: holidaysEndYear$
-    }).subscribe(({ employees, shifts, config, extraRows, vacations, sickLeaves, blockedDates, holidaysStartYear, holidaysEndYear }) => {
+    }).subscribe(({ employees, shifts, config, extraRows, extraRowDefs, vacations, sickLeaves, blockedDates, holidaysStartYear, holidaysEndYear }) => {
       this.allEmployees = employees;
       this.shifts = shifts;
       this.applyConfiguration(config);
       this.extraRowEntries = extraRows;
+      this.extraRowDefs = extraRowDefs || [];
       this.approvedLeaves = [
         ...vacations.map((v: any) => ({ employeeName: v.employeeName, start: new Date(v.startDate), end: new Date(v.endDate) })),
         ...sickLeaves.map((s: any) => ({ employeeName: s.employeeName, start: new Date(s.startDate), end: new Date(s.endDate) }))
@@ -155,7 +176,6 @@ export class ShiftBoardComponent implements OnInit {
 
   private applyConfiguration(config: BoardConfiguration): void {
     this.daysOfWeek = config.workDays;
-    this.extraRowNames = config.extraRowNames || [];
 
     this.shiftBlocks = config.shiftDefinitions.map((sd, i) => ({
       type: sd.name,
@@ -176,6 +196,56 @@ export class ShiftBoardComponent implements OnInit {
       this.calculateStats();
       this.computeRestViolations();
       this.dataRefreshService.notifyDataChanged();
+    });
+  }
+
+  // חדש - הוספת שורה עצמאית לשבוע הנוכחי (המוצג כרגע) בלבד. לא נוגע
+  // בתבנית הגלובלית ב"הגדרות לוח", ולא בשום שבוע אחר.
+  addExtraRowForWeek(): void {
+    const name = this.newExtraRowNameForWeek.trim();
+    if (!name) return;
+
+    if (this.extraRowNames.includes(name)) {
+      alert('שורה בשם הזה כבר קיימת בשבוע הזה');
+      return;
+    }
+
+    const weekStartParam = this.formatDateForApi(this.selectedWeekStart);
+    this.isSavingExtraRow = true;
+
+    this.boardConfigService.addExtraRowName(name, weekStartParam).subscribe({
+      next: (def) => {
+        this.isSavingExtraRow = false;
+        this.extraRowDefs.push(def);
+        this.newExtraRowNameForWeek = '';
+      },
+      error: (err) => {
+        this.isSavingExtraRow = false;
+        console.error('שגיאה בהוספת שורה עצמאית לשבוע:', err);
+        alert(err.error || 'שגיאה בהוספת השורה. נסה שוב.');
+      }
+    });
+  }
+
+  // חדש - הסרת שורה עצמאית מהשבוע הנוכחי בלבד. השרת גם מוחק את
+  // התוכן שהוקלד בפועל תחתיה לשבוע הזה - שבועות אחרים לא מושפעים.
+  removeExtraRowForWeek(def: ExtraRowDefinition): void {
+    if (!def.id) return;
+    if (!confirm(`להסיר את השורה "${def.rowName}" מהשבוע הזה? התוכן שהוקלד תחתיה לשבוע הזה יימחק. שבועות אחרים לא יושפעו.`)) return;
+
+    this.isProcessingExtraRow[def.rowName] = true;
+
+    this.boardConfigService.removeExtraRowName(def.id).subscribe({
+      next: () => {
+        delete this.isProcessingExtraRow[def.rowName];
+        this.extraRowDefs = this.extraRowDefs.filter(d => d.id !== def.id);
+        this.extraRowEntries = this.extraRowEntries.filter(e => e.rowName !== def.rowName);
+      },
+      error: (err) => {
+        delete this.isProcessingExtraRow[def.rowName];
+        console.error('שגיאה בהסרת שורה עצמאית מהשבוע:', err);
+        alert('שגיאה בהסרת השורה. נסה שוב.');
+      }
     });
   }
 
@@ -666,7 +736,7 @@ export class ShiftBoardComponent implements OnInit {
   }
 
   get isWeekPublished(): boolean {
-    return this.shifts.length > 0 && this.shifts.every((s: any) => s.isPublished);
+    return this.shifts.length > 0 && this.shifts.every((s: any) => s.isPublished || s.IsPublished);
   }
 
   publishWeek(): void {

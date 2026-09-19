@@ -84,8 +84,6 @@
                 </div>
               </th>
             </tr>
-            <!-- NEW: sub-header row — makes it unmistakable which half of
-                 each day is the candidate pool and which is the real roster -->
             <tr>
               <th class="col-side-label"></th>
               <th class="col-role-label"></th>
@@ -168,11 +166,33 @@
               </ng-container>
             </ng-container>
 
-            <tr class="extra-row" *ngFor="let rowName of extraRowNames">
-              <td class="shift-label-vertical extra-row-label" colspan="2">{{ rowName }}</td>
+            <!-- תוקן - כל שורה עצמאית עכשיו ספציפית לשבוע (extraRowDefs, לא
+                 extraRowNames גלובלי), עם כפתור "×" להסרה מהשבוע הזה בלבד. -->
+            <tr class="extra-row" *ngFor="let def of extraRowDefs">
+              <td class="shift-label-vertical extra-row-label" colspan="2">
+                {{ def.rowName }}
+                <button type="button" class="btn-remove-extra-row" title="הסר שורה זו לשבוע הנוכחי בלבד"
+                  (click)="removeExtraRowForWeek(def)"
+                  [disabled]="isProcessingExtraRow[def.rowName]">×</button>
+              </td>
               <td class="assign-cell extra-row-cell" *ngFor="let day of daysOfWeek; let i = index" colspan="2">
-                <input type="text" class="extra-row-input" [value]="getExtraRowText(rowName, i)"
-                  (change)="updateExtraRowText(rowName, i, $any($event.target).value)" placeholder="—">
+                <input type="text" class="extra-row-input" [value]="getExtraRowText(def.rowName, i)"
+                  (change)="updateExtraRowText(def.rowName, i, $any($event.target).value)" placeholder="—">
+              </td>
+            </tr>
+
+            <!-- חדש - הוספת שורה עצמאית לשבוע המוצג כרגע בלבד -->
+            <tr class="extra-row extra-row-add">
+              <td colspan="2" class="extra-row-label">+ שורה חדשה לשבוע הזה</td>
+              <td [attr.colspan]="daysOfWeek.length * 2">
+                <div class="add-extra-row-inline">
+                  <input type="text" [(ngModel)]="newExtraRowNameForWeek"
+                    placeholder="שם שורה חדשה (לדוגמה: תגבורים)"
+                    (keyup.enter)="addExtraRowForWeek()">
+                  <button type="button" (click)="addExtraRowForWeek()" [disabled]="isSavingExtraRow">
+                    {{ isSavingExtraRow ? 'מוסיף...' : 'הוסף' }}
+                  </button>
+                </div>
               </td>
             </tr>
 
