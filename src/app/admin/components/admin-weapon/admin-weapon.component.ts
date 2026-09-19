@@ -89,11 +89,17 @@ export class AdminWeaponComponent implements OnInit {
   loadAllTracking(): void {
     this.weaponService.getAllTracking().subscribe(data => {
       this.employeesList = data.map(item => {
-        if (!item.customFieldValues) item.customFieldValues = {};
+        const converted: WeaponTracking = {
+          ...item,
+          refreshDate: this.toDateInputValue(item.refreshDate),
+          licenseDate: this.toDateInputValue((item as any).licenseDate),
+          btfAppointmentDate: this.toDatetimeLocalValue(item.btfAppointmentDate)
+        };
+        if (!converted.customFieldValues) converted.customFieldValues = {};
         this.config.customColumns.forEach(col => {
-          if (!(col in item.customFieldValues)) item.customFieldValues[col] = '';
+          if (!(col in converted.customFieldValues)) converted.customFieldValues[col] = '';
         });
-        return item;
+        return converted;
       });
     });
   }
@@ -121,6 +127,32 @@ export class AdminWeaponComponent implements OnInit {
     const m = String(date.getMonth() + 1).padStart(2, '0');
     const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
+  }
+
+  // חדש - המרת ערך תאריך שמגיע מהשרת (למשל ISO עם שעה/Z) לפורמט
+  // yyyy-MM-dd שאותו <input type="date"> יודע להציג
+  private toDateInputValue(value: any): string | null {
+    if (!value) return null;
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return null;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  // חדש - המרת ערך תאריך+שעה מהשרת לפורמט yyyy-MM-ddTHH:mm
+  // שאותו <input type="datetime-local"> יודע להציג
+  private toDatetimeLocalValue(value: any): string | null {
+    if (!value) return null;
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return null;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return `${y}-${m}-${day}T${hh}:${mm}`;
   }
 
   get availableEmployeesToAdd(): any[] {
