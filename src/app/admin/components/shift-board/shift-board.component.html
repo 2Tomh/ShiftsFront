@@ -65,13 +65,13 @@
     <div class="mobile-day-view" *ngIf="daysOfWeek.length > 0">
       <div class="mobile-day-nav">
         <button type="button" class="mobile-day-nav-btn" (click)="prevMobileDay()"
-          [disabled]="mobileSelectedDayIndex === 0" title="יום קודם">›</button>
+          [disabled]="mobileSelectedDayIndex === 0" title="יום קודם">‹</button>
         <div class="mobile-day-label">
           <span class="mobile-day-name">{{ daysOfWeek[mobileSelectedDayIndex] }}</span>
           <span class="mobile-day-date">{{ getDateLabelForDay(daysOfWeek[mobileSelectedDayIndex]) }}</span>
         </div>
         <button type="button" class="mobile-day-nav-btn" (click)="nextMobileDay()"
-          [disabled]="mobileSelectedDayIndex === daysOfWeek.length - 1" title="יום הבא">‹</button>
+          [disabled]="mobileSelectedDayIndex === daysOfWeek.length - 1" title="יום הבא">›</button>
       </div>
 
       <div class="mobile-day-flag mobile-day-flag-blocked" *ngIf="isFullDayBlocked(mobileSelectedDayIndex)">
