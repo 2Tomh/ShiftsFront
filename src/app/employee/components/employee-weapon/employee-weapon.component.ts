@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WeaponTracking } from '../../../Models/weapon-tracking.model';
 import { WeaponTrackingService } from '../../../services/weapon-tracking.service';
+import { ManagerSettingsService } from '../../../services/ManagerSettings.service';
 
 @Component({
   selector: 'app-employee-weapon',
@@ -19,17 +20,36 @@ export class EmployeeWeaponComponent implements OnInit {
     customFieldValues: {}
   };
 
-  private readonly managerEmail = 'manager@company.com';
+  // תוקן - במקום קבוע hardcoded, נטען מהשרת (ManagerSettingsService)
+  // בטעינת הקומפוננטה. ככה אם המנהל מעדכן את המייל שלו ב"פרטי מנהל",
+  // זה משתקף כאן אוטומטית בלי לגעת בקוד. עד שהטעינה מסתיימת, נשאר
+  // ריק - ראה ההגנה ב-openGmailCompose למטה.
+  private managerEmail = '';
 
-  constructor(private weaponService: WeaponTrackingService) {}
+  constructor(
+    private weaponService: WeaponTrackingService,
+    private managerSettingsService: ManagerSettingsService
+  ) {}
 
   ngOnInit(): void {
     this.loadData();
+    this.loadManagerEmail();
   }
 
   loadData(): void {
     this.weaponService.getMyTracking().subscribe(data => {
       if (data) this.tracking = data;
+    });
+  }
+
+  private loadManagerEmail(): void {
+    this.managerSettingsService.get().subscribe({
+      next: (settings) => {
+        this.managerEmail = settings?.email || '';
+      },
+      error: (err) => {
+        console.error('שגיאה בטעינת פרטי המנהל (מייל יעד):', err);
+      }
     });
   }
 
@@ -47,6 +67,14 @@ export class EmployeeWeaponComponent implements OnInit {
   }
 
   private openGmailCompose(subject: string, body: string): void {
+    // תוקן - אם פרטי המנהל עוד לא נטענו (או שהמנהל מעולם לא הגדיר
+    // מייל ב"פרטי מנהל"), לא פותחים חלון עם "to=" ריק בשקט - עדיף
+    // להתריע לעובד במפורש כדי שינסה שוב או ידווח שההגדרה חסרה.
+    if (!this.managerEmail) {
+      alert('כתובת המייל של המנהל עדיין לא נטענה או לא הוגדרה במערכת. נסה שוב בעוד רגע, ואם זה חוזר - דווח למנהל.');
+      return;
+    }
+
     const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${this.managerEmail}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(url, '_blank');
   }
