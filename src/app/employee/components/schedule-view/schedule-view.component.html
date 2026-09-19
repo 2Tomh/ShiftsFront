@@ -20,7 +20,8 @@
       class="btn-toggle-week"
       [class.is-active]="viewingNextWeek"
       (click)="toggleWeek()">
-      {{ viewingNextWeek ? '↩ חזרה לשבוע הנוכחי' : '➜ הצג סידור לשבוע הבא' }}
+      <span class="btn-toggle-week-icon">{{ viewingNextWeek ? '→' : '←' }}</span>
+      {{ viewingNextWeek ? 'חזרה לשבוע הנוכחי' : 'הצג סידור לשבוע הבא' }}
     </button>
 
     <button class="btn-refresh" (click)="refreshNow()" [disabled]="isLoading">
