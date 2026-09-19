@@ -10,6 +10,8 @@ import { BoardSettingsComponent } from './components/board-settings/board-settin
 import { AdminStatisticsComponent } from './components/admin-statistics/admin-statistics.component';
 import { EmployeeManagementComponent } from './components/employee-management/employee-management.component';
 import { PersonalReportComponent } from './components/personal-report/personal-report.component';
+// חדש - קומפוננטת "פרטי מנהל"
+import { ManagerSettingsComponent } from './components/manager-settings/manager-settings.component';
 
 const routes: Routes = [
   {
@@ -24,6 +26,8 @@ const routes: Routes = [
       { path: 'stats', component: AdminStatisticsComponent },
       { path: 'employee-management', component: EmployeeManagementComponent },
       { path: 'personal-report', component: PersonalReportComponent },
+      // חדש - route שהיה חסר, זו הסיבה שהקישור בתפריט היה מבוטל
+      { path: 'manager-settings', component: ManagerSettingsComponent },
       { path: '', redirectTo: 'board', pathMatch: 'full' }
     ]
   }

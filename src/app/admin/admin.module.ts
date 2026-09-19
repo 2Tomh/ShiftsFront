@@ -13,6 +13,8 @@ import { ScheduleStatsComponent } from './components/schedule-stats/schedule-sta
 import { AdminStatisticsComponent } from './components/admin-statistics/admin-statistics.component';
 import { EmployeeManagementComponent } from './components/employee-management/employee-management.component';
 import { PersonalReportComponent } from './components/personal-report/personal-report.component';
+// חדש - קומפוננטת "פרטי מנהל"
+import { ManagerSettingsComponent } from './components/manager-settings/manager-settings.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,8 @@ import { PersonalReportComponent } from './components/personal-report/personal-r
     ScheduleStatsComponent,
     AdminStatisticsComponent,
     EmployeeManagementComponent,
-    PersonalReportComponent
+    PersonalReportComponent,
+    ManagerSettingsComponent
   ],
   imports: [
     CommonModule,
