@@ -2,6 +2,12 @@
 
   <header class="page-header">
     <div class="header-actions">
+      <div class="view-toggle">
+        <button type="button" class="view-toggle-btn" [class.is-active]="viewMode === 'matrix'"
+          (click)="setViewMode('matrix')">תצוגה מלאה</button>
+        <button type="button" class="view-toggle-btn" [class.is-active]="viewMode === 'clean'"
+          (click)="setViewMode('clean')">תצוגה נקייה</button>
+      </div>
       <div class="week-nav">
         <button type="button" class="week-nav-btn" (click)="previousWeek()" title="שבוע קודם">‹</button>
         <div class="week-nav-label">
@@ -189,7 +195,9 @@
       </div>
     </div>
 
-    <div class="table-container">
+    <!-- ===== תצוגה מלאה (מטריצה עם בנק המועמדים) - כמו שהייתה תמיד.
+         מוצגת רק כש-viewMode === 'matrix'. ===== -->
+    <div class="table-container" *ngIf="viewMode === 'matrix'">
       <div class="table-scroll">
         <table class="schedule-table matrix-table">
           <colgroup>
@@ -329,6 +337,78 @@
               </td>
             </tr>
 
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== תצוגה נקייה - טבלה פשוטה שמציגה רק את המשובצים בפועל,
+         בלי עמודת המועמדים. משתמשת באותן פונקציות בדיוק כמו התצוגה
+         המלאה (getEmployeeForRole, startTextEdit, isCellBlocked וכו')
+         - שום לוגיקה כפולה. מוצגת רק כש-viewMode === 'clean', ומוסתרת
+         במובייל (יש שם כבר תצוגת יום-אחר-יום נקייה משלה). ===== -->
+    <div class="table-container clean-table-container" *ngIf="viewMode === 'clean'">
+      <div class="table-scroll">
+        <table class="schedule-table clean-table">
+          <thead>
+            <tr>
+              <th class="col-side-label">משמרת</th>
+              <th class="col-role-label">תפקיד</th>
+              <th *ngFor="let day of daysOfWeek; let di = index" class="col-day"
+                [class.blocked-day-header]="isFullDayBlocked(di)" [class.holiday-day-header]="isHolidayForDayIndex(di)">
+                <div class="day-header-cell">
+                  <span class="day-name">{{ day }}</span>
+                  <span class="day-date">{{ getDateLabelForDay(day) }}</span>
+                  <span class="day-holiday-label" *ngIf="isHolidayForDayIndex(di)"
+                    [title]="getHolidayForDayIndex(di)?.title">
+                    🕎 {{ getHolidayForDayIndex(di)?.titleHebrew }}
+                  </span>
+                  <span class="day-blocked-reason" *ngIf="isFullDayBlocked(di)">🚫 {{ getBlockedDateReason(di) }}</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let block of shiftBlocks; let blockIndex = index">
+              <tr *ngFor="let role of block.roles; let firstRole = first"
+                [ngClass]="'shift-block-' + blockIndex" [class.block-start]="firstRole && blockIndex > 0">
+                <td *ngIf="firstRole" [attr.rowspan]="block.roles.length" class="shift-label-vertical">
+                  <span class="shift-icon">{{ block.icon }}</span>
+                  {{ block.label }}
+                </td>
+                <td class="role-sidebar">{{ role }}</td>
+
+                <td *ngFor="let day of daysOfWeek; let i = index" class="clean-cell"
+                  [class.clean-cell-blocked]="isCellBlocked(i, block) || isRoleBlockedForDay(i, block, role)">
+
+                  <ng-container *ngIf="!isCellBlocked(i, block) && !isRoleBlockedForDay(i, block, role); else cleanBlocked">
+                    <ng-container *ngIf="isEditingText(i, block.type, role); else cleanNotEditing">
+                      <input type="text" class="clean-text-edit-input"
+                        [(ngModel)]="editingTextValue" (keydown)="onTextEditKeydown($event)" (blur)="saveTextEdit()"
+                        placeholder="שם" #textInput>
+                    </ng-container>
+                    <ng-template #cleanNotEditing>
+                      <button type="button" class="clean-name-btn"
+                        *ngIf="getEmployeeForRole(i, block.type, role) as assignedName; else cleanEmptySlot"
+                        [class.rest-warning]="getRestSeverity(i, block.type, assignedName) === 'orange'"
+                        [class.rest-violation]="getRestSeverity(i, block.type, assignedName) === 'red'"
+                        [class.leave-conflict]="isEmployeeOnApprovedLeave(assignedName, i)"
+                        [title]="getAssignmentTooltip(i, block.type, assignedName)"
+                        (click)="startTextEdit(i, block.type, role)">
+                        {{ assignedName }}
+                      </button>
+                      <ng-template #cleanEmptySlot>
+                        <button type="button" class="clean-empty-btn"
+                          (click)="startTextEdit(i, block.type, role)">לא שובץ</button>
+                      </ng-template>
+                    </ng-template>
+                  </ng-container>
+                  <ng-template #cleanBlocked>
+                    <span class="clean-blocked-label">{{ getCellBlockedLabel(i, block) }}</span>
+                  </ng-template>
+                </td>
+              </tr>
+            </ng-container>
           </tbody>
         </table>
       </div>

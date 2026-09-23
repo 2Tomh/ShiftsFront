@@ -62,6 +62,16 @@ export class ShiftBoardComponent implements OnInit {
   // מאותחל ליום של היום אם הוא בתוך השבוע המוצג, אחרת ליום הראשון.
   mobileSelectedDayIndex = 0;
 
+  // חדש - טוגל בין תצוגת המטריצה המלאה (עם בנק המועמדים) לתצוגה נקייה
+  // שמציגה רק את המשובצים בפועל, בלי עמודת המועמדים. לא משכפל שום
+  // לוגיקה - שתי התצוגות קוראות לאותן פונקציות בדיוק (getEmployeeForRole,
+  // startTextEdit, isCellBlocked וכו').
+  viewMode: 'matrix' | 'clean' = 'matrix';
+
+  setViewMode(mode: 'matrix' | 'clean'): void {
+    this.viewMode = mode;
+  }
+
   private restSeverityMap: Map<string, RestSeverity> = new Map();
 
   private approvedLeaves: { employeeName: string; start: Date; end: Date }[] = [];
